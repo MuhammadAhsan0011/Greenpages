@@ -1,0 +1,13 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ogTitle">
+  <title id="ogTitle">GrowthPro Digital Marketing Agency</title>
+  <defs>
+    <linearGradient id="ogbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14532d"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#ogbg)"/>
+  <text x="80" y="300" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#ffffff">GrowthPro</text>
+  <text x="80" y="360" font-family="Arial, sans-serif" font-size="34" fill="#dcfce7">Digital Marketing Agency</text>
+  <text x="80" y="420" font-family="Arial, sans-serif" font-size="26" fill="#bbf7d0">SEO • Web Development • Content Marketing</text>
+</svg>

@@ -1,0 +1,104 @@
+import "./globals.css";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
+// TODO: Replace "https://example.com" everywhere in this file (and in
+// app/sitemap.js / app/robots.js) with your real production domain before
+// deploying.
+const siteUrl = "https://example.com";
+const siteName = "GrowthPro";
+const siteDescription =
+  "GrowthPro is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";
+
+export const metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} | Digital Marketing Agency`,
+    template: "%s | GrowthPro",
+  },
+  description: siteDescription,
+  keywords: [
+    "digital marketing agency",
+    "SEO services",
+    "web development agency",
+    "content marketing",
+    "GrowthPro",
+  ],
+  authors: [{ name: "GrowthPro" }],
+  creator: "GrowthPro",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: siteName,
+    title: `${siteName} | Digital Marketing Agency`,
+    description: siteDescription,
+    images: [
+      {
+        url: "/images/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "GrowthPro - Digital Marketing Agency",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteName} | Digital Marketing Agency`,
+    description: siteDescription,
+    images: ["/images/og-image.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
+// JSON-LD structured data describing GrowthPro as an organization. Placed
+// in the root layout so it's present (and consistent) on every page.
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "GrowthPro",
+  url: siteUrl,
+  logo: `${siteUrl}/images/og-image.svg`,
+  description: siteDescription,
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    email: "hello@growthpro.example",
+  },
+  sameAs: [],
+};
+
+export default function RootLayout({ children }) {
+  return (
+    // suppressHydrationWarning: browser extensions (e.g. QuillBot, Grammarly)
+    // inject attributes onto <html> before React hydrates, causing a false
+    // mismatch warning that has nothing to do with app code.
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}
