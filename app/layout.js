@@ -58,6 +58,9 @@ export const metadata = {
       follow: true,
     },
   },
+  verification: {
+    google: "6VCBUlR_v8_pEeVxFlFwLly51ldq7-LHKxwOve1bSZQ",
+  },
 };
 
 export const viewport = {
