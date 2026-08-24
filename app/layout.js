@@ -6,15 +6,15 @@ import Footer from "./components/Footer";
 // app/sitemap.js / app/robots.js) with your real production domain before
 // deploying.
 const siteUrl = "https://example.com";
-const siteName = "GrowthPro";
+const siteName = "Green Pages";
 const siteDescription =
-  "GrowthPro is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";
+  "Green Pages is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: `${siteName} | Digital Marketing Agency`,
-    template: "%s | GrowthPro",
+    template: "%s | Green Pages",
   },
   description: siteDescription,
   keywords: [
@@ -22,10 +22,10 @@ export const metadata = {
     "SEO services",
     "web development agency",
     "content marketing",
-    "GrowthPro",
+    "Green Pages",
   ],
-  authors: [{ name: "GrowthPro" }],
-  creator: "GrowthPro",
+  authors: [{ name: "Green Pages" }],
+  creator: "Green Pages",
   alternates: {
     canonical: "/",
   },
@@ -41,7 +41,7 @@ export const metadata = {
         url: "/images/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "GrowthPro - Digital Marketing Agency",
+        alt: "Green Pages - Digital Marketing Agency",
       },
     ],
   },
@@ -66,19 +66,19 @@ export const viewport = {
   initialScale: 1,
 };
 
-// JSON-LD structured data describing GrowthPro as an organization. Placed
+// JSON-LD structured data describing Green Pages as an organization. Placed
 // in the root layout so it's present (and consistent) on every page.
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "GrowthPro",
+  name: "Green Pages",
   url: siteUrl,
   logo: `${siteUrl}/images/og-image.svg`,
   description: siteDescription,
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "hello@growthpro.example",
+    email: "hello@greenpages.example",
   },
   sameAs: [],
 };

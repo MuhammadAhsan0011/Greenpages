@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
   }
 
   const title = `${category.name} Articles`;
-  const description = `Browse all GrowthPro articles on ${category.name} — practical, no-fluff guides on ${category.name.toLowerCase()} strategy and execution.`;
+  const description = `Browse all Green Pages articles on ${category.name} — practical, no-fluff guides on ${category.name.toLowerCase()} strategy and execution.`;
 
   return {
     title,
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
       canonical: `/blog/category/${category.slug}`,
     },
     openGraph: {
-      title: `${title} | GrowthPro Blog`,
+      title: `${title} | Green Pages Blog`,
       description,
       type: "website",
     },
@@ -85,7 +85,7 @@ export default async function BlogCategoryPage({ params }) {
           <span className="category-badge">{category.name}</span>
           <h1>{category.name} Articles</h1>
           <p className="hero-description">
-            Every GrowthPro article on {category.name.toLowerCase()} in one
+            Every Green Pages article on {category.name.toLowerCase()} in one
             place — practical, no-fluff guides you can put to work.
           </p>
         </div>

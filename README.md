@@ -1,4 +1,4 @@
-# GrowthPro – Digital Marketing Agency
+# Green Pages – Digital Marketing Agency
 
 A production-ready, SEO-optimized digital marketing agency website built with **Next.js 15 (App Router)**, **React 19**, and plain **JavaScript** — no TypeScript, no unnecessary third-party libraries.
 

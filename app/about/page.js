@@ -3,9 +3,9 @@ import Button from "../components/Button";
 import aboutIllustration from "../../public/images/about-illustration.svg";
 
 export const metadata = {
-  title: "About GrowthPro",
+  title: "About Green Pages",
   description:
-    "Learn about GrowthPro's mission, values, and the team behind our SEO, web development, and content marketing services.",
+    "Learn about Green Pages' mission, values, and the team behind our SEO, web development, and content marketing services.",
   alternates: {
     canonical: "/about",
   },
@@ -36,10 +36,10 @@ export default function AboutPage() {
       <section className="hero">
         <div className="container hero-inner">
           <div>
-            <span className="hero-eyebrow">About GrowthPro</span>
+            <span className="hero-eyebrow">About Green Pages</span>
             <h1>We Help Businesses Grow Through Smarter Digital Marketing</h1>
             <p className="hero-description">
-              GrowthPro is a digital marketing agency built around one goal:
+              Green Pages is a digital marketing agency built around one goal:
               turning your website into your most reliable source of
               customers. We combine SEO, web development, and content
               marketing into a single, connected growth strategy.
@@ -89,7 +89,7 @@ export default function AboutPage() {
         <div className="container">
           <div className="section-header">
             <span className="section-eyebrow">Why Choose Us</span>
-            <h2 id="why-us-heading">What Sets GrowthPro Apart</h2>
+            <h2 id="why-us-heading">What Sets Green Pages Apart</h2>
           </div>
           <div className="grid grid-3">
             {whyChooseUs.map((item) => (
@@ -108,7 +108,7 @@ export default function AboutPage() {
             <h2 id="about-cta-heading">Let&apos;s Build Your Growth Plan</h2>
             <p>
               Tell us about your business goals and we&apos;ll show you
-              exactly how GrowthPro can help you get there.
+              exactly how Green Pages can help you get there.
             </p>
             <div className="cta-actions">
               <Button href="/contact" variant="inverted">

@@ -7,7 +7,7 @@ import { createPublicClient } from "@/utils/supabase/public";
 export const metadata = {
   title: "Blog",
   description:
-    "Practical, no-fluff articles on SEO, web development, and content marketing from the GrowthPro team.",
+    "Practical, no-fluff articles on SEO, web development, and content marketing from the Green Pages team.",
   alternates: {
     canonical: "/blog",
   },
@@ -39,7 +39,7 @@ export default async function BlogPage() {
           <span className="hero-eyebrow">Blog</span>
           <h1>Insights on SEO, Web Development & Content Marketing</h1>
           <p className="hero-description">
-            Practical, no-fluff articles from the GrowthPro team — what&apos;s
+            Practical, no-fluff articles from the Green Pages team — what&apos;s
             actually working in search, on the web, and in content right
             now.
           </p>

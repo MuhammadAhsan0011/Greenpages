@@ -12,7 +12,7 @@ export default function Navbar() {
     <header className="site-header">
       <div className="container header-inner">
         <Link href="/" className="logo">
-          GrowthPro
+          Green Pages
         </Link>
 
         <input

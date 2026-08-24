@@ -3,7 +3,7 @@ import { login } from "./actions";
 
 export const metadata = {
   title: "Log In",
-  description: "Log in to your GrowthPro account.",
+  description: "Log in to your Green Pages account.",
   alternates: {
     canonical: "/login",
   },

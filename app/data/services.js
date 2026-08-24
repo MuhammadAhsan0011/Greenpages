@@ -11,7 +11,7 @@ export const services = [
     shortDescription:
       "Rank higher on Google and drive consistent, high-intent organic traffic with technical, on-page, and content-driven SEO.",
     metaDescription:
-      "GrowthPro's SEO services combine technical audits, keyword strategy, on-page optimization, and link building to grow your organic search traffic and rankings.",
+      "Green Pages' SEO services combine technical audits, keyword strategy, on-page optimization, and link building to grow your organic search traffic and rankings.",
     heroDescription:
       "We help businesses climb search rankings and earn organic traffic that converts, using a data-backed SEO process refined across dozens of industries.",
     sections: [
@@ -48,7 +48,7 @@ export const services = [
     shortDescription:
       "Fast, responsive, conversion-focused websites built with modern frameworks and SEO best practices from day one.",
     metaDescription:
-      "GrowthPro builds fast, responsive, SEO-ready websites using modern frameworks like Next.js — engineered for Core Web Vitals, conversions, and long-term scalability.",
+      "Green Pages builds fast, responsive, SEO-ready websites using modern frameworks like Next.js — engineered for Core Web Vitals, conversions, and long-term scalability.",
     heroDescription:
       "We design and build websites that load fast, rank well, and turn visitors into customers — built on modern, maintainable technology.",
     sections: [
@@ -85,7 +85,7 @@ export const services = [
     shortDescription:
       "Strategic content that attracts, engages, and converts your target audience across every stage of the funnel.",
     metaDescription:
-      "GrowthPro's content marketing services combine strategy, writing, and distribution to build organic traffic, brand authority, and qualified leads.",
+      "Green Pages' content marketing services combine strategy, writing, and distribution to build organic traffic, brand authority, and qualified leads.",
     heroDescription:
       "We create content that does more than fill a blog — it attracts the right audience, builds trust, and moves people toward a decision.",
     sections: [

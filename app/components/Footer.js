@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <h2>GrowthPro</h2>
+            <h2>Green Pages</h2>
             <p>
               A full-service digital marketing agency helping businesses grow
               through SEO, web development, and content marketing.
@@ -54,7 +54,7 @@ export default function Footer() {
           <div className="footer-col">
             <h3>Contact</h3>
             <ul>
-              <li>hello@growthpro.example</li>
+              <li>hello@greenpages.example</li>
               <li>+1 (555) 010-2024</li>
               <li>Remote-first, serving clients worldwide</li>
             </ul>
@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>&copy; {year} GrowthPro. All rights reserved.</span>
+          <span>&copy; {year} Green Pages. All rights reserved.</span>
           <span>Replace example.com with your production domain.</span>
         </div>
       </div>

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }) {
       canonical: `/services/${service.slug}`,
     },
     openGraph: {
-      title: `${service.title} | GrowthPro`,
+      title: `${service.title} | Green Pages`,
       description: service.metaDescription,
     },
   };
@@ -113,7 +113,7 @@ export default async function ServiceDetailPage({ params }) {
               </Link>
             ))}
             <Link href="/services">All Services</Link>
-            <Link href="/about">About GrowthPro</Link>
+            <Link href="/about">About Green Pages</Link>
           </nav>
         </div>
       </section>

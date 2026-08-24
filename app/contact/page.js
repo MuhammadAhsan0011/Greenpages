@@ -3,7 +3,7 @@ import ContactForm from "../components/ContactForm";
 export const metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with GrowthPro to discuss your SEO, web development, or content marketing goals. Request a free consultation today.",
+    "Get in touch with Green Pages to discuss your SEO, web development, or content marketing goals. Request a free consultation today.",
   alternates: {
     canonical: "/contact",
   },
@@ -32,7 +32,7 @@ export default function ContactPage() {
             <div className="contact-info-list">
               <div className="contact-info-item">
                 <h3>Email</h3>
-                <p>hello@growthpro.example</p>
+                <p>hello@greenpages.example</p>
               </div>
               <div className="contact-info-item">
                 <h3>Phone</h3>

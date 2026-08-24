@@ -71,7 +71,7 @@ export async function generateMetadata({ params }) {
       canonical: `/blog/${post.slug}`,
     },
     openGraph: {
-      title: `${post.title} | GrowthPro Blog`,
+      title: `${post.title} | Green Pages Blog`,
       description: post.metaDescription,
       type: "article",
       publishedTime: post.date,

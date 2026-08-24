@@ -1,4 +1,4 @@
--- GrowthPro platform schema.
+-- Green Pages platform schema.
 -- Run this once in your Supabase project's SQL Editor (Dashboard > SQL Editor > New query)
 -- after creating the project, before using sign-up/business profiles/comments/articles.
 

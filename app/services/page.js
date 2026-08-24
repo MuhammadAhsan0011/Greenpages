@@ -5,7 +5,7 @@ import { services } from "../data/services";
 export const metadata = {
   title: "Our Services",
   description:
-    "Explore GrowthPro's digital marketing services, including SEO, web development, and content marketing — each built to drive measurable growth.",
+    "Explore Green Pages' digital marketing services, including SEO, web development, and content marketing — each built to drive measurable growth.",
   alternates: {
     canonical: "/services",
   },
@@ -22,7 +22,7 @@ export default function ServicesPage() {
           <h1>Digital Marketing Services That Drive Real Growth</h1>
           <p className="hero-description">
             From technical SEO to full website builds and ongoing content
-            strategy, every GrowthPro service is designed to work together
+            strategy, every Green Pages service is designed to work together
             as one connected growth engine for your business.
           </p>
         </div>

@@ -8,7 +8,7 @@ export const posts = [
   title: "Why Your Marketing Site Should Be Server-Rendered",
   category: "Web Development",
   date: "2026-08-20",
-  author: "GrowthPro Team",
+  author: "Green Pages Team",
   readTime: "8 min read",
   excerpt:
     "A client-rendered marketing site asks Google to run your JavaScript before it can read a word of your copy. Here is what each rendering strategy actually costs you.",
@@ -70,7 +70,7 @@ export const posts = [
   title: "Internal Linking: The Cheapest SEO Win Most Sites Ignore",
   category: "SEO",
   date: "2026-08-20",
-  author: "GrowthPro Team",
+  author: "Green Pages Team",
   readTime: "7 min read",
   excerpt:
     "Most sites publish good pages and then leave them stranded three clicks deep with no links pointing in. Here is how we audit and rebuild an internal link graph.",
@@ -113,7 +113,7 @@ export const posts = [
     title: "10 SEO Trends Shaping Search in 2026",
     category: "SEO",
     date: "2026-01-15",
-    author: "GrowthPro Team",
+    author: "Green Pages Team",
     readTime: "7 min read",
     excerpt:
       "From AI-powered search results to evolving E-E-A-T signals, here's what's actually moving rankings in 2026 — and how to adapt your strategy.",
@@ -148,7 +148,7 @@ export const posts = [
     title: "A Practical Guide to Running a Technical SEO Audit",
     category: "SEO",
     date: "2025-11-03",
-    author: "GrowthPro Team",
+    author: "Green Pages Team",
     readTime: "8 min read",
     excerpt:
       "Technical issues can quietly cap your rankings no matter how good your content is. Here's the audit checklist we run for every new client.",
@@ -183,7 +183,7 @@ export const posts = [
     title: "How to Build a Content Marketing Strategy That Actually Converts",
     category: "Content Marketing",
     date: "2025-09-22",
-    author: "GrowthPro Team",
+    author: "Green Pages Team",
     readTime: "6 min read",
     excerpt:
       "Publishing more content isn't a strategy. Here's how to plan content that attracts the right audience and moves them toward a decision.",
@@ -214,7 +214,7 @@ export const posts = [
     title: "Website Speed and Conversions: What the Data Actually Shows",
     category: "Web Development",
     date: "2025-08-10",
-    author: "GrowthPro Team",
+    author: "Green Pages Team",
     readTime: "5 min read",
     excerpt:
       "Every additional second of load time costs you conversions. We break down why performance is a growth lever, not just a technical checkbox.",

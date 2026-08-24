@@ -4,7 +4,7 @@ import { signup } from "./actions";
 export const metadata = {
   title: "Sign Up",
   description:
-    "Create a free GrowthPro account to build a business profile, join blog discussions, and publish your own articles.",
+    "Create a free Green Pages account to build a business profile, join blog discussions, and publish your own articles.",
   alternates: {
     canonical: "/signup",
   },

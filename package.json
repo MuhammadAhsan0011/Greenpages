@@ -1,8 +1,8 @@
 {
-  "name": "growthpro-digital-marketing-agency",
+  "name": "green-pages-digital-marketing-agency",
   "version": "1.0.0",
   "private": true,
-  "description": "GrowthPro - Modern, SEO-optimized digital marketing agency website built with Next.js App Router.",
+  "description": "Green Pages - Modern, SEO-optimized digital marketing agency website built with Next.js App Router.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

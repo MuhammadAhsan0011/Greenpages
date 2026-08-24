@@ -7,7 +7,7 @@ import heroIllustration from "../public/images/hero-illustration.svg";
 export const metadata = {
   title: "Digital Marketing Agency for SEO, Web & Content Growth",
   description:
-    "GrowthPro is a digital marketing agency helping ambitious businesses grow through SEO, web development, and content marketing. Get a free consultation today.",
+    "Green Pages is a digital marketing agency helping ambitious businesses grow through SEO, web development, and content marketing. Get a free consultation today.",
   alternates: {
     canonical: "/",
   },
@@ -52,7 +52,7 @@ export default function HomePage() {
             <span className="hero-eyebrow">Digital Marketing Agency</span>
             <h1>Grow Your Business with Data-Driven Digital Marketing</h1>
             <p className="hero-description">
-              GrowthPro helps ambitious companies attract more traffic,
+              Green Pages helps ambitious companies attract more traffic,
               generate qualified leads, and grow revenue through expert SEO,
               modern web development, and strategic content marketing.
             </p>
@@ -98,7 +98,7 @@ export default function HomePage() {
       <section className="section-alt" aria-labelledby="why-heading">
         <div className="container">
           <div className="section-header">
-            <span className="section-eyebrow">Why GrowthPro</span>
+            <span className="section-eyebrow">Why Green Pages</span>
             <h2 id="why-heading">Why Businesses Choose Us</h2>
             <p>
               We&apos;ve helped companies across industries turn organic

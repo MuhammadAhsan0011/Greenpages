@@ -5,7 +5,7 @@ import { createPublicClient } from "@/utils/supabase/public";
 export const metadata = {
   title: "Business Directory",
   description:
-    "Browse business profiles created by the GrowthPro community — free to list your own business.",
+    "Browse business profiles created by the Green Pages community — free to list your own business.",
   alternates: {
     canonical: "/businesses",
   },
@@ -29,7 +29,7 @@ export default async function BusinessesPage() {
           <span className="hero-eyebrow">Business Directory</span>
           <h1>Community Business Directory</h1>
           <p className="hero-description">
-            Browse businesses listed by the GrowthPro community. Sign up
+            Browse businesses listed by the Green Pages community. Sign up
             free to add your own.
           </p>
           <div className="hero-ctas">
