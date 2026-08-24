@@ -1,5 +1,5 @@
-// TODO: Replace "https://example.com" with your real production domain.
-const siteUrl = "https://example.com";
+// If you later attach a custom domain, update this to match.
+const siteUrl = "https://greenpages-pk.vercel.app";
 
 export default function robots() {
   return {

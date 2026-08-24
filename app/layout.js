@@ -2,10 +2,9 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
-// TODO: Replace "https://example.com" everywhere in this file (and in
-// app/sitemap.js / app/robots.js) with your real production domain before
-// deploying.
-const siteUrl = "https://example.com";
+// If you later attach a custom domain, update this (and app/sitemap.js /
+// app/robots.js) to match.
+const siteUrl = "https://greenpages-pk.vercel.app";
 const siteName = "Green Pages";
 const siteDescription =
   "Green Pages is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";
