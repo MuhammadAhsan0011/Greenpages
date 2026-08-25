@@ -46,7 +46,7 @@ export default async function ContactPage({ searchParams }) {
             <div className="contact-info-list">
               <div className="contact-info-item">
                 <h3>Email</h3>
-                <p>hello@greenpages.example</p>
+                <p>kimmak209@gmail.com</p>
               </div>
               <div className="contact-info-item">
                 <h3>Phone</h3>

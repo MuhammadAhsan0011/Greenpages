@@ -1,14 +1,15 @@
 "use client";
 
 // This component MUST be a Client Component ("use client") because it uses
-// React's useState hook to hold form field values and submission status,
-// and it calls the Supabase browser client on submit — both are
-// browser-only, interactive behaviors that cannot run in a Server
-// Component. Every other page/component in this project stays a Server
-// Component; this is one of the few deliberate, minimal exceptions.
+// React's useState hook to hold form field values and submission status.
+// The actual submission (database write + email notification) happens in
+// submitContactMessage, a Server Action — that keeps the Resend API key
+// server-only and out of the browser bundle. Every other page/component
+// in this project stays a Server Component; this is one of the few
+// deliberate, minimal exceptions.
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { submitContactMessage } from "../contact/actions";
 
 export default function ContactForm({ defaultMessage = "" }) {
   const [formData, setFormData] = useState({
@@ -27,14 +28,9 @@ export default function ContactForm({ defaultMessage = "" }) {
     event.preventDefault();
     setStatus("submitting");
 
-    const supabase = createClient();
-    const { error } = await supabase.from("contact_messages").insert({
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-    });
+    const result = await submitContactMessage(formData);
 
-    if (error) {
+    if (!result.success) {
       setStatus("error");
       return;
     }

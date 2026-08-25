@@ -80,7 +80,7 @@ const organizationSchema = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
-    email: "hello@greenpages.example",
+    email: "kimmak209@gmail.com",
   },
   sameAs: [],
 };
