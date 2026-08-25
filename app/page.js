@@ -1,8 +1,15 @@
 import Image from "next/image";
 import Button from "./components/Button";
 import ServiceCard from "./components/ServiceCard";
+import BlogCard from "./components/BlogCard";
 import { services } from "./data/services";
+import { normalizeDbArticle } from "./data/blog";
+import { createPublicClient } from "@/utils/supabase/public";
 import heroIllustration from "../public/images/hero-illustration.svg";
+
+// Revalidates periodically so newly-featured articles show up here without
+// a rebuild, while the page stays cached/static like the rest of the site.
+export const revalidate = 60;
 
 export const metadata = {
   title: "Pakistan Business Directory & Digital Marketing Agency",
@@ -63,7 +70,18 @@ const whyChooseUs = [
 // This is a Server Component by default — it renders on the server with
 // no client-side JavaScript required, which keeps the homepage fast and
 // fully crawlable for search engines.
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createPublicClient();
+  const { data: featuredArticles } = await supabase
+    .from("articles")
+    .select("slug, title, category, published_at, excerpt, content, cover_image_url, tags")
+    .eq("featured_on_homepage", true)
+    .lte("published_at", new Date().toISOString())
+    .order("published_at", { ascending: false })
+    .limit(3);
+
+  const featured = (featuredArticles ?? []).map(normalizeDbArticle);
+
   return (
     <>
       <section className="hero">
@@ -120,6 +138,22 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {featured.length > 0 && (
+        <section aria-labelledby="featured-articles-heading">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-eyebrow">From the Community</span>
+              <h2 id="featured-articles-heading">Featured Articles</h2>
+            </div>
+            <div className="grid grid-3">
+              {featured.map((post) => (
+                <BlogCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="services-heading">
         <div className="container">

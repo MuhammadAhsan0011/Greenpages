@@ -101,6 +101,16 @@ create table public.articles (
   content text not null,
   category text not null,
   cover_image_url text,
+  -- Verified/Featured-only fields (enforced server-side in
+  -- app/account/articles/actions.js, not just hidden in the form).
+  tags text,
+  meta_title text,
+  meta_description text,
+  featured_on_homepage boolean not null default false,
+  -- Defaults to "now" (instant publish), but Verified/Featured members can
+  -- set a future timestamp to schedule a post — public queries filter on
+  -- this so it stays invisible until that time arrives.
+  published_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
 

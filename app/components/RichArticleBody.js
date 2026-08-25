@@ -1,19 +1,25 @@
 // Server Component — parses the lightweight markdown-style syntax written
-// with ArticleEditor.js (**bold**, _italic_, "## " headings, "- " lists)
-// into plain React elements. Deliberately never uses
-// dangerouslySetInnerHTML: user-submitted content is untrusted (articles
-// publish instantly with no review step), so rendering it as real React
-// nodes instead of raw HTML rules out script injection entirely, rather
-// than relying on escaping.
+// with ArticleEditor.js (**bold**, _italic_, ~~strikethrough~~,
+// __underline__, "## " headings, "- " lists) into plain React elements.
+// Deliberately never uses dangerouslySetInnerHTML: user-submitted content
+// is untrusted (articles publish instantly with no review step), so
+// rendering it as real React nodes instead of raw HTML rules out script
+// injection entirely, rather than relying on escaping.
 
 function parseInline(text, keyPrefix) {
-  const tokenPattern = /(\*\*[^*]+\*\*|_[^_]+_)/g;
+  const tokenPattern = /(\*\*[^*]+\*\*|~~[^~]+~~|__[^_]+__|_[^_]+_)/g;
   const parts = text.split(tokenPattern).filter((part) => part !== "");
 
   return parts.map((part, index) => {
     const key = `${keyPrefix}-${index}`;
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={key}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith("~~") && part.endsWith("~~")) {
+      return <s key={key}>{part.slice(2, -2)}</s>;
+    }
+    if (part.startsWith("__") && part.endsWith("__")) {
+      return <u key={key}>{part.slice(2, -2)}</u>;
     }
     if (part.startsWith("_") && part.endsWith("_")) {
       return <em key={key}>{part.slice(1, -1)}</em>;

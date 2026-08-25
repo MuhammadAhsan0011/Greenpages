@@ -293,10 +293,11 @@ export function normalizeDbArticle(article) {
     slug: article.slug,
     title: article.title,
     category: article.category,
-    date: article.created_at,
+    date: article.published_at ?? article.created_at,
     excerpt: article.excerpt,
     readTime: estimateReadTime(article.content),
     coverImageUrl: article.cover_image_url ?? null,
+    tags: article.tags ?? null,
     isUserSubmitted: true,
   };
 }

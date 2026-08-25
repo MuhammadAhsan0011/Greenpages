@@ -37,19 +37,23 @@ async function getMergedPost(slug) {
     .eq("slug", slug)
     .maybeSingle();
 
-  if (!article) return null;
+  // Scheduled articles (published_at in the future) stay invisible to
+  // everyone, including the author, until that time arrives.
+  if (!article || new Date(article.published_at) > new Date()) return null;
 
   return {
     slug: article.slug,
     title: article.title,
+    seoTitle: article.meta_title || article.title,
     category: article.category,
-    date: article.created_at,
+    date: article.published_at,
     author: article.profiles?.full_name ?? "Community Member",
     readTime: estimateReadTime(article.content),
     excerpt: article.excerpt,
-    metaDescription: article.excerpt,
+    metaDescription: article.meta_description || article.excerpt,
     rawContent: article.content,
     coverImageUrl: article.cover_image_url ?? null,
+    tags: article.tags ?? null,
     relatedServiceSlug: null,
     isUserSubmitted: true,
   };
@@ -66,14 +70,16 @@ export async function generateMetadata({ params }) {
     };
   }
 
+  const seoTitle = post.seoTitle ?? post.title;
+
   return {
-    title: post.title,
+    title: seoTitle,
     description: post.metaDescription,
     alternates: {
       canonical: `/blog/${post.slug}`,
     },
     openGraph: {
-      title: `${post.title} | Green Pages Blog`,
+      title: `${seoTitle} | Green Pages Blog`,
       description: post.metaDescription,
       type: "article",
       publishedTime: post.date,
@@ -139,6 +145,15 @@ export default async function BlogPostPage({ params }) {
             <span aria-hidden="true">·</span>
             <span>{post.readTime}</span>
           </div>
+          {post.tags && (
+            <div className="tag-list">
+              {post.tags.split(",").map((tag) => (
+                <span className="tag-chip" key={tag}>
+                  {tag.trim()}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

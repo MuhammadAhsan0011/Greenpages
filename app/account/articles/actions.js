@@ -44,6 +44,45 @@ export async function createArticle(formData) {
     coverImageUrl = upload.url;
   }
 
+  // Verified/Featured-only fields. Re-checked here against the real plan
+  // in the database — the form only shows these fields to eligible
+  // members, but a request could still be crafted by hand, so the plan
+  // gate has to be enforced server-side, not just by hiding UI.
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("plan")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+
+  let tags = null;
+  let metaTitle = null;
+  let metaDescription = null;
+  let featuredOnHomepage = false;
+  let publishedAt = new Date().toISOString();
+
+  if (isPaidPlan) {
+    tags =
+      formData
+        .get("tags")
+        ?.toString()
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .join(", ") || null;
+    metaTitle = formData.get("metaTitle")?.toString().trim() || null;
+    metaDescription = formData.get("metaDescription")?.toString().trim() || null;
+    featuredOnHomepage = formData.get("featuredOnHomepage") === "yes";
+
+    const requestedPublishDate = formData.get("publishedAt")?.toString();
+    if (requestedPublishDate) {
+      const parsed = new Date(requestedPublishDate);
+      if (!Number.isNaN(parsed.getTime())) {
+        publishedAt = parsed.toISOString();
+      }
+    }
+  }
+
   // Appends a short unique suffix so two articles with the same title never
   // collide, without needing an extra lookup query first.
   const slug = `${slugify(title)}-${Date.now().toString(36)}`;
@@ -56,6 +95,11 @@ export async function createArticle(formData) {
     content,
     category,
     cover_image_url: coverImageUrl,
+    tags,
+    meta_title: metaTitle,
+    meta_description: metaDescription,
+    featured_on_homepage: featuredOnHomepage,
+    published_at: publishedAt,
   });
 
   if (error) {
@@ -63,6 +107,7 @@ export async function createArticle(formData) {
   }
 
   revalidatePath("/blog");
+  revalidatePath("/");
   revalidatePath("/account");
   redirect(`/blog/${slug}`);
 }

@@ -26,7 +26,7 @@ function prefixCurrentLine(value, start, prefix) {
   return { next, cursorStart: cursor, cursorEnd: cursor };
 }
 
-export default function ArticleEditor({ defaultValue = "" }) {
+export default function ArticleEditor({ defaultValue = "", extraFormatting = false }) {
   const [value, setValue] = useState(defaultValue);
   const textareaRef = useRef(null);
 
@@ -64,6 +64,26 @@ export default function ArticleEditor({ defaultValue = "" }) {
         >
           <em>I</em>
         </button>
+        {extraFormatting && (
+          <>
+            <button
+              type="button"
+              onClick={() =>
+                applyChange((v, s, e) => wrapSelection(v, s, e, "__", "__"))
+              }
+            >
+              <u>U</u>
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                applyChange((v, s, e) => wrapSelection(v, s, e, "~~", "~~"))
+              }
+            >
+              <s>S</s>
+            </button>
+          </>
+        )}
         <button
           type="button"
           onClick={() => applyChange((v, s) => prefixCurrentLine(v, s, "## "))}
