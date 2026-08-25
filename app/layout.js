@@ -1,6 +1,9 @@
+import Script from "next/script";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+
+const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
 
 // If you later attach a custom domain, update this (and app/sitemap.js /
 // app/robots.js) to match.
@@ -97,6 +100,20 @@ export default function RootLayout({ children }) {
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        {/* Google Analytics — next/script defers/loads this efficiently
+            instead of a render-blocking plain <script> tag. */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
         <Navbar />
         <main>{children}</main>
         <Footer />
