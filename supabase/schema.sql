@@ -84,7 +84,7 @@ create policy "Users can delete their own business profile"
 -- update the email here if you ever change which account is the admin.
 create policy "Admin can update any business"
   on public.businesses for update
-  using (auth.jwt() ->> 'email' = 'kimmak209@gmail.com');
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
 
 -- ---------------------------------------------------------------
 -- articles: user-submitted blog articles. Published instantly, no
