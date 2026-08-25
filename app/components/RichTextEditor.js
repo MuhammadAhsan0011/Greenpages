@@ -32,6 +32,7 @@ import { uploadInlineImage } from "../account/articles/actions";
 export default function RichTextEditor({ defaultValue = "" }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
 
   const editor = useEditor({
@@ -71,11 +72,23 @@ export default function RichTextEditor({ defaultValue = "" }) {
       if (!file || !editor) return;
 
       setUploading(true);
-      const result = await uploadInlineImage(file);
+      setUploadError("");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      let result;
+      try {
+        result = await uploadInlineImage(formData);
+      } catch {
+        result = { error: "Upload failed. Please try again." };
+      }
       setUploading(false);
 
       if (result?.url) {
         editor.chain().focus().setImage({ src: result.url }).run();
+      } else {
+        setUploadError(result?.error || "Something went wrong uploading that image.");
       }
     },
     [editor]
@@ -224,6 +237,7 @@ export default function RichTextEditor({ defaultValue = "" }) {
           ↷
         </button>
       </div>
+      {uploadError && <p className="form-error editor-inline-error">{uploadError}</p>}
       <EditorContent editor={editor} />
       <input type="hidden" name="content" value={html} />
     </div>

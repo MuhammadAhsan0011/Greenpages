@@ -26,7 +26,9 @@ async function getIsPaidPlan(supabase, userId) {
 // Called directly from RichTextEditor.js (a Verified/Featured-only
 // component) to upload an inline image and get back a public URL. Gated
 // server-side against the real plan, not just by which UI can reach it.
-export async function uploadInlineImage(file) {
+// Takes FormData (not a bare File) — that's the reliable, documented way
+// to send a file to a Server Action invoked directly from client code.
+export async function uploadInlineImage(formData) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -36,6 +38,8 @@ export async function uploadInlineImage(file) {
   if (!(await getIsPaidPlan(supabase, user.id))) {
     return { error: "Upgrade to Verified or Featured to add inline images." };
   }
+
+  const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { error: "No file provided." };
   }

@@ -720,6 +720,13 @@ article.service-section h2 {
   font-weight: 600;
 }
 
+.editor-inline-error {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-width: 0 !important;
+  border-top-width: 1px !important;
+}
+
 .form-error {
   background: #fef2f2;
   border: 1px solid #fca5a5;
