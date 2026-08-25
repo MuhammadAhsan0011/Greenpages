@@ -944,6 +944,7 @@ article.service-section h2 {
 
 .editor-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 8px;
   background: var(--color-bg-alt);
