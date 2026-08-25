@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      // Next.js defaults Server Action request bodies to 1MB, which is too
+      // small for real photo uploads (business logos, article cover/inline
+      // images). Raised to match the 5MB limit already set on the
+      // Supabase "uploads" storage bucket (see supabase/schema.sql).
+      bodySizeLimit: "8mb",
+    },
+  },
   images: {
     // This project's decorative illustrations are local SVG files, so SVG
     // support has to be explicitly enabled for next/image's optimizer.

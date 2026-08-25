@@ -70,6 +70,7 @@ export default async function NewArticlePage({ searchParams }) {
           <div className="form-field">
             <label htmlFor="coverImage">Cover Image (optional)</label>
             <input id="coverImage" name="coverImage" type="file" accept="image/*" />
+            <p className="editor-hint">PNG, JPEG, WebP, or GIF — max 5MB.</p>
           </div>
 
           <div className="form-field">

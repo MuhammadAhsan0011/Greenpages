@@ -71,8 +71,20 @@ export default function RichTextEditor({ defaultValue = "" }) {
       event.target.value = "";
       if (!file || !editor) return;
 
-      setUploading(true);
       setUploadError("");
+
+      // Checked client-side first so an oversized file fails instantly
+      // with a clear reason, instead of a slow, opaque round-trip.
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError("That image is too large — max size is 5MB.");
+        return;
+      }
+      if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.type)) {
+        setUploadError("Unsupported format — use PNG, JPEG, WebP, or GIF.");
+        return;
+      }
+
+      setUploading(true);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -80,8 +92,8 @@ export default function RichTextEditor({ defaultValue = "" }) {
       let result;
       try {
         result = await uploadInlineImage(formData);
-      } catch {
-        result = { error: "Upload failed. Please try again." };
+      } catch (err) {
+        result = { error: err?.message || "Upload failed. Please try again." };
       }
       setUploading(false);
 
@@ -196,6 +208,7 @@ export default function RichTextEditor({ defaultValue = "" }) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
+          title="Insert image — PNG, JPEG, WebP, or GIF, max 5MB"
         >
           {uploading ? "…" : "🖼️"}
         </button>

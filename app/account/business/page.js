@@ -108,6 +108,7 @@ export default async function BusinessProfilePage({ searchParams }) {
                   />
                 )}
                 <input id="logo" name="logo" type="file" accept="image/*" />
+                <p className="editor-hint">PNG, JPEG, WebP, or GIF — max 5MB.</p>
               </>
             )}
           </div>
