@@ -171,6 +171,169 @@ button {
   border-radius: 2px;
 }
 
+/* ---------- Account menu (logged-in nav dropdown) ---------- */
+.account-menu {
+  position: relative;
+}
+
+.account-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-text);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 6px 14px 6px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  max-width: 220px;
+}
+
+.account-menu-trigger:hover,
+.account-menu-trigger:focus-visible {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.account-menu-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.account-menu-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-menu-trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-chevron {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.account-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  z-index: 60;
+}
+
+.account-menu-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 8px;
+  background: var(--color-bg-alt);
+}
+
+.account-menu-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-menu-logo-fallback {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.account-menu-business-badge {
+  display: inline-block;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 4px 14px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.account-menu-detail {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.account-menu-detail strong {
+  color: var(--color-text);
+}
+
+.account-menu-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin: 14px 0 10px;
+}
+
+.account-menu-actions .btn {
+  flex: 1;
+}
+
+.btn-sm {
+  padding: 9px 14px;
+  font-size: 0.85rem;
+}
+
+.account-menu-logout {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.account-menu-logout:hover,
+.account-menu-logout:focus-visible {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .account-menu-trigger-label {
+    display: none;
+  }
+}
+
 /* ---------- Buttons ---------- */
 .btn {
   display: inline-flex;
@@ -209,7 +372,20 @@ button {
 }
 
 .btn-secondary:hover {
-  background: var(--color-primary-light);
+  color: var(--color-primary-light);
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondarytwo {
+  background: transparent;
+  color: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.btn-secondarytwo:hover {
+  color: var(--color-primary-light);
+  background: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
@@ -1706,7 +1882,27 @@ article.service-section h2 {
   }
 
   .nav-toggle-checkbox:checked ~ .main-nav {
-    max-height: 320px;
+    max-height: 720px;
+  }
+
+  .account-menu-trigger {
+    max-width: none;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .account-menu-trigger-label {
+    display: inline;
+  }
+
+  .account-menu-panel {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+    align-items: flex-start;
+    text-align: left;
+    box-shadow: none;
+    border: 1px solid var(--color-border);
   }
 
   .grid-3 {

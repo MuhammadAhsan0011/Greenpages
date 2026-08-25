@@ -212,7 +212,7 @@ export default async function HomePage() {
               <Button href="/contact" variant="inverted">
                 Get Your Free Consultation
               </Button>
-              <Button href="/about" variant="secondary">
+              <Button href="/about" variant="secondarytwo">
                 Learn About Us
               </Button>
             </div>

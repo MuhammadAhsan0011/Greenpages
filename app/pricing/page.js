@@ -32,7 +32,7 @@ const packages = [
     name: "Verified",
     icon: "🛡️",
     price: "Rs. 2,000",
-    period: "/month",
+    period: "/annually",
     description: "Stand out with a trust badge and better visibility.",
     features: [
       "Everything in Free",
@@ -48,7 +48,7 @@ const packages = [
     name: "Featured",
     icon: "👑",
     price: "Rs. 4,500",
-    period: "/month",
+    period: "/annually",
     description: "Maximum visibility across the entire directory.",
     features: [
       "Everything in Verified",
