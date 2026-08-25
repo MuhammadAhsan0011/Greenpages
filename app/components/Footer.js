@@ -12,8 +12,9 @@ export default function Footer() {
           <div className="footer-brand">
             <h2>Green Pages</h2>
             <p>
-              A full-service digital marketing agency helping businesses grow
-              through SEO, web development, and content marketing.
+              Pakistan&apos;s business directory and digital marketing
+              agency — get listed, get found, and grow with expert SEO, web
+              development, and content marketing.
             </p>
           </div>
 
@@ -28,6 +29,12 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/services">Services</Link>
+              </li>
+              <li>
+                <Link href="/businesses">Directory</Link>
+              </li>
+              <li>
+                <Link href="/pricing">Pricing</Link>
               </li>
               <li>
                 <Link href="/blog">Blog</Link>
@@ -55,15 +62,14 @@ export default function Footer() {
             <h3>Contact</h3>
             <ul>
               <li>hello@greenpages.example</li>
-              <li>+1 (555) 010-2024</li>
-              <li>Remote-first, serving clients worldwide</li>
+              <li>+92 300 1234567</li>
+              <li>Islamabad, Pakistan</li>
             </ul>
           </div>
         </div>
 
         <div className="footer-bottom">
           <span>&copy; {year} Green Pages. All rights reserved.</span>
-          <span>Replace example.com with your production domain.</span>
         </div>
       </div>
     </footer>

@@ -9,9 +9,17 @@ export const metadata = {
   },
 };
 
+const PACKAGE_LABELS = {
+  verified: "Verified (Rs. 2,000/month)",
+  featured: "Featured (Rs. 4,500/month)",
+};
+
 // This page itself is a Server Component — only the interactive form
 // inside it (ContactForm) needs to run on the client.
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }) {
+  const params = await searchParams;
+  const packageLabel = PACKAGE_LABELS[params?.package];
+
   return (
     <section aria-labelledby="contact-heading">
       <div className="container">
@@ -25,7 +33,13 @@ export default function ContactPage() {
         </div>
 
         <div className="contact-layout">
-          <ContactForm />
+          <ContactForm
+            defaultMessage={
+              packageLabel
+                ? `I'd like to upgrade my listing to the ${packageLabel} package.`
+                : ""
+            }
+          />
 
           <div>
             <h2>Other Ways to Reach Us</h2>
@@ -36,11 +50,11 @@ export default function ContactPage() {
               </div>
               <div className="contact-info-item">
                 <h3>Phone</h3>
-                <p>+1 (555) 010-2024</p>
+                <p>+92 300 1234567</p>
               </div>
               <div className="contact-info-item">
                 <h3>Office</h3>
-                <p>Remote-first agency, serving clients worldwide.</p>
+                <p>Islamabad, Pakistan — serving clients nationwide.</p>
               </div>
             </div>
           </div>

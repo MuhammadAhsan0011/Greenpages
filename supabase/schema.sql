@@ -48,6 +48,12 @@ create table public.businesses (
   website text,
   phone text,
   city text,
+  -- Listing tier. Never exposed as a field in the business profile form —
+  -- the app has no code path that lets an owner set their own plan.
+  -- Upgrade it yourself in the Supabase Table Editor after collecting
+  -- payment manually (bank transfer / JazzCash / Easypaisa) for the
+  -- "verified" (Rs. 2000) or "featured" (Rs. 4500) package.
+  plan text not null default 'free' check (plan in ('free', 'verified', 'featured')),
   created_at timestamptz not null default now()
 );
 
@@ -132,3 +138,22 @@ create policy "Signed-in users can post comments"
 create policy "Users can delete their own comments"
   on public.comments for delete
   using (auth.uid() = author_id);
+
+-- ---------------------------------------------------------------
+-- contact_messages: submissions from the /contact form. Insert-only for
+-- the public — no select policy, so only the project owner can read
+-- these, via the Supabase Table Editor (which bypasses RLS).
+-- ---------------------------------------------------------------
+create table public.contact_messages (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  message text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.contact_messages enable row level security;
+
+create policy "Anyone can submit a contact message"
+  on public.contact_messages for insert
+  with check (true);

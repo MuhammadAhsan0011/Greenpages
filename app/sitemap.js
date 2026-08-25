@@ -14,6 +14,7 @@ export default async function sitemap() {
     { path: "/services", priority: 0.9 },
     { path: "/blog", priority: 0.8 },
     { path: "/businesses", priority: 0.7 },
+    { path: "/pricing", priority: 0.7 },
     { path: "/contact", priority: 0.7 },
   ].map(({ path, priority }) => ({
     url: `${siteUrl}${path}`,

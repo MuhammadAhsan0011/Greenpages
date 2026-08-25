@@ -49,6 +49,9 @@ export default function Navbar() {
               <Link href="/businesses">Directory</Link>
             </li>
             <li>
+              <Link href="/pricing">Pricing</Link>
+            </li>
+            <li>
               <Link href="/contact">Contact</Link>
             </li>
             <AuthNav />

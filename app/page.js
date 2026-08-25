@@ -5,13 +5,33 @@ import { services } from "./data/services";
 import heroIllustration from "../public/images/hero-illustration.svg";
 
 export const metadata = {
-  title: "Digital Marketing Agency for SEO, Web & Content Growth",
+  title: "Pakistan Business Directory & Digital Marketing Agency",
   description:
-    "Green Pages is a digital marketing agency helping ambitious businesses grow through SEO, web development, and content marketing. Get a free consultation today.",
+    "Green Pages is Pakistan's business directory and digital marketing agency — list your business free, get discovered by customers, and grow with expert SEO, web development, and content marketing.",
   alternates: {
     canonical: "/",
   },
 };
+
+const howItWorks = [
+  {
+    step: "1",
+    title: "Register",
+    description: "Create a free account in under a minute — no credit card required.",
+  },
+  {
+    step: "2",
+    title: "Add Your Business",
+    description:
+      "Fill in your business details, category, and city to build your public profile.",
+  },
+  {
+    step: "3",
+    title: "Get Found",
+    description:
+      "Your listing goes live instantly in the directory, ready for customers to find you.",
+  },
+];
 
 const whyChooseUs = [
   {
@@ -49,19 +69,19 @@ export default function HomePage() {
       <section className="hero">
         <div className="container hero-inner">
           <div>
-            <span className="hero-eyebrow">Digital Marketing Agency</span>
-            <h1>Grow Your Business with Data-Driven Digital Marketing</h1>
+            <span className="hero-eyebrow">Pakistan Business Directory</span>
+            <h1>Grow Your Business with Green Pages</h1>
             <p className="hero-description">
-              Green Pages helps ambitious companies attract more traffic,
-              generate qualified leads, and grow revenue through expert SEO,
-              modern web development, and strategic content marketing.
+              List your business free and get discovered by customers across
+              Pakistan, then grow further with expert SEO, web development,
+              and content marketing from our in-house team.
             </p>
             <div className="hero-ctas">
-              <Button href="/contact" variant="primary">
-                Get a Free Consultation
+              <Button href="/signup" variant="primary">
+                List Your Business Free
               </Button>
-              <Button href="/services" variant="secondary">
-                Explore Our Services
+              <Button href="/businesses" variant="secondary">
+                Browse the Directory
               </Button>
             </div>
           </div>
@@ -72,6 +92,31 @@ export default function HomePage() {
               priority
               sizes="(max-width: 900px) 100vw, 560px"
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="section-alt" aria-labelledby="how-it-works-heading">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-eyebrow">How It Works</span>
+            <h2 id="how-it-works-heading">Listed in Three Simple Steps</h2>
+          </div>
+          <div className="grid grid-3">
+            {howItWorks.map((item) => (
+              <div className="how-it-works-step" key={item.step}>
+                <span className="how-it-works-number" aria-hidden="true">
+                  {item.step}
+                </span>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="hero-ctas">
+            <Button href="/pricing" variant="primary">
+              View Packages
+            </Button>
           </div>
         </div>
       </section>

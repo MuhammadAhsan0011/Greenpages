@@ -60,6 +60,11 @@ export default async function BusinessProfilePage({ params }) {
             <Link href="/businesses">Business Directory</Link> / {business.name}
           </p>
           <span className="category-badge">{business.category}</span>
+          {business.plan !== "free" && (
+            <span className={`plan-badge plan-badge-${business.plan}`}>
+              {business.plan === "featured" ? "★ Featured" : "✓ Verified"}
+            </span>
+          )}
           <h1>{business.name}</h1>
           <div className="post-meta">
             {business.city && <span>{business.city}</span>}

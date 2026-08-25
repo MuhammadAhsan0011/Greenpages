@@ -2,39 +2,48 @@
 
 // This component MUST be a Client Component ("use client") because it uses
 // React's useState hook to hold form field values and submission status,
-// and it attaches an onSubmit event handler — both are browser-only,
-// interactive behaviors that cannot run in a Server Component. Every other
-// page/component in this project stays a Server Component; this is the one
-// deliberate, minimal exception, kept as small and isolated as possible so
-// the rest of the app ships zero unnecessary client-side JavaScript.
+// and it calls the Supabase browser client on submit — both are
+// browser-only, interactive behaviors that cannot run in a Server
+// Component. Every other page/component in this project stays a Server
+// Component; this is one of the few deliberate, minimal exceptions.
 
 import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
-const initialFormState = {
-  name: "",
-  email: "",
-  message: "",
-};
-
-export default function ContactForm() {
-  const [formData, setFormData] = useState(initialFormState);
-  const [submitted, setSubmitted] = useState(false);
+export default function ContactForm({ defaultMessage = "" }) {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: defaultMessage,
+  });
+  const [status, setStatus] = useState("idle"); // idle | submitting | success | error
 
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    // No backend is wired up in this starter project. In production, send
-    // formData to an API route (e.g. app/api/contact/route.js) or a
-    // third-party form/email service here.
-    setSubmitted(true);
-    setFormData(initialFormState);
+    setStatus("submitting");
+
+    const supabase = createClient();
+    const { error } = await supabase.from("contact_messages").insert({
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+    });
+
+    if (error) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus("success");
+    setFormData({ name: "", email: "", message: "" });
   }
 
-  if (submitted) {
+  if (status === "success") {
     return (
       <div className="form-success" role="status">
         Thanks for reaching out! Your message has been received and our team
@@ -45,6 +54,12 @@ export default function ContactForm() {
 
   return (
     <form className="contact-form" onSubmit={handleSubmit} noValidate>
+      {status === "error" && (
+        <p className="form-error">
+          Something went wrong sending your message. Please try again.
+        </p>
+      )}
+
       <div className="form-field">
         <label htmlFor="name">Full Name</label>
         <input
@@ -83,8 +98,8 @@ export default function ContactForm() {
         />
       </div>
 
-      <button type="submit" className="btn btn-primary">
-        Send Message
+      <button type="submit" className="btn btn-primary" disabled={status === "submitting"}>
+        {status === "submitting" ? "Sending..." : "Send Message"}
       </button>
     </form>
   );
