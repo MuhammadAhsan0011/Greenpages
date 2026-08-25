@@ -1886,7 +1886,8 @@ article.service-section h2 {
   }
 
   .nav-toggle-checkbox:checked ~ .main-nav {
-    max-height: 720px;
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
   }
 
   .account-menu-trigger {
