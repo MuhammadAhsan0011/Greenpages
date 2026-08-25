@@ -1,10 +1,15 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 // Whitelist matching exactly what the TipTap toolbar in RichTextEditor.js
 // can produce. Used both when an article is submitted (Server Action) and
 // again when it's rendered (defense in depth, in case a row is ever
 // edited directly in the Supabase Table Editor). No script/iframe/event
-// handlers/style are ever allowed.
+// handlers are ever allowed.
+//
+// Uses sanitize-html rather than isomorphic-dompurify/jsdom — the latter
+// pulls in html-encoding-sniffer, which ships an ESM-only dependency that
+// breaks require() under Vercel's serverless bundler (ERR_REQUIRE_ESM).
+// sanitize-html has no DOM/jsdom dependency, so it works reliably there.
 const ALLOWED_TAGS = [
   "p",
   "br",
@@ -31,15 +36,34 @@ const ALLOWED_TAGS = [
   "span",
 ];
 
-const ALLOWED_ATTR = ["href", "target", "rel", "src", "alt", "style", "colspan", "rowspan"];
+const ALLOWED_ATTRIBUTES = {
+  a: ["href", "target", "rel"],
+  img: ["src", "alt", "style"],
+  span: ["style"],
+  p: ["style"],
+  h2: ["style"],
+  h3: ["style"],
+  h4: ["style"],
+  th: ["colspan", "rowspan"],
+  td: ["colspan", "rowspan"],
+};
+
+// Only "color:" and "text-align:" inline styles survive — set via the
+// toolbar's color picker and alignment buttons. Anything else in a style
+// attribute is stripped.
+const ALLOWED_STYLES = {
+  "*": {
+    color: [/^#[0-9a-fA-F]{3,8}$/, /^rgb\(.*\)$/],
+    "text-align": [/^left$/, /^center$/, /^right$/],
+  },
+};
 
 export function sanitizeArticleHtml(html) {
-  return DOMPurify.sanitize(html ?? "", {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    // Only allow inline "color:"/"text-align:" styles (set via the
-    // toolbar's color picker and alignment buttons) — strips anything
-    // else that could smuggle in behavior via CSS.
-    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:)/i,
+  return sanitizeHtml(html ?? "", {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: ALLOWED_ATTRIBUTES,
+    allowedStyles: ALLOWED_STYLES,
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowProtocolRelative: false,
   });
 }
