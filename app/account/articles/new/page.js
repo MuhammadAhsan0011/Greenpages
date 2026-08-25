@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createArticle } from "../actions";
 import ArticleEditor from "../../../components/ArticleEditor";
-import RichTextEditor from "../../../components/RichTextEditor";
+import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 
 export const metadata = {
   title: "Write a New Article",
