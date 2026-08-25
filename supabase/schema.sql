@@ -54,6 +54,10 @@ create table public.businesses (
   -- payment manually (bank transfer / JazzCash / Easypaisa) for the
   -- "verified" (Rs. 2000) or "featured" (Rs. 4500) package.
   plan text not null default 'free' check (plan in ('free', 'verified', 'featured')),
+  -- Set when the owner clicks "Choose Verified/Featured" on /pricing while
+  -- signed in. Shows up in /admin as a pending request; approving it there
+  -- copies this into `plan` and clears it back to null.
+  requested_plan text check (requested_plan in ('verified', 'featured')),
   logo_url text,
   created_at timestamptz not null default now()
 );
@@ -75,6 +79,12 @@ create policy "Users can update their own business profile"
 create policy "Users can delete their own business profile"
   on public.businesses for delete
   using (auth.uid() = owner_id);
+
+-- Lets the admin account approve/set any business's plan from /admin —
+-- update the email here if you ever change which account is the admin.
+create policy "Admin can update any business"
+  on public.businesses for update
+  using (auth.jwt() ->> 'email' = 'kimmak209@gmail.com');
 
 -- ---------------------------------------------------------------
 -- articles: user-submitted blog articles. Published instantly, no

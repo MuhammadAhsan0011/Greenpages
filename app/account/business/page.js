@@ -66,6 +66,8 @@ export default async function BusinessProfilePage({ searchParams }) {
     .eq("owner_id", user.id)
     .maybeSingle();
 
+  const logoLocked = !business || business.plan === "free";
+
   return (
     <div className="dashboard-form-wrap">
       <h1 id="business-profile-heading">
@@ -80,17 +82,34 @@ export default async function BusinessProfilePage({ searchParams }) {
 
       <form action={upsertBusiness} className="contact-form">
           <div className="form-field">
-            <label htmlFor="logo">Business Logo (optional)</label>
-            {business?.logo_url && (
-              <Image
-                src={business.logo_url}
-                alt={`${business.name} logo`}
-                width={72}
-                height={72}
-                className="logo-preview"
-              />
+            <label htmlFor="logo">Business Logo</label>
+            {logoLocked ? (
+              <div
+                className="locked-field"
+                title="Upgrade your package to unlock this feature"
+              >
+                <span className="locked-field-icon" aria-hidden="true">
+                  🔒
+                </span>
+                <span>
+                  Logo upload is a Verified/Featured feature.{" "}
+                  <Link href="/pricing">Upgrade your package</Link> to unlock it.
+                </span>
+              </div>
+            ) : (
+              <>
+                {business?.logo_url && (
+                  <Image
+                    src={business.logo_url}
+                    alt={`${business.name} logo`}
+                    width={72}
+                    height={72}
+                    className="logo-preview"
+                  />
+                )}
+                <input id="logo" name="logo" type="file" accept="image/*" />
+              </>
             )}
-            <input id="logo" name="logo" type="file" accept="image/*" />
           </div>
 
           <div className="form-field">

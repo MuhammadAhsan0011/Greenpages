@@ -14,6 +14,7 @@ export const metadata = {
 export default async function LoginPage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
+  const next = params?.next;
 
   return (
     <section aria-labelledby="login-heading">
@@ -24,6 +25,7 @@ export default async function LoginPage({ searchParams }) {
         {error && <p className="form-error">{error}</p>}
 
         <form action={login} className="contact-form">
+          {next && <input type="hidden" name="next" value={next} />}
           <div className="form-field">
             <label htmlFor="email">Email Address</label>
             <input id="email" name="email" type="email" autoComplete="email" required />

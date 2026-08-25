@@ -49,7 +49,22 @@ export default async function AccountPage() {
               <span>{business.name}</span>
               <span>{business.category}</span>
               {business.city && <span>{business.city}</span>}
+              <span>
+                Plan:{" "}
+                {business.plan === "free"
+                  ? "Free"
+                  : business.plan === "verified"
+                    ? "Verified"
+                    : "Featured"}
+              </span>
             </p>
+            {business.requested_plan && (
+              <p className="form-success pricing-alert">
+                Your request to upgrade to{" "}
+                {business.requested_plan === "verified" ? "Verified" : "Featured"} is
+                pending approval. We&apos;ll contact you to arrange payment.
+              </p>
+            )}
             <p>{business.description}</p>
           </>
         ) : (
