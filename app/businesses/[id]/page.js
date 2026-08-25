@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../components/Button";
@@ -59,6 +60,16 @@ export default async function BusinessProfilePage({ params }) {
           <p className="breadcrumbs">
             <Link href="/businesses">Business Directory</Link> / {business.name}
           </p>
+          {business.logo_url && (
+            <div className="business-hero-logo">
+              <Image
+                src={business.logo_url}
+                alt={`${business.name} logo`}
+                width={80}
+                height={80}
+              />
+            </div>
+          )}
           <span className="category-badge">{business.category}</span>
           {business.plan !== "free" && (
             <span className={`plan-badge plan-badge-${business.plan}`}>

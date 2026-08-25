@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../components/Button";
@@ -48,6 +49,7 @@ async function getMergedPost(slug) {
     excerpt: article.excerpt,
     metaDescription: article.excerpt,
     rawContent: article.content,
+    coverImageUrl: article.cover_image_url ?? null,
     relatedServiceSlug: null,
     isUserSubmitted: true,
   };
@@ -145,6 +147,17 @@ export default async function BlogPostPage({ params }) {
           <h2 id="article-heading" className="visually-hidden">
             {post.title} — Full Article
           </h2>
+          {post.coverImageUrl && (
+            <div className="article-cover-image">
+              <Image
+                src={post.coverImageUrl}
+                alt={`Cover image for ${post.title}`}
+                fill
+                sizes="(max-width: 900px) 100vw, 800px"
+                priority
+              />
+            </div>
+          )}
           {post.isUserSubmitted ? (
             <article className="service-section">
               <RichArticleBody content={post.rawContent} />

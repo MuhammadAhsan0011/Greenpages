@@ -54,6 +54,7 @@ create table public.businesses (
   -- payment manually (bank transfer / JazzCash / Easypaisa) for the
   -- "verified" (Rs. 2000) or "featured" (Rs. 4500) package.
   plan text not null default 'free' check (plan in ('free', 'verified', 'featured')),
+  logo_url text,
   created_at timestamptz not null default now()
 );
 
@@ -89,6 +90,7 @@ create table public.articles (
   excerpt text not null,
   content text not null,
   category text not null,
+  cover_image_url text,
   created_at timestamptz not null default now()
 );
 
@@ -157,3 +159,33 @@ alter table public.contact_messages enable row level security;
 create policy "Anyone can submit a contact message"
   on public.contact_messages for insert
   with check (true);
+
+-- ---------------------------------------------------------------
+-- storage: public bucket for business logos and article cover images.
+-- Public read; only signed-in users can upload, and only the uploader
+-- can update/delete their own files.
+-- ---------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'uploads',
+  'uploads',
+  true,
+  5242880,
+  array['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+);
+
+create policy "Public read access to uploads"
+  on storage.objects for select
+  using (bucket_id = 'uploads');
+
+create policy "Signed-in users can upload"
+  on storage.objects for insert
+  with check (bucket_id = 'uploads' and auth.role() = 'authenticated');
+
+create policy "Users can update their own uploads"
+  on storage.objects for update
+  using (bucket_id = 'uploads' and owner = auth.uid());
+
+create policy "Users can delete their own uploads"
+  on storage.objects for delete
+  using (bucket_id = 'uploads' and owner = auth.uid());

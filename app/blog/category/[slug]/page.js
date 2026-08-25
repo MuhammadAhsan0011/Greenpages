@@ -64,7 +64,7 @@ export default async function BlogCategoryPage({ params }) {
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
-    .select("slug, title, category, created_at, excerpt, content");
+    .select("slug, title, category, created_at, excerpt, content, cover_image_url");
 
   const matchingArticles = (articles ?? [])
     .filter((article) => categorySlug(article.category) === slug)

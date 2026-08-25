@@ -387,6 +387,33 @@ section {
   transform: translateY(-3px);
 }
 
+.blog-card-image {
+  position: relative;
+  width: calc(100% + 64px);
+  margin: -32px -32px 20px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+}
+
+.blog-card-image img {
+  object-fit: cover;
+}
+
+.article-cover-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.article-cover-image img {
+  object-fit: cover;
+}
+
 .blog-card h3 {
   font-size: 1.15rem;
   margin-bottom: 10px;
@@ -973,6 +1000,46 @@ article.service-section h2 {
   padding: 28px;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.business-card-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.business-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.business-hero-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+
+.business-hero-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo-preview {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  margin-bottom: 8px;
 }
 
 .business-card:hover {

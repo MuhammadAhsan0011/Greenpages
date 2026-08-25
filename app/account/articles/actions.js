@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { uploadPublicImage } from "@/utils/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -33,6 +34,16 @@ export async function createArticle(formData) {
     );
   }
 
+  let coverImageUrl = null;
+  const coverImageFile = formData.get("coverImage");
+  if (coverImageFile instanceof File && coverImageFile.size > 0) {
+    const upload = await uploadPublicImage(supabase, coverImageFile, "article-images", user.id);
+    if (upload.error) {
+      redirect(`/account/articles/new?error=${encodeURIComponent(upload.error.message)}`);
+    }
+    coverImageUrl = upload.url;
+  }
+
   // Appends a short unique suffix so two articles with the same title never
   // collide, without needing an extra lookup query first.
   const slug = `${slugify(title)}-${Date.now().toString(36)}`;
@@ -44,6 +55,7 @@ export async function createArticle(formData) {
     excerpt,
     content,
     category,
+    cover_image_url: coverImageUrl,
   });
 
   if (error) {

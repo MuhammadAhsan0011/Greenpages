@@ -43,6 +43,11 @@ export default async function NewArticlePage({ searchParams }) {
           </div>
 
           <div className="form-field">
+            <label htmlFor="coverImage">Cover Image (optional)</label>
+            <input id="coverImage" name="coverImage" type="file" accept="image/*" />
+          </div>
+
+          <div className="form-field">
             <label htmlFor="category">Category</label>
             <select id="category" name="category" defaultValue="" required>
               <option value="" disabled>

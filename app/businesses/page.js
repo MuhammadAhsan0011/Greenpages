@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Button from "../components/Button";
 import { createPublicClient } from "@/utils/supabase/public";
@@ -90,6 +91,16 @@ export default async function BusinessesPage({ searchParams }) {
             <div className="grid grid-3">
               {businesses.map((business) => (
                 <article className="business-card" key={business.id}>
+                  {business.logo_url && (
+                    <div className="business-card-logo">
+                      <Image
+                        src={business.logo_url}
+                        alt={`${business.name} logo`}
+                        width={56}
+                        height={56}
+                      />
+                    </div>
+                  )}
                   {business.plan !== "free" && (
                     <span className={`plan-badge plan-badge-${business.plan}`}>
                       {business.plan === "featured" ? "★ Featured" : "✓ Verified"}

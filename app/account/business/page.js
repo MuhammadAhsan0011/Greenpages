@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
@@ -9,12 +10,38 @@ export const metadata = {
 };
 
 const categories = [
+  "Manufacturing",
+  "Construction & Real Estate",
+  "Industrial Machinery",
+  "Healthcare & Medical",
+  "IT & Software Services",
+  "Textiles & Garments",
+  "Packaging & Printing",
+  "Agriculture & Livestock",
+  "Solar & Renewable Energy",
+  "Chemicals, Rubber & Plastics",
+  "Automotive",
+  "Electrical & Electronics",
+  "Furniture & Interior Design",
+  "Freight, Shipping & Logistics",
+  "Food & Beverage",
+  "Cosmetics & Personal Care",
+  "Security & Surveillance",
+  "Education & Training",
+  "Hospitality & Tourism",
+  "Beauty & Salons",
+  "Legal Services",
+  "Financial & Insurance Services",
+  "Real Estate",
+  "Fashion & Apparel",
+  "Events & Entertainment",
+  "Sports & Fitness",
+  "Arts & Crafts",
+  "Retail & E-Commerce",
+  "Professional Services",
   "SEO",
   "Web Development",
   "Content Marketing",
-  "Retail",
-  "Food & Beverage",
-  "Professional Services",
   "Other",
 ];
 
@@ -52,6 +79,20 @@ export default async function BusinessProfilePage({ searchParams }) {
       {error && <p className="form-error">{error}</p>}
 
       <form action={upsertBusiness} className="contact-form">
+          <div className="form-field">
+            <label htmlFor="logo">Business Logo (optional)</label>
+            {business?.logo_url && (
+              <Image
+                src={business.logo_url}
+                alt={`${business.name} logo`}
+                width={72}
+                height={72}
+                className="logo-preview"
+              />
+            )}
+            <input id="logo" name="logo" type="file" accept="image/*" />
+          </div>
+
           <div className="form-field">
             <label htmlFor="name">Business Name</label>
             <input

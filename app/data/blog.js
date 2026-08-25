@@ -296,6 +296,7 @@ export function normalizeDbArticle(article) {
     date: article.created_at,
     excerpt: article.excerpt,
     readTime: estimateReadTime(article.content),
+    coverImageUrl: article.cover_image_url ?? null,
     isUserSubmitted: true,
   };
 }

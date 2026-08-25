@@ -26,7 +26,7 @@ export default async function BlogPage() {
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
-    .select("slug, title, category, created_at, excerpt, content");
+    .select("slug, title, category, created_at, excerpt, content, cover_image_url");
 
   const allPosts = [...posts, ...(articles ?? []).map(normalizeDbArticle)].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
