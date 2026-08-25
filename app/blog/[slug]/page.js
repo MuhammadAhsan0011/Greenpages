@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Button from "../../components/Button";
 import Comments from "../../components/Comments";
 import RichArticleBody from "../../components/RichArticleBody";
+import SanitizedArticleBody from "../../components/SanitizedArticleBody";
 import { posts, getPostBySlug, categorySlug, estimateReadTime } from "../../data/blog";
 import { getServiceBySlug } from "../../data/services";
 import { createPublicClient } from "@/utils/supabase/public";
@@ -52,6 +53,7 @@ async function getMergedPost(slug) {
     excerpt: article.excerpt,
     metaDescription: article.meta_description || article.excerpt,
     rawContent: article.content,
+    contentFormat: article.content_format ?? "markdown",
     coverImageUrl: article.cover_image_url ?? null,
     tags: article.tags ?? null,
     relatedServiceSlug: null,
@@ -175,7 +177,11 @@ export default async function BlogPostPage({ params }) {
           )}
           {post.isUserSubmitted ? (
             <article className="service-section">
-              <RichArticleBody content={post.rawContent} />
+              {post.contentFormat === "html" ? (
+                <SanitizedArticleBody html={post.rawContent} />
+              ) : (
+                <RichArticleBody content={post.rawContent} />
+              )}
             </article>
           ) : (
             post.sections.map((block, index) => (

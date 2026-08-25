@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { uploadPublicImage } from "@/utils/storage";
+import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -11,6 +12,37 @@ function slugify(title) {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+}
+
+async function getIsPaidPlan(supabase, userId) {
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("plan")
+    .eq("owner_id", userId)
+    .maybeSingle();
+  return business?.plan === "verified" || business?.plan === "featured";
+}
+
+// Called directly from RichTextEditor.js (a Verified/Featured-only
+// component) to upload an inline image and get back a public URL. Gated
+// server-side against the real plan, not just by which UI can reach it.
+export async function uploadInlineImage(file) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not signed in." };
+  if (!(await getIsPaidPlan(supabase, user.id))) {
+    return { error: "Upgrade to Verified or Featured to add inline images." };
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "No file provided." };
+  }
+
+  const upload = await uploadPublicImage(supabase, file, "article-inline-images", user.id);
+  if (upload.error) return { error: upload.error.message };
+  return { url: upload.url };
 }
 
 export async function createArticle(formData) {
@@ -23,12 +55,26 @@ export async function createArticle(formData) {
     redirect("/login");
   }
 
+  // Verified/Featured-only fields and the rich HTML editor. Re-checked
+  // here against the real plan in the database — the form only shows
+  // these to eligible members, but a request could still be crafted by
+  // hand, so the plan gate has to be enforced server-side, not just by
+  // hiding UI.
+  const isPaidPlan = await getIsPaidPlan(supabase, user.id);
+
   const title = formData.get("title")?.toString().trim();
   const category = formData.get("category")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
-  const content = formData.get("content")?.toString().trim();
+  const rawContent = formData.get("content")?.toString() ?? "";
 
-  if (!title || !category || !excerpt || !content) {
+  const contentFormat = isPaidPlan ? "html" : "markdown";
+  const content = contentFormat === "html" ? sanitizeArticleHtml(rawContent) : rawContent.trim();
+  const contentIsEmpty =
+    contentFormat === "html"
+      ? content.replace(/<[^>]*>/g, "").trim().length === 0
+      : content.length === 0;
+
+  if (!title || !category || !excerpt || contentIsEmpty) {
     redirect(
       `/account/articles/new?error=${encodeURIComponent("All fields are required.")}`
     );
@@ -43,17 +89,6 @@ export async function createArticle(formData) {
     }
     coverImageUrl = upload.url;
   }
-
-  // Verified/Featured-only fields. Re-checked here against the real plan
-  // in the database — the form only shows these fields to eligible
-  // members, but a request could still be crafted by hand, so the plan
-  // gate has to be enforced server-side, not just by hiding UI.
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("plan")
-    .eq("owner_id", user.id)
-    .maybeSingle();
-  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
 
   let tags = null;
   let metaTitle = null;
@@ -93,6 +128,7 @@ export async function createArticle(formData) {
     title,
     excerpt,
     content,
+    content_format: contentFormat,
     category,
     cover_image_url: coverImageUrl,
     tags,

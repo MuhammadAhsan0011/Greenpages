@@ -3,13 +3,24 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createArticle } from "../actions";
 import ArticleEditor from "../../../components/ArticleEditor";
+import RichTextEditor from "../../../components/RichTextEditor";
 
 export const metadata = {
   title: "Write a New Article",
   robots: { index: false, follow: false },
 };
 
-const categories = ["SEO", "Web Development", "Content Marketing"];
+const categories = [
+  "SEO",
+  "Web Development",
+  "Content Marketing",
+  "Accounting",
+  "Business",
+  "Online",
+  "Marketing",
+  "Technology",
+  "Services",
+];
 
 // Server Component — the form posts directly to a Server Action
 // (createArticle), so no client-side JavaScript is needed to submit it.
@@ -88,12 +99,18 @@ export default async function NewArticlePage({ searchParams }) {
 
           <div className="form-field">
             <label htmlFor="content">Article Content</label>
-            <ArticleEditor extraFormatting={isPaidPlan} />
-            <p className="editor-hint">
-              Leave a blank line between paragraphs. Start a line with{" "}
-              <code>## </code> for a heading or <code>- </code> for a
-              bullet list.
-            </p>
+            {isPaidPlan ? (
+              <RichTextEditor />
+            ) : (
+              <>
+                <ArticleEditor />
+                <p className="editor-hint">
+                  Leave a blank line between paragraphs. Start a line with{" "}
+                  <code>## </code> for a heading or <code>- </code> for a
+                  bullet list.
+                </p>
+              </>
+            )}
           </div>
 
           {isPaidPlan ? (

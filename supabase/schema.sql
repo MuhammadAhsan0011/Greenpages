@@ -101,6 +101,11 @@ create table public.articles (
   content text not null,
   category text not null,
   cover_image_url text,
+  -- 'markdown' = the safe lightweight editor (Free tier), rendered via
+  -- RichArticleBody.js. 'html' = TipTap output (Verified/Featured),
+  -- sanitized server-side before storage and again on render — see
+  -- utils/sanitizeHtml.js.
+  content_format text not null default 'markdown' check (content_format in ('markdown', 'html')),
   -- Verified/Featured-only fields (enforced server-side in
   -- app/account/articles/actions.js, not just hidden in the form).
   tags text,

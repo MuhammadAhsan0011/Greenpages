@@ -256,14 +256,35 @@ export function categorySlug(category) {
     .replace(/(^-|-$)/g, "");
 }
 
-// Every unique category present across all posts, as { name, slug } pairs.
-// Powers generateStaticParams for the category archive pages.
+// Categories user-submitted articles can additionally pick, beyond the
+// SEO/Web Development/Content Marketing ones tied to the static posts and
+// the services content-cluster (see app/account/articles/new/page.js).
+// Listed here too so their /blog/category/[slug] archive pages exist even
+// before any article has used them yet.
+const USER_ARTICLE_CATEGORIES = [
+  "Accounting",
+  "Business",
+  "Online",
+  "Marketing",
+  "Technology",
+  "Services",
+];
+
+// Every unique category present across all posts, plus the categories
+// above, as { name, slug } pairs. Powers generateStaticParams for the
+// category archive pages.
 export function getCategories() {
   const seen = new Map();
   for (const post of posts) {
     const slug = categorySlug(post.category);
     if (!seen.has(slug)) {
       seen.set(slug, { name: post.category, slug });
+    }
+  }
+  for (const name of USER_ARTICLE_CATEGORIES) {
+    const slug = categorySlug(name);
+    if (!seen.has(slug)) {
+      seen.set(slug, { name, slug });
     }
   }
   return Array.from(seen.values());
@@ -278,9 +299,15 @@ export function getPostsByCategorySlug(slug) {
 }
 
 // Rough reading-time estimate for user-submitted article content (static
-// posts already carry a hand-set readTime).
+// posts already carry a hand-set readTime). Strips HTML tags first so it
+// works the same for both markdown-lite (Free) and sanitized-HTML
+// (Verified/Featured) article content.
 export function estimateReadTime(content) {
-  const words = content.trim().split(/\s+/).length;
+  const words = content
+    .replace(/<[^>]*>/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
   const minutes = Math.max(1, Math.round(words / 200));
   return `${minutes} min read`;
 }
