@@ -297,13 +297,15 @@ button {
 
 .account-menu-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
-  margin: 14px 0 10px;
+  margin: 12px 0 10px;
 }
 
 .account-menu-actions .btn {
-  flex: 1;
+  width: 100%;
+  white-space: nowrap;
 }
 
 .btn-sm {
