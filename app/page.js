@@ -2,6 +2,7 @@ import Image from "next/image";
 import Button from "./components/Button";
 import ServiceCard from "./components/ServiceCard";
 import BlogCard from "./components/BlogCard";
+import ReviewList from "./components/ReviewList";
 import { services } from "./data/services";
 import { normalizeDbArticle } from "./data/blog";
 import { createPublicClient } from "@/utils/supabase/public";
@@ -81,6 +82,14 @@ export default async function HomePage() {
     .limit(3);
 
   const featured = (featuredArticles ?? []).map(normalizeDbArticle);
+
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("id, reviewer_name, rating, message, created_at")
+    .is("business_id", null)
+    .eq("approved", true)
+    .order("created_at", { ascending: false })
+    .limit(3);
 
   return (
     <>
@@ -199,6 +208,23 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {reviews && reviews.length > 0 && (
+        <section className="section-alt" aria-labelledby="reviews-heading">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-eyebrow">Reviews</span>
+              <h2 id="reviews-heading">What People Say About Green Pages</h2>
+            </div>
+            <ReviewList reviews={reviews} />
+            <div className="hero-ctas">
+              <Button href="/reviews" variant="primary">
+                Read All Reviews
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="cta-heading">
         <div className="container">

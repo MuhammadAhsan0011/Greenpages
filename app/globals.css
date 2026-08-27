@@ -1031,6 +1031,114 @@ article.service-section h2 {
   font-weight: 600;
 }
 
+/* ---------- Reviews ---------- */
+.review-list {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.review-item {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+}
+
+.review-item-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.review-stars {
+  color: #f59e0b;
+  letter-spacing: 2px;
+}
+
+.review-author {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.review-item p {
+  margin-bottom: 6px;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.review-form {
+  max-width: 560px;
+}
+
+/* Floating popup for the 15-minute returning-visitor review prompt */
+.review-popup {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+}
+
+.review-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.review-popup-title {
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.review-popup-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.review-popup-form input,
+.review-popup-form select,
+.review-popup-form textarea {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.review-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .review-popup {
+    left: 24px;
+    right: 24px;
+    width: auto;
+  }
+}
+
 .editor-inline-error {
   margin: 0 !important;
   border-radius: 0 !important;

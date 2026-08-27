@@ -1,6 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { approveUpgrade, dismissRequest, setPlan } from "./actions";
+import {
+  approveUpgrade,
+  dismissRequest,
+  setPlan,
+  approveReview,
+  dismissReview,
+} from "./actions";
 
 export const metadata = {
   title: "Admin",
@@ -28,6 +34,12 @@ export default async function AdminPage() {
     .order("name", { ascending: true });
 
   const pending = (businesses ?? []).filter((b) => b.requested_plan);
+
+  const { data: pendingReviews } = await supabase
+    .from("reviews")
+    .select("id, business_id, reviewer_name, rating, message, created_at, businesses(name)")
+    .eq("approved", false)
+    .order("created_at", { ascending: true });
 
   return (
     <section aria-labelledby="admin-heading">
@@ -75,6 +87,51 @@ export default async function AdminPage() {
                           </button>
                         </form>
                         <form action={dismissRequest.bind(null, business.id)}>
+                          <button type="submit" className="btn btn-secondary admin-btn-sm">
+                            Dismiss
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="account-card">
+          <h2>Pending Reviews ({pendingReviews?.length ?? 0})</h2>
+          {!pendingReviews || pendingReviews.length === 0 ? (
+            <p>No reviews waiting for approval.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th scope="col">For</th>
+                    <th scope="col">Reviewer</th>
+                    <th scope="col">Rating</th>
+                    <th scope="col">Message</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingReviews.map((review) => (
+                    <tr key={review.id}>
+                      <td>{review.businesses?.name ?? "Green Pages (platform)"}</td>
+                      <td>{review.reviewer_name}</td>
+                      <td>{"★".repeat(review.rating)}</td>
+                      <td>{review.message}</td>
+                      <td className="admin-table-actions">
+                        <form
+                          action={approveReview.bind(null, review.id, review.business_id)}
+                        >
+                          <button type="submit" className="btn btn-primary admin-btn-sm">
+                            Approve
+                          </button>
+                        </form>
+                        <form action={dismissReview.bind(null, review.id)}>
                           <button type="submit" className="btn btn-secondary admin-btn-sm">
                             Dismiss
                           </button>

@@ -2,6 +2,7 @@ import Script from "next/script";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
 
 const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
 
@@ -125,6 +126,7 @@ export default function RootLayout({ children }) {
         <Navbar />
         <main>{children}</main>
         <Footer />
+        <ReturnVisitorReviewPopup />
       </body>
     </html>
   );

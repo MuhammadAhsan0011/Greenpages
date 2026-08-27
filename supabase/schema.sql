@@ -207,6 +207,54 @@ create policy "Signed-in users can upload"
   on storage.objects for insert
   with check (bucket_id = 'uploads' and auth.role() = 'authenticated');
 
+-- ---------------------------------------------------------------
+-- reviews: testimonials about Green Pages itself (business_id null) and
+-- per-business customer reviews (business_id set) — the latter is a
+-- Featured-plan-only perk, enforced both in app/reviews/actions.js and
+-- again here via the insert policy below. Anyone can submit a review
+-- (no sign-in required); every submission starts unapproved and only
+-- becomes publicly visible once the admin approves it in /admin.
+-- ---------------------------------------------------------------
+create table public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid references public.businesses(id) on delete cascade,
+  reviewer_name text not null,
+  rating smallint not null check (rating between 1 and 5),
+  message text not null,
+  approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.reviews enable row level security;
+
+create policy "Approved reviews are publicly readable"
+  on public.reviews for select
+  using (approved = true);
+
+create policy "Anyone can submit a review"
+  on public.reviews for insert
+  with check (
+    approved = false
+    and (
+      business_id is null
+      or exists (
+        select 1 from public.businesses
+        where businesses.id = reviews.business_id
+        and businesses.plan = 'featured'
+      )
+    )
+  );
+
+-- Matches the admin email used for the "Admin can update any business"
+-- policy above — update it here too if that ever changes.
+create policy "Admin can update any review"
+  on public.reviews for update
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
+
+create policy "Admin can delete any review"
+  on public.reviews for delete
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
+
 create policy "Users can update their own uploads"
   on storage.objects for update
   using (bucket_id = 'uploads' and owner = auth.uid());

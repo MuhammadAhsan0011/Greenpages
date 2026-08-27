@@ -61,3 +61,26 @@ export async function setPlan(formData) {
   revalidatePath("/admin");
   revalidatePath("/businesses");
 }
+
+// Makes a pending review publicly visible.
+export async function approveReview(reviewId, businessId) {
+  const supabase = await requireAdmin();
+
+  await supabase.from("reviews").update({ approved: true }).eq("id", reviewId);
+
+  revalidatePath("/admin");
+  revalidatePath("/reviews");
+  revalidatePath("/");
+  if (businessId) {
+    revalidatePath(`/businesses/${businessId}`);
+  }
+}
+
+// Deletes a pending review instead of approving it.
+export async function dismissReview(reviewId) {
+  const supabase = await requireAdmin();
+
+  await supabase.from("reviews").delete().eq("id", reviewId);
+
+  revalidatePath("/admin");
+}

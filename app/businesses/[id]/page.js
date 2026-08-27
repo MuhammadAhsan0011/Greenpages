@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../components/Button";
+import ReviewForm from "../../components/ReviewForm";
+import ReviewList from "../../components/ReviewList";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const revalidate = 60;
@@ -33,8 +35,11 @@ export async function generateMetadata({ params }) {
 // Server Component — public business profile with an Overview section and
 // an Articles section by the same owner. Both render in full on the page
 // (no client-side tab switching) so every part stays crawlable.
-export default async function BusinessProfilePage({ params }) {
+export default async function BusinessProfilePage({ params, searchParams }) {
   const { id } = await params;
+  const search = await searchParams;
+  const reviewed = search?.reviewed;
+  const reviewError = search?.reviewError;
   const supabase = createPublicClient();
 
   const { data: business } = await supabase
@@ -53,6 +58,22 @@ export default async function BusinessProfilePage({ params }) {
     .eq("author_id", business.owner_id)
     .order("created_at", { ascending: false });
 
+  const isFeatured = business.plan === "featured";
+  let reviews = [];
+  if (isFeatured) {
+    const { data } = await supabase
+      .from("reviews")
+      .select("id, reviewer_name, rating, message, created_at")
+      .eq("business_id", business.id)
+      .eq("approved", true)
+      .order("created_at", { ascending: false });
+    reviews = data ?? [];
+  }
+
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    : null;
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -66,6 +87,13 @@ export default async function BusinessProfilePage({ params }) {
       ...(business.city && { addressLocality: business.city }),
       addressCountry: "PK",
     },
+    ...(averageRating && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: averageRating.toFixed(1),
+        reviewCount: reviews.length,
+      },
+    }),
   };
 
   return (
@@ -113,6 +141,7 @@ export default async function BusinessProfilePage({ params }) {
           <nav className="profile-tabs" aria-label="Profile sections">
             <a href="#overview">Overview</a>
             <a href="#articles">Articles ({articles?.length ?? 0})</a>
+            <a href="#reviews">Reviews {isFeatured ? `(${reviews.length})` : ""}</a>
           </nav>
 
           <article id="overview" className="service-section">
@@ -156,6 +185,40 @@ export default async function BusinessProfilePage({ params }) {
               </ul>
             ) : (
               <p>No articles published yet.</p>
+            )}
+          </article>
+
+          <article id="reviews" className="service-section">
+            <h2>
+              Reviews
+              {isFeatured && averageRating
+                ? ` — ${averageRating.toFixed(1)} out of 5 (${reviews.length})`
+                : ""}
+            </h2>
+            {isFeatured ? (
+              <>
+                <ReviewList reviews={reviews} />
+                <h3>Write a Review</h3>
+                {reviewed && (
+                  <p className="form-success">
+                    Thanks for your review! It&apos;ll appear here once our
+                    team approves it.
+                  </p>
+                )}
+                {reviewError && <p className="form-error">{reviewError}</p>}
+                <ReviewForm businessId={business.id} redirectTo={`/businesses/${business.id}`} />
+              </>
+            ) : (
+              <div className="locked-field" title="Upgrade your package to unlock this feature">
+                <span className="locked-field-icon" aria-hidden="true">
+                  🔒
+                </span>
+                <span>
+                  Customer reviews are a Featured-plan feature — {business.name}{" "}
+                  hasn&apos;t unlocked this yet. Businesses can enable reviews by
+                  upgrading to the <Link href="/pricing">Featured package</Link>.
+                </span>
+              </div>
             )}
           </article>
         </div>
