@@ -49,17 +49,24 @@ export default async function MyArticlesPage() {
                     day: "numeric",
                   })}
                 </span>
+              </span>
+              <div className="account-article-actions">
                 {isPaidPlan ? (
-                  <Link href={`/account/articles/${article.slug}/edit`}>Edit</Link>
+                  <Link
+                    href={`/account/articles/${article.slug}/edit`}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Edit Article
+                  </Link>
                 ) : (
                   <span
                     className="locked-inline-hint"
                     title="Upgrade your package to edit articles"
                   >
-                    🔒 <Link href="/pricing">Edit (upgrade)</Link>
+                    🔒 <Link href="/pricing">Upgrade to edit</Link>
                   </span>
                 )}
-              </span>
+              </div>
             </li>
           ))}
         </ul>

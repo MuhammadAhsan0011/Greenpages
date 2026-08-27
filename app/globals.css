@@ -1104,6 +1104,10 @@ article.service-section h2 {
   margin-bottom: 0;
 }
 
+.account-article-actions {
+  margin-top: 10px;
+}
+
 .account-article-item p {
   margin-top: 6px;
   margin-bottom: 0;
