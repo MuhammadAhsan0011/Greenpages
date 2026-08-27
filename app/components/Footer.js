@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { services } from "../data/services";
+import { LEGAL_PAGES } from "../data/legalPages";
 
 // Server Component — purely presentational, no client interactivity needed.
 export default function Footer() {
@@ -66,6 +67,17 @@ export default function Footer() {
               <li>Islamabad, Pakistan</li>
             </ul>
           </div>
+
+          <nav className="footer-col" aria-label="Legal">
+            <h3>Legal</h3>
+            <ul>
+              {LEGAL_PAGES.map((page) => (
+                <li key={page.slug}>
+                  <Link href={`/legal/${page.slug}`}>{page.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
         <div className="footer-bottom">

@@ -2,6 +2,7 @@ import { services } from "./data/services";
 import { posts, getCategories } from "./data/blog";
 import { PK_CITIES } from "./data/directoryCities";
 import { BUSINESS_CATEGORIES } from "./data/businessCategories";
+import { LEGAL_PAGES } from "./data/legalPages";
 import { createPublicClient } from "@/utils/supabase/public";
 
 // If you later attach a custom domain, update this to match.
@@ -83,6 +84,13 @@ export default async function sitemap() {
     priority: 0.65,
   }));
 
+  const legalRoutes = LEGAL_PAGES.map((page) => ({
+    url: `${siteUrl}/legal/${page.slug}`,
+    lastModified,
+    changeFrequency: "yearly",
+    priority: 0.3,
+  }));
+
   return [
     ...staticRoutes,
     ...serviceRoutes,
@@ -92,5 +100,6 @@ export default async function sitemap() {
     ...businessRoutes,
     ...cityRoutes,
     ...businessCategoryRoutes,
+    ...legalRoutes,
   ];
 }
