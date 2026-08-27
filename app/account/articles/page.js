@@ -21,6 +21,13 @@ export default async function MyArticlesPage() {
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("plan")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+
   return (
     <>
       <h2>My Articles</h2>
@@ -42,6 +49,16 @@ export default async function MyArticlesPage() {
                     day: "numeric",
                   })}
                 </span>
+                {isPaidPlan ? (
+                  <Link href={`/account/articles/${article.slug}/edit`}>Edit</Link>
+                ) : (
+                  <span
+                    className="locked-inline-hint"
+                    title="Upgrade your package to edit articles"
+                  >
+                    🔒 <Link href="/pricing">Edit (upgrade)</Link>
+                  </span>
+                )}
               </span>
             </li>
           ))}

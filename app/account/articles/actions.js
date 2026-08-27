@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { uploadPublicImage } from "@/utils/storage";
+import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -150,4 +150,155 @@ export async function createArticle(formData) {
   revalidatePath("/");
   revalidatePath("/account");
   redirect(`/blog/${slug}`);
+}
+
+// Editing a published article is a Verified/Featured perk — enforced here
+// against the real plan, not just by which UI can reach this action, same
+// as every other paid-only field on createArticle above.
+export async function updateArticle(slug, formData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: article } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!article || article.author_id !== user.id) {
+    redirect("/account/articles");
+  }
+
+  const isPaidPlan = await getIsPaidPlan(supabase, user.id);
+  if (!isPaidPlan) {
+    redirect("/account/articles");
+  }
+
+  const title = formData.get("title")?.toString().trim();
+  const category = formData.get("category")?.toString().trim();
+  const excerpt = formData.get("excerpt")?.toString().trim();
+  const rawContent = formData.get("content")?.toString() ?? "";
+  const content = sanitizeArticleHtml(rawContent);
+  const contentIsEmpty = content.replace(/<[^>]*>/g, "").trim().length === 0;
+
+  if (!title || !category || !excerpt || contentIsEmpty) {
+    redirect(
+      `/account/articles/${slug}/edit?error=${encodeURIComponent("All fields are required.")}`
+    );
+  }
+
+  let coverImageUrl = article.cover_image_url;
+  const oldCoverImageUrl = article.cover_image_url;
+  let shouldDeleteOldCover = false;
+
+  const coverImageFile = formData.get("coverImage");
+  if (coverImageFile instanceof File && coverImageFile.size > 0) {
+    const upload = await uploadPublicImage(supabase, coverImageFile, "article-images", user.id);
+    if (upload.error) {
+      redirect(`/account/articles/${slug}/edit?error=${encodeURIComponent(upload.error.message)}`);
+    }
+    coverImageUrl = upload.url;
+    shouldDeleteOldCover = Boolean(oldCoverImageUrl);
+  }
+
+  const tags =
+    formData
+      .get("tags")
+      ?.toString()
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .join(", ") || null;
+  const metaTitle = formData.get("metaTitle")?.toString().trim() || null;
+  const metaDescription = formData.get("metaDescription")?.toString().trim() || null;
+  const featuredOnHomepage = formData.get("featuredOnHomepage") === "yes";
+
+  let publishedAt = article.published_at;
+  const requestedPublishDate = formData.get("publishedAt")?.toString();
+  if (requestedPublishDate) {
+    const parsed = new Date(requestedPublishDate);
+    if (!Number.isNaN(parsed.getTime())) {
+      publishedAt = parsed.toISOString();
+    }
+  }
+
+  const { error } = await supabase
+    .from("articles")
+    .update({
+      title,
+      excerpt,
+      content,
+      category,
+      cover_image_url: coverImageUrl,
+      tags,
+      meta_title: metaTitle,
+      meta_description: metaDescription,
+      featured_on_homepage: featuredOnHomepage,
+      published_at: publishedAt,
+    })
+    .eq("slug", slug);
+
+  if (error) {
+    redirect(`/account/articles/${slug}/edit?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Only delete the old cover file once the update has actually saved, so a
+  // failed save never leaves the article with a missing image.
+  if (shouldDeleteOldCover) {
+    await deletePublicImage(supabase, oldCoverImageUrl);
+  }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+  revalidatePath("/");
+  revalidatePath("/account/articles");
+  redirect(`/blog/${slug}`);
+}
+
+// Removes an article's cover image, both the DB reference and the physical
+// file in Storage. Verified/Featured-only, same as updateArticle.
+export async function removeArticleCoverImage(slug) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: article } = await supabase
+    .from("articles")
+    .select("author_id, cover_image_url")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!article || article.author_id !== user.id) {
+    redirect("/account/articles");
+  }
+
+  const isPaidPlan = await getIsPaidPlan(supabase, user.id);
+  if (!isPaidPlan) {
+    redirect("/account/articles");
+  }
+
+  if (article.cover_image_url) {
+    await supabase
+      .from("articles")
+      .update({ cover_image_url: null })
+      .eq("slug", slug);
+
+    await deletePublicImage(supabase, article.cover_image_url);
+  }
+
+  revalidatePath("/blog");
+  revalidatePath(`/blog/${slug}`);
+  revalidatePath("/account/articles");
+  redirect(`/account/articles/${slug}/edit`);
 }

@@ -1455,6 +1455,17 @@ article.service-section h2 {
   font-weight: 700;
 }
 
+.locked-inline-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.locked-inline-hint a {
+  color: var(--color-text-muted);
+  text-decoration: underline;
+}
+
 /* ---------- Admin ---------- */
 .admin-table-wrap {
   overflow-x: auto;
