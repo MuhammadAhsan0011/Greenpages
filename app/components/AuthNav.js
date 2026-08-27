@@ -81,7 +81,9 @@ export default function AuthNav() {
           <Link href="/login">Log In</Link>
         </li>
         <li>
-          <Link href="/signup">Sign Up</Link>
+          <Link href="/signup" className="btn btn-primary btn-sm">
+            Get Listed Today
+          </Link>
         </li>
       </>
     );

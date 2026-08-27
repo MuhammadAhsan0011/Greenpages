@@ -24,6 +24,7 @@ const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 export default async function BusinessesPage({ searchParams }) {
   const params = await searchParams;
   const query = params?.q?.trim() ?? "";
+  const city = params?.city?.trim() ?? "";
 
   const supabase = createPublicClient();
   let request = supabase.from("businesses").select("*");
@@ -31,6 +32,9 @@ export default async function BusinessesPage({ searchParams }) {
   if (query) {
     const term = `%${query}%`;
     request = request.or(`name.ilike.${term},category.ilike.${term},city.ilike.${term}`);
+  }
+  if (city) {
+    request = request.ilike("city", `%${city}%`);
   }
 
   const { data } = await request;
@@ -79,12 +83,14 @@ export default async function BusinessesPage({ searchParams }) {
       <section aria-labelledby="businesses-heading">
         <div className="container">
           <h2 id="businesses-heading" className="visually-hidden">
-            {query ? `Results for "${query}"` : "All Businesses"}
+            {query || city ? `Search Results` : "All Businesses"}
           </h2>
-          {query && (
+          {(query || city) && (
             <p className="search-results-note">
-              {businesses.length} result{businesses.length === 1 ? "" : "s"} for
-              &ldquo;{query}&rdquo; — <Link href="/businesses">clear search</Link>
+              {businesses.length} result{businesses.length === 1 ? "" : "s"}
+              {query && <> for &ldquo;{query}&rdquo;</>}
+              {city && <> in &ldquo;{city}&rdquo;</>} —{" "}
+              <Link href="/businesses">clear search</Link>
             </p>
           )}
           {businesses.length > 0 ? (
