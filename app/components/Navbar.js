@@ -32,7 +32,7 @@ export default function Navbar() {
           </svg>
           <span className="logo-text-group">
             <span className="logo">Green Pages</span>
-            <span className="logo-tagline">Find Local Businesses &amp; Get Listed</span>
+            <span className="logo-tagline">Pakistan Business Directory</span>
           </span>
         </Link>
 

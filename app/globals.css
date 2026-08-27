@@ -200,7 +200,7 @@ button {
 
 .main-nav ul {
   display: flex;
-  gap: 32px;
+  gap: 22px;
 }
 
 .main-nav a {
@@ -1980,7 +1980,11 @@ article.service-section h2 {
   }
 }
 
-@media (max-width: 768px) {
+/* The nav row (logo + 7 links + Log In + Get Listed Today button) is too
+   wide to fit the container below ~1100px, so it switches to the hamburger
+   menu at that width — well before the general content breakpoints below,
+   which is why this lives in its own media query. */
+@media (max-width: 1100px) {
   .nav-toggle-label {
     display: flex;
   }
@@ -2009,6 +2013,11 @@ article.service-section h2 {
     border-bottom: 1px solid var(--color-border);
   }
 
+  .main-nav a.btn {
+    display: inline-flex;
+    margin: 8px 0;
+  }
+
   .nav-toggle-checkbox:checked ~ .main-nav {
     max-height: calc(100vh - 72px);
     overflow-y: auto;
@@ -2033,7 +2042,9 @@ article.service-section h2 {
     box-shadow: none;
     border: 1px solid var(--color-border);
   }
+}
 
+@media (max-width: 768px) {
   .grid-3 {
     grid-template-columns: 1fr;
   }
