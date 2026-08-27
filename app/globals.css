@@ -580,6 +580,13 @@ section {
   padding: 80px 0;
 }
 
+/* The hero already carries a large bottom padding for pages whose hero has
+   CTA buttons; stacked with the next section's own top padding that left an
+   overly large empty gap on heroes without CTAs (e.g. /pricing). */
+.hero + section {
+  padding-top: 40px;
+}
+
 .section-alt {
   background: var(--color-bg-alt);
 }
@@ -1813,6 +1820,97 @@ article.service-section h2 {
 .pricing-note a {
   color: var(--color-primary-dark);
   font-weight: 700;
+}
+
+/* ---------- Payment methods (pricing page) ---------- */
+.payment-methods-grid {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.payment-method-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.payment-qr {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-alt);
+}
+
+.payment-qr img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.payment-method-card h3 {
+  margin-bottom: 4px;
+}
+
+.payment-account-name {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.payment-account-number {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.payment-guide-note {
+  max-width: 620px;
+  margin: 36px auto 0;
+  text-align: center;
+}
+
+.payment-guide-note p {
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.payment-guide-note strong {
+  color: var(--color-text);
+}
+
+.btn-whatsapp {
+  background: #25d366;
+  color: #ffffff;
+}
+
+.btn-whatsapp:hover {
+  background: #1ebc59;
+  transform: translateY(-1px);
+}
+
+.btn-whatsapp svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 640px) {
+  .payment-methods-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---------- Comments ---------- */
