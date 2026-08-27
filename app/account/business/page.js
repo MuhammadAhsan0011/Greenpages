@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { upsertBusiness } from "../actions";
+import { upsertBusiness, removeBusinessLogo } from "../actions";
 
 export const metadata = {
   title: "Business Profile",
@@ -80,9 +80,28 @@ export default async function BusinessProfilePage({ searchParams }) {
 
       {error && <p className="form-error">{error}</p>}
 
+      {!logoLocked && business?.logo_url && (
+        <div className="logo-preview-row">
+          <Image
+            src={business.logo_url}
+            alt={`${business.name} logo`}
+            width={72}
+            height={72}
+            className="logo-preview"
+          />
+          <form action={removeBusinessLogo}>
+            <button type="submit" className="btn btn-secondary btn-sm">
+              Remove Logo
+            </button>
+          </form>
+        </div>
+      )}
+
       <form action={upsertBusiness} className="contact-form">
           <div className="form-field">
-            <label htmlFor="logo">Business Logo</label>
+            <label htmlFor="logo">
+              {business?.logo_url ? "Replace Business Logo" : "Business Logo"}
+            </label>
             {logoLocked ? (
               <div
                 className="locked-field"
@@ -98,15 +117,6 @@ export default async function BusinessProfilePage({ searchParams }) {
               </div>
             ) : (
               <>
-                {business?.logo_url && (
-                  <Image
-                    src={business.logo_url}
-                    alt={`${business.name} logo`}
-                    width={72}
-                    height={72}
-                    className="logo-preview"
-                  />
-                )}
                 <input id="logo" name="logo" type="file" accept="image/*" />
                 <p className="editor-hint">PNG, JPEG, WebP, or GIF — max 5MB.</p>
               </>

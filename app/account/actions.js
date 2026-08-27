@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { uploadPublicImage } from "@/utils/storage";
+import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -39,6 +39,7 @@ export async function upsertBusiness(formData) {
     .maybeSingle();
 
   let logoUrl = existing?.logo_url ?? null;
+  let oldLogoUrl = null;
 
   const logoFile = formData.get("logo");
   if (logoFile instanceof File && logoFile.size > 0) {
@@ -46,6 +47,7 @@ export async function upsertBusiness(formData) {
     if (upload.error) {
       redirect(`/account/business?error=${encodeURIComponent(upload.error.message)}`);
     }
+    oldLogoUrl = existing?.logo_url ?? null;
     logoUrl = upload.url;
   }
 
@@ -58,7 +60,46 @@ export async function upsertBusiness(formData) {
     redirect(`/account/business?error=${encodeURIComponent(error.message)}`);
   }
 
+  // Only delete the old file once the new one is safely saved, so a failed
+  // upsert never leaves the business with no logo at all.
+  if (oldLogoUrl) {
+    await deletePublicImage(supabase, oldLogoUrl);
+  }
+
   revalidatePath("/account");
   revalidatePath("/businesses");
   redirect("/account");
+}
+
+// Deletes the signed-in user's business logo, both the DB reference and the
+// physical file in Storage, so removed logos don't linger in the bucket.
+export async function removeBusinessLogo() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("logo_url")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  if (business?.logo_url) {
+    await supabase
+      .from("businesses")
+      .update({ logo_url: null })
+      .eq("owner_id", user.id);
+
+    await deletePublicImage(supabase, business.logo_url);
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/businesses");
+  redirect("/account/business");
 }

@@ -1571,7 +1571,13 @@ article.service-section h2 {
   object-fit: cover;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
-  margin-bottom: 8px;
+}
+
+.logo-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .business-card:hover {
