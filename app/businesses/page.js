@@ -1,7 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import Button from "../components/Button";
+import BusinessCard from "../components/BusinessCard";
 import { createPublicClient } from "@/utils/supabase/public";
+import { PK_CITIES } from "../data/directoryCities";
+import { BUSINESS_CATEGORIES } from "../data/businessCategories";
 
 export const metadata = {
   title: "Pakistan Business Directory",
@@ -96,34 +98,7 @@ export default async function BusinessesPage({ searchParams }) {
           {businesses.length > 0 ? (
             <div className="grid grid-3">
               {businesses.map((business) => (
-                <article className="business-card" key={business.id}>
-                  {business.logo_url && (
-                    <div className="business-card-logo">
-                      <Image
-                        src={business.logo_url}
-                        alt={`${business.name} logo`}
-                        width={56}
-                        height={56}
-                      />
-                    </div>
-                  )}
-                  {business.plan !== "free" && (
-                    <span className={`plan-badge plan-badge-${business.plan}`}>
-                      {business.plan === "featured" ? "★ Featured" : "✓ Verified"}
-                    </span>
-                  )}
-                  <h3>
-                    <Link href={`/businesses/${business.id}`}>{business.name}</Link>
-                  </h3>
-                  <div className="business-meta">
-                    <span>{business.category}</span>
-                    {business.city && <span>{business.city}</span>}
-                  </div>
-                  <p>{business.description}</p>
-                  <Link href={`/businesses/${business.id}`} className="service-link">
-                    View Profile →
-                  </Link>
-                </article>
+                <BusinessCard business={business} key={business.id} />
               ))}
             </div>
           ) : (
@@ -132,6 +107,41 @@ export default async function BusinessesPage({ searchParams }) {
               <Link href="/signup">Be the first to add yours.</Link>
             </p>
           )}
+        </div>
+      </section>
+
+      <section className="section-alt" aria-labelledby="browse-city-heading">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-eyebrow">Browse by City</span>
+            <h2 id="browse-city-heading">Directories by City</h2>
+          </div>
+          <nav className="directory-browse-links" aria-label="Browse by city">
+            {PK_CITIES.map((cityOption) => (
+              <Link href={`/businesses/city/${cityOption.slug}`} key={cityOption.slug}>
+                {cityOption.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </section>
+
+      <section aria-labelledby="browse-category-heading">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-eyebrow">Browse by Category</span>
+            <h2 id="browse-category-heading">Directories by Category</h2>
+          </div>
+          <nav className="directory-browse-links" aria-label="Browse by category">
+            {BUSINESS_CATEGORIES.map((categoryOption) => (
+              <Link
+                href={`/businesses/category/${categoryOption.slug}`}
+                key={categoryOption.slug}
+              >
+                {categoryOption.name}
+              </Link>
+            ))}
+          </nav>
         </div>
       </section>
     </>

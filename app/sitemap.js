@@ -1,5 +1,7 @@
 import { services } from "./data/services";
 import { posts, getCategories } from "./data/blog";
+import { PK_CITIES } from "./data/directoryCities";
+import { BUSINESS_CATEGORIES } from "./data/businessCategories";
 import { createPublicClient } from "@/utils/supabase/public";
 
 // If you later attach a custom domain, update this to match.
@@ -67,6 +69,20 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
+  const cityRoutes = PK_CITIES.map((city) => ({
+    url: `${siteUrl}/businesses/city/${city.slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  const businessCategoryRoutes = BUSINESS_CATEGORIES.map((category) => ({
+    url: `${siteUrl}/businesses/category/${category.slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.65,
+  }));
+
   return [
     ...staticRoutes,
     ...serviceRoutes,
@@ -74,5 +90,7 @@ export default async function sitemap() {
     ...categoryRoutes,
     ...articleRoutes,
     ...businessRoutes,
+    ...cityRoutes,
+    ...businessCategoryRoutes,
   ];
 }

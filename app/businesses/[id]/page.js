@@ -53,8 +53,28 @@ export default async function BusinessProfilePage({ params }) {
     .eq("author_id", business.owner_id)
     .order("created_at", { ascending: false });
 
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: business.name,
+    description: business.description,
+    ...(business.logo_url && { image: business.logo_url }),
+    ...(business.phone && { telephone: business.phone }),
+    ...(business.website && { url: business.website }),
+    address: {
+      "@type": "PostalAddress",
+      ...(business.city && { addressLocality: business.city }),
+      addressCountry: "PK",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <section className="service-hero">
         <div className="container">
           <p className="breadcrumbs">

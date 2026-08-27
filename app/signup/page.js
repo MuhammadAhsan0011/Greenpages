@@ -2,9 +2,9 @@ import Link from "next/link";
 import { signup } from "./actions";
 
 export const metadata = {
-  title: "Sign Up",
+  title: { absolute: "List Your Business Free | Green Pages" },
   description:
-    "Create a free Green Pages account to build a business profile, join blog discussions, and publish your own articles.",
+    "Create a free Green Pages account and list your business on Pakistan's directory in minutes.",
   alternates: {
     canonical: "/signup",
   },

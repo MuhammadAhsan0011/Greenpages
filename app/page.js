@@ -14,7 +14,7 @@ export const revalidate = 60;
 export const metadata = {
   title: "Pakistan Business Directory & Digital Marketing Agency",
   description:
-    "Green Pages is Pakistan's business directory and digital marketing agency — list your business free, get discovered by customers, and grow with expert SEO, web development, and content marketing.",
+    "List your business free on Pakistan's directory, or grow it with Green Pages' SEO, web dev & content marketing.",
   alternates: {
     canonical: "/",
   },

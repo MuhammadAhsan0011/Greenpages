@@ -80,10 +80,18 @@ const organizationSchema = {
   url: siteUrl,
   logo: `${siteUrl}/images/og-image.svg`,
   description: siteDescription,
+  email: "kimmak209@gmail.com",
+  telephone: "+92 300 1234567",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Islamabad",
+    addressCountry: "PK",
+  },
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
     email: "kimmak209@gmail.com",
+    telephone: "+92 300 1234567",
   },
   sameAs: [],
 };

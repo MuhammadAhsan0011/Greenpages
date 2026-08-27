@@ -3,47 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { upsertBusiness, removeBusinessLogo } from "../actions";
+import { BUSINESS_CATEGORIES } from "../../data/businessCategories";
 
 export const metadata = {
   title: "Business Profile",
   robots: { index: false, follow: false },
 };
 
-const categories = [
-  "Manufacturing",
-  "Construction & Real Estate",
-  "Industrial Machinery",
-  "Healthcare & Medical",
-  "IT & Software Services",
-  "Textiles & Garments",
-  "Packaging & Printing",
-  "Agriculture & Livestock",
-  "Solar & Renewable Energy",
-  "Chemicals, Rubber & Plastics",
-  "Automotive",
-  "Electrical & Electronics",
-  "Furniture & Interior Design",
-  "Freight, Shipping & Logistics",
-  "Food & Beverage",
-  "Cosmetics & Personal Care",
-  "Security & Surveillance",
-  "Education & Training",
-  "Hospitality & Tourism",
-  "Beauty & Salons",
-  "Legal Services",
-  "Financial & Insurance Services",
-  "Real Estate",
-  "Fashion & Apparel",
-  "Events & Entertainment",
-  "Sports & Fitness",
-  "Arts & Crafts",
-  "Retail & E-Commerce",
-  "Professional Services",
-  "SEO",
-  "Web Development",
-  "Content Marketing",
-  "Other",
-];
+const categories = BUSINESS_CATEGORIES.map((category) => category.name);
 
 // Server Component — the form posts directly to a Server Action
 // (upsertBusiness), so no client-side JavaScript is needed to submit it.
@@ -181,7 +148,12 @@ export default async function BusinessProfilePage({ searchParams }) {
               name="phone"
               type="tel"
               defaultValue={business?.phone ?? ""}
+              placeholder="+92 3XX XXXXXXX"
             />
+            <p className="editor-hint">
+              Use the same format everywhere you list this business — we
+              recommend +92 3XX XXXXXXX.
+            </p>
           </div>
 
           <div className="form-field">

@@ -1,9 +1,9 @@
 import ContactForm from "../components/ContactForm";
 
 export const metadata = {
-  title: "Contact Us",
+  title: { absolute: "Contact Green Pages | Islamabad Marketing Agency" },
   description:
-    "Get in touch with Green Pages to discuss your SEO, web development, or content marketing goals. Request a free consultation today.",
+    "Reach Green Pages' Islamabad team for SEO, web development, content marketing, or listing support.",
   alternates: {
     canonical: "/contact",
   },

@@ -5,7 +5,7 @@
 export const services = [
   {
     slug: "seo",
-    title: "Search Engine Optimization",
+    title: "SEO Agency Pakistan",
     shortTitle: "SEO",
     icon: "🔍",
     shortDescription:
@@ -42,7 +42,7 @@ export const services = [
   },
   {
     slug: "web-development",
-    title: "Web Development",
+    title: "Web Development Agency Islamabad",
     shortTitle: "Web Development",
     icon: "💻",
     shortDescription:

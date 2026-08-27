@@ -47,8 +47,28 @@ export default async function ServiceDetailPage({ params }) {
     .map((relatedSlug) => getServiceBySlug(relatedSlug))
     .filter(Boolean);
 
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    serviceType: service.title,
+    name: `${service.title} Services`,
+    provider: {
+      "@type": "Organization",
+      name: "Green Pages",
+      url: "https://greenpages-pk.vercel.app/",
+    },
+    areaServed: { "@type": "Country", name: "Pakistan" },
+    description: service.metaDescription,
+    url: `https://greenpages-pk.vercel.app/services/${service.slug}`,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
       <section className="service-hero">
         <div className="container">
           <p className="breadcrumbs">
