@@ -218,6 +218,42 @@ button {
   border-bottom-color: var(--color-primary);
 }
 
+/* .main-nav a's color/padding/border-bottom above are more specific than
+   .btn/.btn-primary/.btn-sm alone, so any button-styled link inside the nav
+   (the "Get Listed Today" CTA, and View Listing/Dashboard in the account
+   dropdown) needs these to explicitly win back its real button styling. */
+.main-nav a.btn {
+  padding: 13px 26px;
+  border-bottom: none;
+}
+
+.main-nav a.btn-sm {
+  padding: 9px 14px;
+}
+
+.main-nav a.btn-primary {
+  color: #ffffff;
+}
+
+.main-nav a.btn-secondary {
+  color: var(--color-primary-dark);
+}
+
+.main-nav a.btn:hover,
+.main-nav a.btn:focus-visible {
+  border-bottom: none;
+}
+
+.main-nav a.btn-primary:hover,
+.main-nav a.btn-primary:focus-visible {
+  color: #ffffff;
+}
+
+.main-nav a.btn-secondary:hover,
+.main-nav a.btn-secondary:focus-visible {
+  color: var(--color-primary-light);
+}
+
 .nav-signout-btn {
   font-family: inherit;
   font-weight: 600;
