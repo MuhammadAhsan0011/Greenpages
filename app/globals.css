@@ -479,6 +479,16 @@ button {
   transform: translateY(-1px);
 }
 
+.btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
 .btn-secondary {
   background: transparent;
   color: var(--color-primary-dark);

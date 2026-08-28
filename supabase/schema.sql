@@ -101,6 +101,10 @@ create policy "Admin can update any business"
   on public.businesses for update
   using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
 
+create policy "Admin can delete any business"
+  on public.businesses for delete
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
+
 -- ---------------------------------------------------------------
 -- articles: user-submitted blog articles. Published instantly, no
 -- review step (per site policy) — moderation happens by the site owner
@@ -151,6 +155,10 @@ create policy "Users can update their own articles"
 create policy "Users can delete their own articles"
   on public.articles for delete
   using (auth.uid() = author_id);
+
+create policy "Admin can delete any article"
+  on public.articles for delete
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
 
 -- ---------------------------------------------------------------
 -- comments: on any post, identified by its slug. Works for both the

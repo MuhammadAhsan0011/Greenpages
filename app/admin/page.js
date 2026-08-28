@@ -6,6 +6,8 @@ import {
   setPlan,
   approveReview,
   dismissReview,
+  deleteBusiness,
+  deleteArticle,
 } from "./actions";
 
 export const metadata = {
@@ -40,6 +42,11 @@ export default async function AdminPage() {
     .select("id, business_id, reviewer_name, rating, message, created_at, businesses(name)")
     .eq("approved", false)
     .order("created_at", { ascending: true });
+
+  const { data: articles } = await supabase
+    .from("articles")
+    .select("id, slug, title, category, created_at, profiles(full_name)")
+    .order("created_at", { ascending: false });
 
   return (
     <section aria-labelledby="admin-heading">
@@ -156,6 +163,7 @@ export default async function AdminPage() {
                   <th scope="col">City</th>
                   <th scope="col">Plan</th>
                   <th scope="col">Set Plan</th>
+                  <th scope="col">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,6 +183,57 @@ export default async function AdminPage() {
                         </select>
                         <button type="submit" className="btn btn-secondary admin-btn-sm">
                           Save
+                        </button>
+                      </form>
+                    </td>
+                    <td>
+                      <form action={deleteBusiness.bind(null, business.id)}>
+                        <button type="submit" className="btn btn-danger admin-btn-sm">
+                          Delete
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="account-card">
+          <h2>All Articles ({articles?.length ?? 0})</h2>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th scope="col">Title</th>
+                  <th scope="col">Author</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Published</th>
+                  <th scope="col">Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(articles ?? []).map((article) => (
+                  <tr key={article.id}>
+                    <td>
+                      <a href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer">
+                        {article.title}
+                      </a>
+                    </td>
+                    <td>{article.profiles?.full_name ?? "—"}</td>
+                    <td>{article.category}</td>
+                    <td>
+                      {new Date(article.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td>
+                      <form action={deleteArticle.bind(null, article.id)}>
+                        <button type="submit" className="btn btn-danger admin-btn-sm">
+                          Delete
                         </button>
                       </form>
                     </td>

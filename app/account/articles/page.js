@@ -35,6 +35,13 @@ export default async function MyArticlesPage() {
         Everything you&apos;ve published, newest first.
       </p>
 
+      {!isPaidPlan && (
+        <p className="editor-hint">
+          Free plan: {articles?.length ?? 0} of 5 articles used.{" "}
+          <Link href="/pricing">Upgrade</Link> for unlimited.
+        </p>
+      )}
+
       {articles && articles.length > 0 ? (
         <ul className="account-article-list">
           {articles.map((article) => (

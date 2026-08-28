@@ -6,6 +6,8 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+const FREE_PLAN_ARTICLE_LIMIT = 5;
+
 function slugify(title) {
   return title
     .toLowerCase()
@@ -65,6 +67,23 @@ export async function createArticle(formData) {
   // hand, so the plan gate has to be enforced server-side, not just by
   // hiding UI.
   const isPaidPlan = await getIsPaidPlan(supabase, user.id);
+
+  // Free plan is capped at FREE_PLAN_ARTICLE_LIMIT articles — enforced here
+  // against the real count, not just hidden in the UI.
+  if (!isPaidPlan) {
+    const { count } = await supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", user.id);
+
+    if ((count ?? 0) >= FREE_PLAN_ARTICLE_LIMIT) {
+      redirect(
+        `/account/articles/new?error=${encodeURIComponent(
+          `Free plan is limited to ${FREE_PLAN_ARTICLE_LIMIT} articles. Upgrade to Silver or Gold for unlimited articles.`
+        )}`
+      );
+    }
+  }
 
   const title = formData.get("title")?.toString().trim();
   const category = formData.get("category")?.toString().trim();
