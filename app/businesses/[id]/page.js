@@ -5,6 +5,7 @@ import Button from "../../components/Button";
 import ReviewForm from "../../components/ReviewForm";
 import ReviewList from "../../components/ReviewList";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
+import NoPhotoPlaceholder from "../../components/NoPhotoPlaceholder";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const revalidate = 60;
@@ -125,16 +126,18 @@ export default async function BusinessProfilePage({ params, searchParams }) {
           <p className="breadcrumbs">
             <Link href="/businesses">Business Directory</Link> / {business.name}
           </p>
-          {business.logo_url && (
-            <div className="business-hero-logo">
+          <div className="business-hero-logo">
+            {business.logo_url ? (
               <Image
                 src={business.logo_url}
                 alt={`${business.name} logo`}
                 width={80}
                 height={80}
               />
-            </div>
-          )}
+            ) : (
+              <NoPhotoPlaceholder showLabel />
+            )}
+          </div>
           <span className="category-badge">{business.category}</span>
           {business.plan !== "free" && (
             <span className={`plan-badge plan-badge-${business.plan}`}>

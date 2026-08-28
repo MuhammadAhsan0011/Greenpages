@@ -1,21 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
+import NoPhotoPlaceholder from "./NoPhotoPlaceholder";
 
 // Server Component — shared listing card used by the main directory,
 // city pages, and category pages, so all three stay visually consistent.
 export default function BusinessCard({ business }) {
   return (
     <article className="business-card">
-      {business.logo_url && (
-        <div className="business-card-logo">
+      <div className="business-card-logo">
+        {business.logo_url ? (
           <Image
             src={business.logo_url}
             alt={`${business.name} logo`}
             width={56}
             height={56}
           />
-        </div>
-      )}
+        ) : (
+          <NoPhotoPlaceholder />
+        )}
+      </div>
       {business.plan !== "free" && (
         <span className={`plan-badge plan-badge-${business.plan}`}>
           {business.plan === "featured" ? "★ Gold" : "✓ Silver"}
