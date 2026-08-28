@@ -282,6 +282,12 @@ button {
   position: relative;
 }
 
+/* Hidden on desktop — the mobile hamburger swaps to this plain "My
+   Profile" link instead of the dropdown; see the ≤1100px breakpoint. */
+.account-menu-mobile {
+  display: none;
+}
+
 .account-menu-trigger {
   display: flex;
   align-items: center;
@@ -2326,24 +2332,20 @@ article.service-section h2 {
     overflow: visible;
   }
 
-  .account-menu-trigger {
-    max-width: none;
-    width: 100%;
-    justify-content: flex-start;
+  .account-menu {
+    display: none;
   }
 
-  .account-menu-trigger-label {
-    display: inline;
+  .account-menu-mobile {
+    display: block;
   }
 
-  .account-menu-panel {
-    position: static;
+  .account-menu-mobile .nav-signout-btn {
+    display: block;
     width: 100%;
-    margin-top: 8px;
-    align-items: flex-start;
     text-align: left;
-    box-shadow: none;
-    border: 1px solid var(--color-border);
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
   }
 }
 

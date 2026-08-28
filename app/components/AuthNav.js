@@ -95,6 +95,7 @@ export default function AuthNav() {
   const statusLabel = business?.requested_plan ? "Pending Approval" : "Active";
 
   return (
+    <>
     <li className="account-menu" ref={menuRef}>
       <button
         type="button"
@@ -187,5 +188,19 @@ export default function AuthNav() {
         </div>
       )}
     </li>
+
+    {/* Mobile-only: a plain "My Profile" link instead of the desktop
+        dropdown, so the hamburger menu never has to nest a second
+        expand/collapse panel inside itself (see globals.css for the
+        breakpoint that swaps these). */}
+    <li className="account-menu-mobile">
+      <Link href="/account">My Profile</Link>
+    </li>
+    <li className="account-menu-mobile">
+      <button type="button" className="nav-signout-btn" onClick={handleSignOut}>
+        Log Out
+      </button>
+    </li>
+    </>
   );
 }
