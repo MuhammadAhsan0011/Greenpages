@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AuthNav from "./AuthNav";
+import NavAutoClose from "./NavAutoClose";
 
 // Server Component. The mobile menu open/close state is handled with a
 // pure CSS checkbox trick (see .nav-toggle-checkbox in globals.css)
@@ -78,6 +79,7 @@ export default function Navbar() {
             <AuthNav />
           </ul>
         </nav>
+        <NavAutoClose />
       </div>
 
       <div className="header-search-row">

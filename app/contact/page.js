@@ -50,7 +50,7 @@ export default async function ContactPage({ searchParams }) {
               </div>
               <div className="contact-info-item">
                 <h3>Phone</h3>
-                <p>+92 300 1234567</p>
+                <p>+92 303 2672509</p>
               </div>
               <div className="contact-info-item">
                 <h3>Office</h3>
