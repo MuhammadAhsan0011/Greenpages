@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Button from "../../components/Button";
 import ReviewForm from "../../components/ReviewForm";
 import ReviewList from "../../components/ReviewList";
+import SanitizedArticleBody from "../../components/SanitizedArticleBody";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const revalidate = 60;
@@ -74,6 +75,22 @@ export default async function BusinessProfilePage({ params, searchParams }) {
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : null;
 
+  const addressParts = [
+    business.address_line1,
+    business.address_line2,
+    business.city,
+    business.state,
+    business.postal_code,
+    business.country,
+  ].filter(Boolean);
+
+  const socialLinks = [
+    { label: "Facebook", url: business.facebook_url },
+    { label: "Instagram", url: business.instagram_url },
+    { label: "LinkedIn", url: business.linkedin_url },
+    { label: "WhatsApp", url: business.whatsapp_url },
+  ].filter((link) => link.url);
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -140,6 +157,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
           </h2>
           <nav className="profile-tabs" aria-label="Profile sections">
             <a href="#overview">Overview</a>
+            {business.about_html && <a href="#about">About</a>}
             <a href="#articles">Articles ({articles?.length ?? 0})</a>
             <a href="#reviews">Reviews {isFeatured ? `(${reviews.length})` : ""}</a>
           </nav>
@@ -169,8 +187,36 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   <dd>{business.phone}</dd>
                 </div>
               )}
+              {addressParts.length > 0 && (
+                <div>
+                  <dt>Address</dt>
+                  <dd>{addressParts.join(", ")}</dd>
+                </div>
+              )}
             </dl>
+            {socialLinks.length > 0 && (
+              <div className="social-link-list">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary btn-sm"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </article>
+
+          {business.about_html && (
+            <article id="about" className="service-section">
+              <h2>About {business.name}</h2>
+              <SanitizedArticleBody html={business.about_html} />
+            </article>
+          )}
 
           <article id="articles" className="service-section">
             <h2>Articles by {business.profiles?.full_name ?? "this member"}</h2>

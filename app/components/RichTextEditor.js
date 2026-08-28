@@ -29,7 +29,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { uploadInlineImage } from "../account/articles/actions";
 
-export default function RichTextEditor({ defaultValue = "" }) {
+export default function RichTextEditor({ defaultValue = "", name = "content" }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -252,7 +252,7 @@ export default function RichTextEditor({ defaultValue = "" }) {
       </div>
       {uploadError && <p className="form-error editor-inline-error">{uploadError}</p>}
       <EditorContent editor={editor} />
-      <input type="hidden" name="content" value={html} />
+      <input type="hidden" name={name} value={html} />
     </div>
   );
 }

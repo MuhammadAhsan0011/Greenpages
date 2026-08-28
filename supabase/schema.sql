@@ -59,6 +59,21 @@ create table public.businesses (
   -- copies this into `plan` and clears it back to null.
   requested_plan text check (requested_plan in ('verified', 'featured')),
   logo_url text,
+  -- Contact person's role at the business (e.g. "Owner", "Manager").
+  position text,
+  address_line1 text,
+  address_line2 text,
+  state text,
+  country text,
+  postal_code text,
+  -- Social links + the rich "About" editor are Verified/Featured-only,
+  -- enforced server-side in app/account/actions.js — not just hidden in
+  -- the form.
+  facebook_url text,
+  instagram_url text,
+  linkedin_url text,
+  whatsapp_url text,
+  about_html text,
   created_at timestamptz not null default now()
 );
 

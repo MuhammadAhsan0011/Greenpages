@@ -1328,6 +1328,61 @@ article.service-section h2 {
   max-width: 640px;
 }
 
+/* ---------- Business profile tabs (pure CSS, no JS) ---------- */
+.profile-tab-radio {
+  display: none;
+}
+
+.profile-tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.profile-tab-bar label {
+  padding: 12px 18px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.profile-tab-bar label:hover {
+  color: var(--color-primary-dark);
+}
+
+.profile-tab-panel {
+  display: none;
+}
+
+#tab-contact:checked ~ #panel-contact,
+#tab-photo:checked ~ #panel-photo,
+#tab-about:checked ~ #panel-about {
+  display: block;
+}
+
+#tab-contact:checked ~ .profile-tab-bar label[for="tab-contact"],
+#tab-photo:checked ~ .profile-tab-bar label[for="tab-photo"],
+#tab-about:checked ~ .profile-tab-bar label[for="tab-about"] {
+  color: var(--color-primary-dark);
+  border-bottom-color: var(--color-primary);
+}
+
+.remove-logo-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
 /* ---------- Legal / policy pages ---------- */
 .legal-content {
   max-width: 720px;
@@ -1776,6 +1831,13 @@ article.service-section h2 {
 
 .business-card a.website-link:hover {
   color: var(--color-primary);
+}
+
+.social-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 /* ---------- Directory search ---------- */
