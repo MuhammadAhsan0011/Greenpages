@@ -66,8 +66,8 @@ export default function Footer() {
             <h3>Contact</h3>
             <ul>
               <li>greenpages.pk.com@gmail.com</li>
-              <li>+92 300 1234567</li>
-              <li>Islamabad, Pakistan</li>
+              <li>+92 303 2672509</li>
+              <li>Karachi, Pakistan</li>
             </ul>
           </div>
 
