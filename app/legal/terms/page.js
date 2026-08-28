@@ -97,7 +97,7 @@ export default function TermsPage() {
       <h3>9. Contact</h3>
       <p>
         Questions about these Terms? Reach us at{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> or via
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> or via
         our <a href="/contact">Contact page</a>.
       </p>
     </article>

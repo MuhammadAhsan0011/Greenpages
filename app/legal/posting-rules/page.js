@@ -62,7 +62,7 @@ export default function PostingRulesPage() {
       <h3>6. Reporting a Listing or Article</h3>
       <p>
         If you spot content that breaks these rules, email us at{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> with a
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> with a
         link to the listing or article and a short description of the
         issue.
       </p>

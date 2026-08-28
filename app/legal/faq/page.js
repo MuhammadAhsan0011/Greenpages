@@ -53,7 +53,7 @@ const FAQS = [
     a: (
       <>
         Email us at{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> and
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> and
         we&apos;ll remove your account and associated public data.
       </>
     ),
@@ -63,7 +63,7 @@ const FAQS = [
     a: (
       <>
         Use our <Link href="/contact">Contact page</Link>, email{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a>, or
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a>, or
         WhatsApp us directly from the Pricing page.
       </>
     ),

@@ -2,7 +2,7 @@
 
 import { createPublicClient } from "@/utils/supabase/public";
 
-const NOTIFICATION_EMAIL = "kimmak209@gmail.com";
+const NOTIFICATION_EMAIL = "greenpages.pk.com@gmail.com";
 
 // Called directly from the ContactForm Client Component. Runs entirely on
 // the server, so RESEND_API_KEY is never exposed to the browser bundle —

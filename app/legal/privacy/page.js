@@ -77,7 +77,7 @@ export default function PrivacyPage() {
         You can update your business listing and article content directly
         from your account at any time. To request a copy of your data, or
         to have your account and data deleted, email us at{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a>.
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a>.
       </p>
 
       <h3>6. Children&apos;s Privacy</h3>
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
       <h3>8. Contact</h3>
       <p>
         Questions about this policy? Email{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> or use
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> or use
         our <a href="/contact">Contact page</a>.
       </p>
     </article>

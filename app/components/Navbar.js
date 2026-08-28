@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import AuthNav from "./AuthNav";
 import NavAutoClose from "./NavAutoClose";
+import logo from "../../public/images/green-pages-logo.png";
 
 // Server Component. The mobile menu open/close state is handled with a
 // pure CSS checkbox trick (see .nav-toggle-checkbox in globals.css)
@@ -14,27 +16,12 @@ export default function Navbar() {
     <header className="site-header">
       <div className="container header-inner">
         <Link href="/" className="logo-group">
-          <svg
-            className="logo-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="2.5" />
-            <line
-              x1="15.3"
-              y1="15.3"
-              x2="21"
-              y2="21"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="logo-text-group">
-            <span className="logo">Green Pages</span>
-            <span className="logo-tagline">Pakistan Business Directory</span>
-          </span>
+          <Image
+            src={logo}
+            alt="Green Pages PK — Your Business, Our Directory"
+            className="logo-image"
+            priority
+          />
         </Link>
 
         <input

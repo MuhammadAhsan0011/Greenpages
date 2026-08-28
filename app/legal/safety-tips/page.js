@@ -52,7 +52,7 @@ export default function SafetyTipsPage() {
       <h3>5. Report Suspicious Listings</h3>
       <p>
         If a listing looks fraudulent or misleading, report it to{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> so we
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> so we
         can review and, if needed, remove it under our{" "}
         <a href="/legal/posting-rules">Posting Rules</a>.
       </p>

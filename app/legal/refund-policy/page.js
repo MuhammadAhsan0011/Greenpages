@@ -43,7 +43,7 @@ export default function RefundPolicyPage() {
 
       <h3>4. Requesting a Refund</h3>
       <p>
-        Email <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a>{" "}
+        Email <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a>{" "}
         with your business name and payment details. We aim to respond
         within 2–3 business days and process approved refunds using the
         original payment method where possible.

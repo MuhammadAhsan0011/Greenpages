@@ -65,7 +65,7 @@ export default function Footer() {
           <div className="footer-col">
             <h3>Contact</h3>
             <ul>
-              <li>kimmak209@gmail.com</li>
+              <li>greenpages.pk.com@gmail.com</li>
               <li>+92 300 1234567</li>
               <li>Islamabad, Pakistan</li>
             </ul>

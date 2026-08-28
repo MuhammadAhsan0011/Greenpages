@@ -109,30 +109,9 @@ button {
   flex-shrink: 0;
 }
 
-.logo-icon {
-  width: 28px;
-  height: 28px;
-  color: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.logo-text-group {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-}
-
-.logo {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--color-primary-dark);
-  letter-spacing: -0.02em;
-}
-
-.logo-tagline {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+.logo-image {
+  height: 48px;
+  width: auto;
 }
 
 /* ---------- Header search row ---------- */
@@ -188,10 +167,6 @@ button {
 }
 
 @media (max-width: 640px) {
-  .logo-tagline {
-    display: none;
-  }
-
   .header-search-form {
     flex-wrap: wrap;
   }

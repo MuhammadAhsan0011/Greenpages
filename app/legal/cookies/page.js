@@ -54,7 +54,7 @@ export default function CookiesPage() {
       <h3>5. Contact</h3>
       <p>
         Questions about this policy? Email{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a>.
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a>.
       </p>
     </article>
   );

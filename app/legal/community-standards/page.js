@@ -53,7 +53,7 @@ export default function CommunityStandardsPage() {
       <h3>6. Reporting</h3>
       <p>
         To report a comment or article, email{" "}
-        <a href="mailto:kimmak209@gmail.com">kimmak209@gmail.com</a> with a
+        <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> with a
         link and a short description.
       </p>
     </article>
