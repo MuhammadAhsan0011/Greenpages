@@ -10,8 +10,8 @@ export const metadata = {
 };
 
 const PACKAGE_LABELS = {
-  verified: "Verified (Rs. 2,000/month)",
-  featured: "Featured (Rs. 4,500/month)",
+  verified: "Silver (Rs. 2,000/month)",
+  featured: "Gold (Rs. 4,500/month)",
 };
 
 // This page itself is a Server Component — only the interactive form

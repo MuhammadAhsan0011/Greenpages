@@ -27,7 +27,7 @@ export default function SafetyTipsPage() {
 
       <h3>2. A Badge Is a Signal, Not a Guarantee</h3>
       <p>
-        &quot;Verified&quot; and &quot;Featured&quot; badges mean the
+        &quot;Silver&quot; and &quot;Gold&quot; badges mean the
         business has purchased a paid listing package — they are not a
         certification of quality, and don&apos;t replace your own due
         diligence.

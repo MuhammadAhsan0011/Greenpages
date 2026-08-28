@@ -138,7 +138,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
           <span className="category-badge">{business.category}</span>
           {business.plan !== "free" && (
             <span className={`plan-badge plan-badge-${business.plan}`}>
-              {business.plan === "featured" ? "★ Featured" : "✓ Verified"}
+              {business.plan === "featured" ? "★ Gold" : "✓ Silver"}
             </span>
           )}
           <h1>{business.name}</h1>
@@ -260,9 +260,9 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   🔒
                 </span>
                 <span>
-                  Customer reviews are a Featured-plan feature — {business.name}{" "}
+                  Customer reviews are a Gold-plan feature — {business.name}{" "}
                   hasn&apos;t unlocked this yet. Businesses can enable reviews by
-                  upgrading to the <Link href="/pricing">Featured package</Link>.
+                  upgrading to the <Link href="/pricing">Gold package</Link>.
                 </span>
               </div>
             )}

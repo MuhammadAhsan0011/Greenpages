@@ -54,14 +54,14 @@ export default async function AccountPage() {
                 {business.plan === "free"
                   ? "Free"
                   : business.plan === "verified"
-                    ? "Verified"
-                    : "Featured"}
+                    ? "Silver"
+                    : "Gold"}
               </span>
             </p>
             {business.requested_plan && (
               <p className="form-success pricing-alert">
                 Your request to upgrade to{" "}
-                {business.requested_plan === "verified" ? "Verified" : "Featured"} is
+                {business.requested_plan === "verified" ? "Silver" : "Gold"} is
                 pending approval. We&apos;ll contact you to arrange payment.
               </p>
             )}

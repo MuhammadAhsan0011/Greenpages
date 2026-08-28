@@ -59,13 +59,13 @@ export default async function EditArticlePage({ params, searchParams }) {
   if (!isPaidPlan) {
     return (
       <div className="dashboard-form-wrap">
-        <h1>Editing is a Verified/Featured Feature</h1>
+        <h1>Editing is a Silver/Gold Feature</h1>
         <div className="locked-field" title="Upgrade your package to unlock this feature">
           <span className="locked-field-icon" aria-hidden="true">
             🔒
           </span>
           <span>
-            Editing a published article requires the Verified or Featured
+            Editing a published article requires the Silver or Gold
             package. <Link href="/pricing">Upgrade your package</Link> to
             unlock it.
           </span>
@@ -158,7 +158,7 @@ export default async function EditArticlePage({ params, searchParams }) {
         </div>
 
         <div className="account-card">
-          <h2>Verified/Featured Options</h2>
+          <h2>Silver/Gold Options</h2>
 
           <div className="form-field">
             <label htmlFor="tags">Tags (comma-separated, optional)</label>

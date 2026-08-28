@@ -15,8 +15,8 @@ import { createClient } from "@/utils/supabase/client";
 
 const PLAN_LABELS = {
   free: "Free",
-  verified: "Verified",
-  featured: "Featured",
+  verified: "Silver",
+  featured: "Gold",
 };
 
 export default function AuthNav() {

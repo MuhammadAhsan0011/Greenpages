@@ -54,7 +54,7 @@ export default function PostingRulesPage() {
       <p>
         Some features — tags, scheduled publishing, homepage featuring,
         custom SEO fields, and the rich text editor — are only available on
-        Verified and Featured packages, and are enforced on our end
+        Silver and Gold packages, and are enforced on our end
         regardless of what a request claims. Free-tier articles and listings
         remain fully functional without these extras.
       </p>

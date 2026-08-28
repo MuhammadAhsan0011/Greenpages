@@ -36,7 +36,7 @@ export async function uploadInlineImage(formData) {
 
   if (!user) return { error: "Not signed in." };
   if (!(await getIsPaidPlan(supabase, user.id))) {
-    return { error: "Upgrade to Verified or Featured to add inline images." };
+    return { error: "Upgrade to Silver or Gold to add inline images." };
   }
 
   const file = formData.get("file");

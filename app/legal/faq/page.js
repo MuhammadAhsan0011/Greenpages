@@ -19,7 +19,7 @@ const FAQS = [
     ),
   },
   {
-    q: "How do I upgrade to Verified or Featured?",
+    q: "How do I upgrade to Silver or Gold?",
     a: (
       <>
         Choose a package on the <Link href="/pricing">Pricing page</Link>{" "}
@@ -39,7 +39,7 @@ const FAQS = [
       <>
         Yes. Edit your listing anytime from{" "}
         <Link href="/account/business">Business Profile</Link>. Editing a
-        published article is a Verified/Featured feature, available from{" "}
+        published article is a Silver/Gold feature, available from{" "}
         <Link href="/account/articles">My Articles</Link>.
       </>
     ),

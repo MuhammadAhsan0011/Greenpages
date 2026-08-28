@@ -8,7 +8,7 @@ const WHATSAPP_NUMBER = "923032672509";
 export const metadata = {
   title: "Packages & Pricing",
   description:
-    "Green Pages listing packages: a free business listing, or upgrade to Verified (Rs. 2,000) or Featured (Rs. 4,500) for priority placement in the Pakistan business directory.",
+    "Green Pages listing packages: a free business listing, or upgrade to Silver (Rs. 2,000) or Gold (Rs. 4,500) for priority placement in the Pakistan business directory.",
   alternates: {
     canonical: "/pricing",
   },
@@ -32,7 +32,7 @@ const packages = [
   },
   {
     id: "verified",
-    name: "Verified",
+    name: "Silver",
     icon: "🛡️",
     price: "Rs. 2,000",
     period: "/annually",
@@ -40,7 +40,7 @@ const packages = [
     features: [
       "Everything in Free",
       "Business logo on your listing",
-      "“Verified” badge on your listing",
+      "“Silver” badge on your listing",
       "Priority placement above Free listings",
       "Higher ranking in city & category search results",
     ],
@@ -48,15 +48,15 @@ const packages = [
   },
   {
     id: "featured",
-    name: "Featured",
+    name: "Gold",
     icon: "👑",
     price: "Rs. 4,500",
     period: "/annually",
     description: "Maximum visibility across the entire directory.",
     features: [
-      "Everything in Verified",
-      "“Featured” badge — top placement directory-wide",
-      "Priority placement above Verified listings",
+      "Everything in Silver",
+      "“Gold” badge — top placement directory-wide",
+      "Priority placement above Silver listings",
       "Dedicated support setting up your profile",
     ],
   },
@@ -184,7 +184,7 @@ export default async function PricingPage({ searchParams }) {
             })}
           </div>
           <p className="pricing-note">
-            Verified and Featured packages are activated after payment via
+            Silver and Gold packages are activated after payment via
             bank transfer or Easypaisa. Click a package above to send a
             request, then pay using either method below.
           </p>
@@ -199,7 +199,7 @@ export default async function PricingPage({ searchParams }) {
           <div className="section-header">
             <span className="section-eyebrow">Payment Methods</span>
             <h2 id="payment-methods-heading">
-              How to Pay for Verified &amp; Featured Packages
+              How to Pay for Silver &amp; Gold Packages
             </h2>
             <p>
               Scan a QR code below or send the package amount directly to

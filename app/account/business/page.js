@@ -20,7 +20,7 @@ function LockedNotice({ feature }) {
         🔒
       </span>
       <span>
-        {feature} is a Verified/Featured feature.{" "}
+        {feature} is a Silver/Gold feature.{" "}
         <Link href="/pricing">Upgrade your package</Link> to unlock it.
       </span>
     </div>

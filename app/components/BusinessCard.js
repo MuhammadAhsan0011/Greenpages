@@ -18,7 +18,7 @@ export default function BusinessCard({ business }) {
       )}
       {business.plan !== "free" && (
         <span className={`plan-badge plan-badge-${business.plan}`}>
-          {business.plan === "featured" ? "★ Featured" : "✓ Verified"}
+          {business.plan === "featured" ? "★ Gold" : "✓ Silver"}
         </span>
       )}
       <h3>

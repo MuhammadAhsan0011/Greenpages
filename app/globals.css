@@ -1913,8 +1913,8 @@ article.service-section h2 {
 }
 
 .plan-badge-verified {
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  background: #e5e7eb;
+  color: #374151;
 }
 
 .plan-badge-featured {
@@ -1997,7 +1997,7 @@ article.service-section h2 {
 }
 
 .pricing-icon-verified {
-  background: var(--color-primary-light);
+  background: #e5e7eb;
 }
 
 .pricing-icon-featured {

@@ -13,7 +13,7 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const PLAN_LABELS = { free: "Free", verified: "Verified", featured: "Featured" };
+const PLAN_LABELS = { free: "Free", verified: "Silver", featured: "Gold" };
 
 // Server Component, gated to the single admin account (ADMIN_EMAIL). This
 // is where package upgrade requests from /pricing get approved, and where
@@ -170,8 +170,8 @@ export default async function AdminPage() {
                         <input type="hidden" name="businessId" value={business.id} />
                         <select name="plan" defaultValue={business.plan}>
                           <option value="free">Free</option>
-                          <option value="verified">Verified</option>
-                          <option value="featured">Featured</option>
+                          <option value="verified">Silver</option>
+                          <option value="featured">Gold</option>
                         </select>
                         <button type="submit" className="btn btn-secondary admin-btn-sm">
                           Save

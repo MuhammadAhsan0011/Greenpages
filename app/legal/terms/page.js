@@ -23,7 +23,7 @@ export default function TermsPage() {
       <p>
         Green Pages is a Pakistan-focused business directory and digital
         marketing agency. Businesses can create a free listing, purchase a
-        Verified or Featured package for added visibility, publish articles,
+        Silver or Gold package for added visibility, publish articles,
         and comment on published content. We separately offer SEO, web
         development, and content marketing services.
       </p>
@@ -55,9 +55,9 @@ export default function TermsPage() {
         account or listing remains active.
       </p>
 
-      <h3>4. Paid Packages (Verified &amp; Featured)</h3>
+      <h3>4. Paid Packages (Silver &amp; Gold)</h3>
       <p>
-        Verified and Featured are paid, prepaid annual upgrades to a business
+        Silver and Gold are paid, prepaid annual upgrades to a business
         listing. Payment is made manually via bank transfer or Easypaisa
         using the account details on our{" "}
         <a href="/pricing">Pricing page</a>, and your package is activated by
