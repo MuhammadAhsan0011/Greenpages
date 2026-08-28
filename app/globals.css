@@ -2314,8 +2314,16 @@ article.service-section h2 {
   }
 
   .nav-toggle-checkbox:checked ~ .main-nav {
-    max-height: calc(100vh - 72px);
-    overflow-y: auto;
+    /* A fixed generous cap instead of a viewport-relative one: the real
+       header height changes (e.g. when the logo size changes) and a
+       calc(100vh - Npx) tied to a stale N put part of the open menu below
+       the viewport while its own overflow-y:auto still tried to scroll
+       internally — fighting the page's own scroll and making it feel
+       stuck once the account panel expanded it further. 2000px is well
+       above any realistic content height here, so this cap only clips in
+       a pathological case and normal page scroll handles the rest. */
+    max-height: 2000px;
+    overflow: visible;
   }
 
   .account-menu-trigger {
