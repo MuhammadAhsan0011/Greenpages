@@ -8,7 +8,7 @@ const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
 
 // If you later attach a custom domain, update this (and app/sitemap.js /
 // app/robots.js) to match.
-const siteUrl = "https://greenpages-pk.vercel.app";
+const siteUrl = "https://www.greenpagespk.com";
 const siteName = "Green Pages";
 const siteDescription =
   "Green Pages is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";

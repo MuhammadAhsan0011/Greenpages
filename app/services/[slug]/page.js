@@ -55,11 +55,11 @@ export default async function ServiceDetailPage({ params }) {
     provider: {
       "@type": "Organization",
       name: "Green Pages",
-      url: "https://greenpages-pk.vercel.app/",
+      url: "https://www.greenpagespk.com/",
     },
     areaServed: { "@type": "Country", name: "Pakistan" },
     description: service.metaDescription,
-    url: `https://greenpages-pk.vercel.app/services/${service.slug}`,
+    url: `https://www.greenpagespk.com/services/${service.slug}`,
   };
 
   return (

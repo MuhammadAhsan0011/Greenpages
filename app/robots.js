@@ -1,5 +1,5 @@
 // If you later attach a custom domain, update this to match.
-const siteUrl = "https://greenpages-pk.vercel.app";
+const siteUrl = "https://www.greenpagespk.com";
 
 export default function robots() {
   return {
