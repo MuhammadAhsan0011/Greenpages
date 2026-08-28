@@ -63,7 +63,10 @@ export const metadata = {
     },
   },
   verification: {
-    google: "6VCBUlR_v8_pEeVxFlFwLly51ldq7-LHKxwOve1bSZQ",
+    google: [
+      "6VCBUlR_v8_pEeVxFlFwLly51ldq7-LHKxwOve1bSZQ",
+      "eLyflD3ZyFvDB0jjD2YYNOGdOpSqQizd-XkmcSqBJvQ",
+    ],
   },
 };
 
