@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { signup } from "./actions";
+import AuthIllustration from "../components/AuthIllustration";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 export const metadata = {
   title: { absolute: "List Your Business Free | Green Pages" },
@@ -17,47 +19,99 @@ export default async function SignUpPage({ searchParams }) {
   const error = params?.error;
 
   return (
-    <section aria-labelledby="signup-heading">
-      <div className="container auth-wrap">
-        <h1 id="signup-heading">Create Your Free Account</h1>
-        <p className="hero-description">
-          Sign up to create a business profile, comment on articles, and
-          publish your own — free.
-        </p>
-
-        {error && <p className="form-error">{error}</p>}
-
-        <form action={signup} className="contact-form">
-          <div className="form-field">
-            <label htmlFor="fullName">Full Name</label>
-            <input id="fullName" name="fullName" type="text" autoComplete="name" required />
+    <section aria-labelledby="signup-heading" className="auth-page">
+      <div className="container">
+        <div className="auth-shell">
+          <div className="auth-illustration-panel">
+            <AuthIllustration icon="person-plus" />
+            <h2>Create an Account</h2>
+            <p>Join Green Pages PK and grow your business.</p>
           </div>
 
-          <div className="form-field">
-            <label htmlFor="email">Email Address</label>
-            <input id="email" name="email" type="email" autoComplete="email" required />
+          <div className="auth-form-panel">
+            <h1 id="signup-heading">Register</h1>
+            <p className="hero-description">
+              Sign up to create a business profile, comment on articles, and
+              publish your own — free.
+            </p>
+
+            {error && <p className="form-error">{error}</p>}
+
+            <GoogleAuthButton />
+            <div className="auth-divider">or</div>
+
+            <form action={signup} className="contact-form">
+              <div className="grid grid-2">
+                <div className="form-field">
+                  <label htmlFor="fullName">Full Name</label>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Enter your name"
+                    required
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-2">
+                <div className="form-field">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Create a password"
+                    minLength={6}
+                    required
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Confirm your password"
+                    minLength={6}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="auth-options-row">
+                <label className="auth-remember-me">
+                  <input type="checkbox" name="agreeTerms" value="yes" required />
+                  I agree to the <Link href="/legal/terms">Terms &amp; Conditions</Link>
+                </label>
+              </div>
+
+              <button type="submit" className="btn btn-primary">
+                Register
+              </button>
+            </form>
+
+            <p className="auth-footer-note">
+              Already have an account? <Link href="/login">Login</Link>
+            </p>
           </div>
-
-          <div className="form-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              minLength={6}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary">
-            Sign Up
-          </button>
-        </form>
-
-        <p className="auth-footer-note">
-          Already have an account? <Link href="/login">Log in</Link>
-        </p>
+        </div>
       </div>
     </section>
   );

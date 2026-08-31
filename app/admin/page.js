@@ -48,6 +48,16 @@ export default async function AdminPage() {
     .select("id, slug, title, category, created_at, profiles(full_name)")
     .order("created_at", { ascending: false });
 
+  const [{ data: profiles }, { data: userEmails }] = await Promise.all([
+    supabase.from("profiles").select("id, full_name, created_at").order("created_at", { ascending: false }),
+    supabase.from("user_emails").select("id, email"),
+  ]);
+  const emailById = new Map((userEmails ?? []).map((row) => [row.id, row.email]));
+  const users = (profiles ?? []).map((profile) => ({
+    ...profile,
+    email: emailById.get(profile.id) ?? "—",
+  }));
+
   return (
     <section aria-labelledby="admin-heading">
       <div className="container">
@@ -150,6 +160,36 @@ export default async function AdminPage() {
               </table>
             </div>
           )}
+        </div>
+
+        <div className="account-card">
+          <h2>All Users ({users.length})</h2>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((profile) => (
+                  <tr key={profile.id}>
+                    <td>{profile.full_name}</td>
+                    <td>{profile.email}</td>
+                    <td>
+                      {new Date(profile.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="account-card">

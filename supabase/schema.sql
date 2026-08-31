@@ -21,13 +21,39 @@ create policy "Users can update their own profile"
   on public.profiles for update
   using (auth.uid() = id);
 
--- Auto-creates a public.profiles row whenever someone signs up, using the
--- full_name they entered on the sign-up form.
+-- ---------------------------------------------------------------
+-- user_emails: emails live in the private auth.users table (not exposed
+-- via the API), and Postgres RLS can't restrict a single COLUMN to one
+-- viewer — only rows. So email is denormalized into its own table where
+-- normal row-level policies apply cleanly: only the user themselves and
+-- the admin can read it. Used by /admin's user list.
+-- ---------------------------------------------------------------
+create table public.user_emails (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null
+);
+
+alter table public.user_emails enable row level security;
+
+create policy "Users can read their own email"
+  on public.user_emails for select
+  using (auth.uid() = id);
+
+create policy "Admin can read all emails"
+  on public.user_emails for select
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
+
+-- Auto-creates a public.profiles row (and a user_emails row) whenever
+-- someone signs up, using the full_name they entered on the sign-up form.
 create function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, full_name)
   values (new.id, coalesce(new.raw_user_meta_data ->> 'full_name', 'New Member'));
+
+  insert into public.user_emails (id, email)
+  values (new.id, new.email);
+
   return new;
 end;
 $$ language plpgsql security definer set search_path = public;

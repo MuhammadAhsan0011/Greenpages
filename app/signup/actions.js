@@ -8,9 +8,21 @@ export async function signup(formData) {
   const fullName = formData.get("fullName")?.toString().trim();
   const email = formData.get("email")?.toString().trim();
   const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
+  const agreedToTerms = formData.get("agreeTerms") === "yes";
 
-  if (!fullName || !email || !password) {
+  if (!fullName || !email || !password || !confirmPassword) {
     redirect(`/signup?error=${encodeURIComponent("All fields are required.")}`);
+  }
+
+  if (password !== confirmPassword) {
+    redirect(`/signup?error=${encodeURIComponent("Passwords do not match.")}`);
+  }
+
+  if (!agreedToTerms) {
+    redirect(
+      `/signup?error=${encodeURIComponent("You must agree to the Terms & Conditions.")}`
+    );
   }
 
   const supabase = await createClient();
