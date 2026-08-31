@@ -321,3 +321,39 @@ export async function removeArticleCoverImage(slug) {
   revalidatePath("/account/articles");
   redirect(`/account/articles/${slug}/edit`);
 }
+
+// Lets an article's own author permanently delete it (and its cover image
+// file, if any) — available on every plan, since removing your own content
+// isn't a paid feature. Free-plan members use this to stay under the
+// FREE_PLAN_ARTICLE_LIMIT.
+export async function deleteOwnArticle(articleId) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: article } = await supabase
+    .from("articles")
+    .select("author_id, cover_image_url")
+    .eq("id", articleId)
+    .maybeSingle();
+
+  if (!article || article.author_id !== user.id) {
+    redirect("/account/articles");
+  }
+
+  await supabase.from("articles").delete().eq("id", articleId);
+
+  if (article.cover_image_url) {
+    await deletePublicImage(supabase, article.cover_image_url);
+  }
+
+  revalidatePath("/account/articles");
+  revalidatePath("/blog");
+  revalidatePath("/");
+  redirect("/account/articles");
+}

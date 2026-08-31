@@ -1386,6 +1386,9 @@ article.service-section h2 {
 }
 
 .account-article-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 10px;
 }
 
@@ -2486,6 +2489,35 @@ article.service-section h2 {
 .footer-brand p {
   color: #9fc2a7;
   max-width: 32ch;
+}
+
+.footer-social-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.footer-social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.footer-social-links a:hover {
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  transform: translateY(-2px);
+}
+
+.footer-social-links svg {
+  width: 18px;
+  height: 18px;
 }
 
 .footer-col h3 {

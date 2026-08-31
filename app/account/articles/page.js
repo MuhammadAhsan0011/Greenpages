@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import Button from "../../components/Button";
+import { deleteOwnArticle } from "./actions";
 
 export const metadata = {
   title: "My Articles",
@@ -17,7 +18,7 @@ export default async function MyArticlesPage() {
 
   const { data: articles } = await supabase
     .from("articles")
-    .select("slug, title, category, created_at")
+    .select("id, slug, title, category, created_at")
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -73,6 +74,11 @@ export default async function MyArticlesPage() {
                     🔒 <Link href="/pricing">Upgrade to edit</Link>
                   </span>
                 )}
+                <form action={deleteOwnArticle.bind(null, article.id)}>
+                  <button type="submit" className="btn btn-danger btn-sm">
+                    Delete
+                  </button>
+                </form>
               </div>
             </li>
           ))}

@@ -97,7 +97,10 @@ const organizationSchema = {
     email: "greenpages.pk.com@gmail.com",
     telephone: "+92 300 1234567",
   },
-  sameAs: [],
+  sameAs: [
+    "https://www.facebook.com/greenpages.pk",
+    "https://www.instagram.com/greenpages.pk",
+  ],
 };
 
 export default function RootLayout({ children }) {
