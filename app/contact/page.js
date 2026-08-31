@@ -1,9 +1,9 @@
 import ContactForm from "../components/ContactForm";
 
 export const metadata = {
-  title: { absolute: "Contact Green Pages | Islamabad Marketing Agency" },
+  title: { absolute: "Contact Green Pages | Karachi Marketing Agency" },
   description:
-    "Reach Green Pages' Islamabad team for SEO, web development, content marketing, or listing support.",
+    "Reach Green Pages' Karachi team for SEO, web development, content marketing, or listing support.",
   alternates: {
     canonical: "/contact",
   },
@@ -54,7 +54,7 @@ export default async function ContactPage({ searchParams }) {
               </div>
               <div className="contact-info-item">
                 <h3>Office</h3>
-                <p>Islamabad, Pakistan — serving clients nationwide.</p>
+                <p>Karachi, Pakistan — serving clients nationwide.</p>
               </div>
             </div>
           </div>

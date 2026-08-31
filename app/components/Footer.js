@@ -51,6 +51,21 @@ export default function Footer() {
                   <circle cx="16.6" cy="7.4" r="1" fill="currentColor" />
                 </svg>
               </a>
+              <a
+                href="https://www.linkedin.com/company/green-pages-pk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Green Pages on LinkedIn"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="5" y="9" width="3" height="10" fill="currentColor" />
+                  <circle cx="6.5" cy="5.5" r="1.8" fill="currentColor" />
+                  <path
+                    d="M11 9h3v1.6c.6-1 1.7-1.8 3.3-1.8 2.5 0 3.7 1.7 3.7 4.6V19h-3v-5.2c0-1.4-.5-2.4-1.8-2.4-1 0-1.6.7-1.9 1.3-.1.2-.1.6-.1 1V19h-3V9Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </a>
             </div>
           </div>
 

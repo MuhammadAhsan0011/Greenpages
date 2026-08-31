@@ -88,7 +88,7 @@ const organizationSchema = {
   telephone: "+92 300 1234567",
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Islamabad",
+    addressLocality: "Karachi",
     addressCountry: "PK",
   },
   contactPoint: {
@@ -100,6 +100,7 @@ const organizationSchema = {
   sameAs: [
     "https://www.facebook.com/greenpages.pk",
     "https://www.instagram.com/greenpages.pk",
+    "https://www.linkedin.com/company/green-pages-pk/",
   ],
 };
 
