@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import NoPhotoPlaceholder from "./NoPhotoPlaceholder";
+import PlanBadge from "./PlanBadge";
 
 // Server Component — shared listing card used by the main directory,
 // city pages, and category pages, so all three stay visually consistent.
@@ -19,11 +20,7 @@ export default function BusinessCard({ business }) {
           <NoPhotoPlaceholder />
         )}
       </div>
-      {business.plan !== "free" && (
-        <span className={`plan-badge plan-badge-${business.plan}`}>
-          {business.plan === "featured" ? "★ Gold" : "✓ Silver"}
-        </span>
-      )}
+      <PlanBadge plan={business.plan} />
       <h3>
         <Link href={`/businesses/${business.id}`}>{business.name}</Link>
       </h3>

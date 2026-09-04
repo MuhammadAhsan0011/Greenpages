@@ -71,7 +71,7 @@ export default async function NewArticlePage({ searchParams }) {
           </span>
           <span>
             Free plan is limited to {FREE_PLAN_ARTICLE_LIMIT} articles.{" "}
-            <Link href="/pricing">Upgrade to Silver or Gold</Link> for
+            <Link href="/pricing">Upgrade to Verified or Premium</Link> for
             unlimited articles.
           </span>
         </div>
@@ -154,7 +154,7 @@ export default async function NewArticlePage({ searchParams }) {
 
           {isPaidPlan ? (
             <div className="account-card">
-              <h2>Silver/Gold Options</h2>
+              <h2>Verified/Premium Options</h2>
 
               <div className="form-field">
                 <label htmlFor="tags">Tags (comma-separated, optional)</label>
@@ -212,7 +212,7 @@ export default async function NewArticlePage({ searchParams }) {
             </div>
           ) : (
             <p className="editor-hint">
-              <Link href="/pricing">Upgrade to Silver or Gold</Link> to
+              <Link href="/pricing">Upgrade to Verified or Premium</Link> to
               unlock tags, scheduled publishing, homepage featuring, and
               custom SEO fields for your articles.
             </p>

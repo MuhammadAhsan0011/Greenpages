@@ -6,10 +6,8 @@ import { revalidatePath } from "next/cache";
 
 // Anyone can submit a review — no sign-in required. Every submission starts
 // unapproved (approved: false) and only becomes publicly visible once the
-// admin approves it in /admin. Per-business reviews are a Featured-plan
-// perk, re-checked here against the real plan (not just hidden in the UI) —
-// the same rule is enforced again at the database level in
-// supabase/schema.sql's insert policy, as defense in depth.
+// admin approves it in /admin. Available for every business regardless of
+// plan; the database's insert policy (supabase/schema.sql) matches this.
 export async function submitReview(formData) {
   const supabase = await createClient();
 
@@ -21,22 +19,6 @@ export async function submitReview(formData) {
 
   if (!reviewerName || !message || !Number.isInteger(rating) || rating < 1 || rating > 5) {
     redirect(`${redirectTo}?reviewError=${encodeURIComponent("Please fill in your name, a rating, and a message.")}`);
-  }
-
-  if (businessId) {
-    const { data: business } = await supabase
-      .from("businesses")
-      .select("plan")
-      .eq("id", businessId)
-      .maybeSingle();
-
-    if (business?.plan !== "featured") {
-      redirect(
-        `${redirectTo}?reviewError=${encodeURIComponent(
-          "This business hasn't unlocked customer reviews."
-        )}`
-      );
-    }
   }
 
   const { error } = await supabase.from("reviews").insert({

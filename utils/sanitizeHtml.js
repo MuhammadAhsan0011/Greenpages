@@ -37,7 +37,7 @@ const ALLOWED_TAGS = [
 ];
 
 const ALLOWED_ATTRIBUTES = {
-  a: ["href", "target", "rel"],
+  a: ["href", "target", "rel", "title"],
   img: ["src", "alt", "style"],
   span: ["style"],
   p: ["style"],

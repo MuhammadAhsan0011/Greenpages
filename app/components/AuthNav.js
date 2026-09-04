@@ -6,17 +6,28 @@
 // supabase.auth.signOut() from an onClick handler. Keeping this as the ONLY
 // dynamic piece of the header means Navbar itself stays a Server Component
 // and every other page keeps its static rendering.
+//
+// getUser() re-runs on every pathname change (not just on mount) — this
+// matters because email/password login runs as a Server Action, whose
+// sign-in happens on a separate, server-side Supabase client instance.
+// This component's browser client never hears an onAuthStateChange event
+// for that sign-in, and the Server Action's redirect afterward is a soft
+// RSC navigation that never remounts this component (it lives in the
+// layout) — so a mount-once getUser() call would just keep showing the
+// pre-login "Login / Register" state forever. The pathname always does
+// change on that redirect (e.g. /login -> /account), so re-running
+// getUser() there picks up the now-real cookies correctly.
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 const PLAN_LABELS = {
   free: "Free",
-  verified: "Silver",
-  featured: "Gold",
+  verified: "Verified",
+  featured: "Premium",
 };
 
 export default function AuthNav() {
@@ -25,11 +36,14 @@ export default function AuthNav() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+  }, [supabase, pathname]);
 
+  useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -76,16 +90,11 @@ export default function AuthNav() {
 
   if (user === null) {
     return (
-      <>
-        <li>
-          <Link href="/login">Log In</Link>
-        </li>
-        <li>
-          <Link href="/signup" className="btn btn-primary btn-sm">
-            Get Listed Today
-          </Link>
-        </li>
-      </>
+      <li>
+        <Link href="/login" className="btn btn-secondary btn-sm">
+          Login / Register
+        </Link>
+      </li>
     );
   }
 

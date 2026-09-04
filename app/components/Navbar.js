@@ -9,11 +9,73 @@ import logo from "../../public/images/green-pages-logo.png";
 // instead of React state, so no client-side JavaScript is needed just
 // to show/hide the mobile nav. AuthNav is the one small Client Component
 // island inside it (see AuthNav.js for why) — everything else here stays
-// static. The search row below submits a plain GET request to /businesses,
-// so it works with zero client-side JavaScript too.
+// static.
+//
+// Deliberately NOT reading the session here even though Navbar sits in the
+// root layout on every page: calling the cookie-based server Supabase
+// client from a layout that wraps the whole site would force every page
+// (including ones with `revalidate`/generateStaticParams today) into fully
+// dynamic, uncached rendering. AuthNav figures out the session itself,
+// client-side, instead.
 export default function Navbar() {
   return (
     <header className="site-header">
+      <div className="top-utility-bar">
+        <div className="container top-utility-bar-inner">
+          <span className="top-utility-item top-utility-tagline">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <circle cx="12" cy="10" r="2.3" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+            Pakistan&apos;s Business Directory &amp; Digital Marketing Agency
+          </span>
+          <span className="top-utility-right">
+            <a href="tel:+923032672509" className="top-utility-item">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M6 4h3l1.5 4.5L8 10.5a11 11 0 0 0 5.5 5.5l1.5-2.5 4.5 1.5v3c0 1.1-.9 2-2 2C10.5 20 4 13.5 4 6c0-1.1.9-2 2-2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              +92 303 2672509
+            </a>
+            <a href="mailto:greenpages.pk.com@gmail.com" className="top-utility-item">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                <path
+                  d="M4 7.5 12 13l8-5.5"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              greenpages.pk.com@gmail.com
+            </a>
+            <Link href="/signup" className="top-utility-item top-utility-cta">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.6" />
+                <path
+                  d="M4 19c0-3 2.2-5 5-5s5 2 5 5"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+                <path d="M17 8v5M14.5 10.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+              Add Your Business
+            </Link>
+          </span>
+        </div>
+      </div>
+
       <div className="container header-inner">
         <Link href="/" className="logo-group">
           <Image
@@ -52,10 +114,10 @@ export default function Navbar() {
               <Link href="/services">Services</Link>
             </li>
             <li>
-              <Link href="/blog">Blog</Link>
+              <Link href="/businesses">Directory</Link>
             </li>
             <li>
-              <Link href="/businesses">Directory</Link>
+              <Link href="/blog">Blog</Link>
             </li>
             <li>
               <Link href="/pricing">Pricing</Link>
@@ -67,54 +129,6 @@ export default function Navbar() {
           </ul>
         </nav>
         <NavAutoClose />
-      </div>
-
-      <div className="header-search-row">
-        <div className="container">
-          <form action="/businesses" method="get" className="header-search-form">
-            <div className="header-search-field">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="2" />
-                <line
-                  x1="15.3"
-                  y1="15.3"
-                  x2="21"
-                  y2="21"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <label htmlFor="header-search-q" className="visually-hidden">
-                Name or Keyword
-              </label>
-              <input id="header-search-q" name="q" type="text" placeholder="Name or Keyword" />
-            </div>
-            <div className="header-search-field">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-                <circle cx="12" cy="10" r="2.3" stroke="currentColor" strokeWidth="2" />
-              </svg>
-              <label htmlFor="header-search-city" className="visually-hidden">
-                City or Post Code
-              </label>
-              <input
-                id="header-search-city"
-                name="city"
-                type="text"
-                placeholder="City or Post Code"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Search
-            </button>
-          </form>
-        </div>
       </div>
     </header>
   );

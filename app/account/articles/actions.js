@@ -38,7 +38,7 @@ export async function uploadInlineImage(formData) {
 
   if (!user) return { error: "Not signed in." };
   if (!(await getIsPaidPlan(supabase, user.id))) {
-    return { error: "Upgrade to Silver or Gold to add inline images." };
+    return { error: "Upgrade to Verified or Premium to add inline images." };
   }
 
   const file = formData.get("file");
@@ -79,7 +79,7 @@ export async function createArticle(formData) {
     if ((count ?? 0) >= FREE_PLAN_ARTICLE_LIMIT) {
       redirect(
         `/account/articles/new?error=${encodeURIComponent(
-          `Free plan is limited to ${FREE_PLAN_ARTICLE_LIMIT} articles. Upgrade to Silver or Gold for unlimited articles.`
+          `Free plan is limited to ${FREE_PLAN_ARTICLE_LIMIT} articles. Upgrade to Verified or Premium for unlimited articles.`
         )}`
       );
     }

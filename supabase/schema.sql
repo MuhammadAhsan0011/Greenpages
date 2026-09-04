@@ -70,6 +70,7 @@ create table public.businesses (
   owner_id uuid not null references public.profiles(id) on delete cascade unique,
   name text not null,
   category text not null,
+  subcategory text,
   description text not null,
   website text,
   phone text,
@@ -85,6 +86,16 @@ create table public.businesses (
   -- copies this into `plan` and clears it back to null.
   requested_plan text check (requested_plan in ('verified', 'featured')),
   logo_url text,
+  cover_image_url text,
+  -- Comma-separated gallery photo URLs (max 5, enforced in the Add Listing
+  -- wizard) — separate from logo_url/cover_image_url, and never includes
+  -- the logo: this is only real uploaded photos of the business.
+  photos text,
+  -- Comma-separated — same convention as articles.tags.
+  tags text,
+  -- Comma-separated feature keys (e.g. "24/7 Service, Free Wi-Fi") chosen
+  -- from a fixed checkbox list in the Add Listing wizard.
+  features text,
   -- Contact person's role at the business (e.g. "Owner", "Manager").
   position text,
   address_line1 text,
@@ -100,6 +111,15 @@ create table public.businesses (
   linkedin_url text,
   whatsapp_url text,
   about_html text,
+  -- Structured per-day hours, e.g.
+  -- {"monday": {"open": "09:00", "close": "18:00", "closed": false}, ...}
+  -- — only days the owner actually set appear as keys.
+  business_hours jsonb,
+  -- Incremented by the increment_business_view() function below, called
+  -- from the public listing page — never written to directly, since plain
+  -- UPDATE is restricted to the owner by RLS (see "Users can update their
+  -- own business profile").
+  view_count integer not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -130,6 +150,23 @@ create policy "Admin can update any business"
 create policy "Admin can delete any business"
   on public.businesses for delete
   using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
+
+-- Lets the public listing page bump view_count without needing a general
+-- UPDATE grant (RLS above only allows the owner/admin to update a row) —
+-- security definer runs as the function owner, bypassing RLS, but this
+-- function does nothing except that one increment.
+create function public.increment_business_view(business_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.businesses set view_count = view_count + 1 where id = business_id;
+end;
+$$;
+
+grant execute on function public.increment_business_view(uuid) to anon, authenticated;
 
 -- ---------------------------------------------------------------
 -- articles: user-submitted blog articles. Published instantly, no
@@ -235,6 +272,22 @@ create policy "Anyone can submit a contact message"
   with check (true);
 
 -- ---------------------------------------------------------------
+-- newsletter_subscribers: footer newsletter signup. Insert-only for the
+-- public, same reasoning as contact_messages above.
+-- ---------------------------------------------------------------
+create table public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.newsletter_subscribers enable row level security;
+
+create policy "Anyone can subscribe to the newsletter"
+  on public.newsletter_subscribers for insert
+  with check (true);
+
+-- ---------------------------------------------------------------
 -- storage: public bucket for business logos and article cover images.
 -- Public read; only signed-in users can upload, and only the uploader
 -- can update/delete their own files.
@@ -258,11 +311,10 @@ create policy "Signed-in users can upload"
 
 -- ---------------------------------------------------------------
 -- reviews: testimonials about Green Pages itself (business_id null) and
--- per-business customer reviews (business_id set) — the latter is a
--- Featured-plan-only perk, enforced both in app/reviews/actions.js and
--- again here via the insert policy below. Anyone can submit a review
--- (no sign-in required); every submission starts unapproved and only
--- becomes publicly visible once the admin approves it in /admin.
+-- per-business customer reviews (business_id set) — available to every
+-- business regardless of plan. Anyone can submit a review (no sign-in
+-- required); every submission starts unapproved and only becomes publicly
+-- visible once the admin approves it in /admin.
 -- ---------------------------------------------------------------
 create table public.reviews (
   id uuid primary key default gen_random_uuid(),
@@ -282,17 +334,7 @@ create policy "Approved reviews are publicly readable"
 
 create policy "Anyone can submit a review"
   on public.reviews for insert
-  with check (
-    approved = false
-    and (
-      business_id is null
-      or exists (
-        select 1 from public.businesses
-        where businesses.id = reviews.business_id
-        and businesses.plan = 'featured'
-      )
-    )
-  );
+  with check (approved = false);
 
 -- Matches the admin email used for the "Admin can update any business"
 -- policy above — update it here too if that ever changes.

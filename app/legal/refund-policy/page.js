@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Refund Policy",
   description:
-    "Refund terms for Green Pages' Silver and Gold business listing packages.",
+    "Refund terms for Green Pages' Verified and Premium business listing packages.",
   alternates: { canonical: "/legal/refund-policy" },
 };
 
@@ -12,8 +12,8 @@ export default function RefundPolicyPage() {
       <p className="legal-updated">Last updated: August 27, 2026</p>
 
       <p>
-        This policy covers payments for our paid listing packages, Silver
-        (Rs. 2,000/year) and Gold (Rs. 4,500/year). The Free plan never
+        This policy covers payments for our paid listing packages, Verified
+        (Rs. 2,000/year) and Premium (Rs. 4,500/year). The Free plan never
         requires payment.
       </p>
 

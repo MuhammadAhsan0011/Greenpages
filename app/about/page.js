@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Button from "../components/Button";
-import aboutIllustration from "../../public/images/about-illustration.svg";
+import aboutHeroPhoto from "../../public/images/about-hero-photo.png";
 
 export const metadata = {
   title: "About Green Pages",
@@ -55,8 +55,8 @@ export default function AboutPage() {
           </div>
           <div className="hero-image">
             <Image
-              src={aboutIllustration}
-              alt="Illustration of a team collaborating around a shared marketing strategy board"
+              src={aboutHeroPhoto}
+              alt="Illustration of a business owner working on a laptop overlooking a green, growing Pakistani skyline"
               priority
               sizes="(max-width: 900px) 100vw, 560px"
             />

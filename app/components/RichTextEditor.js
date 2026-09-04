@@ -14,8 +14,9 @@
 // re-sanitizes it server-side with the same allowlist as
 // utils/sanitizeHtml.js before it's ever stored or rendered.
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
@@ -29,11 +30,34 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { uploadInlineImage } from "../account/articles/actions";
 
+// Adds a `title` attribute on top of the extension's default href/target/rel —
+// kept in sync with the "a" entry in utils/sanitizeHtml.js's allowlist.
+const LinkWithTitle = Link.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      title: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("title"),
+        renderHTML: (attributes) =>
+          attributes.title ? { title: attributes.title } : {},
+      },
+    };
+  },
+});
+
 export default function RichTextEditor({ defaultValue = "", name = "content" }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
+  const linkPopoverRef = useRef(null);
+
+  const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
+  const [linkTitle, setLinkTitle] = useState("");
+  const [linkNewTab, setLinkNewTab] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -43,7 +67,7 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
       TextStyle,
       Color,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Link.configure({ openOnClick: false, autolink: true }),
+      LinkWithTitle.configure({ openOnClick: false, autolink: true }),
       ImageExtension,
       Table.configure({ resizable: false }),
       TableRow,
@@ -57,12 +81,73 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
     },
   });
 
-  const insertLink = useCallback(() => {
-    if (!editor) return;
-    const url = window.prompt("Link URL:");
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
+  // Closes the link popover on an outside click, same pattern as the
+  // account menu dropdown in AuthNav.js.
+  useEffect(() => {
+    if (!linkPopoverOpen) return;
+    function handleClickOutside(event) {
+      if (linkPopoverRef.current && !linkPopoverRef.current.contains(event.target)) {
+        setLinkPopoverOpen(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [linkPopoverOpen]);
+
+  const openLinkPopover = useCallback(() => {
+    if (!editor) return;
+    const editingExisting = editor.isActive("link");
+    if (editingExisting) {
+      editor.chain().focus().extendMarkRange("link").run();
+    }
+    const attrs = editor.getAttributes("link");
+    const { from, to, empty } = editor.state.selection;
+    const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, " ");
+
+    setLinkUrl(attrs.href || "");
+    setLinkTitle(attrs.title || "");
+    setLinkNewTab(attrs.target === "_blank");
+    setLinkText(selectedText);
+    setLinkPopoverOpen(true);
+  }, [editor]);
+
+  const confirmLink = useCallback(
+    (event) => {
+      event.preventDefault();
+      if (!editor || !linkUrl.trim()) {
+        setLinkPopoverOpen(false);
+        return;
+      }
+      const attrs = {
+        href: linkUrl.trim(),
+        target: linkNewTab ? "_blank" : null,
+        rel: linkNewTab ? "noopener noreferrer" : null,
+        title: linkTitle.trim() || null,
+      };
+      editor
+        .chain()
+        .focus()
+        .deleteSelection()
+        .insertContent({
+          type: "text",
+          text: linkText.trim() || linkUrl.trim(),
+          marks: [{ type: "link", attrs }],
+        })
+        .run();
+      setLinkPopoverOpen(false);
+    },
+    [editor, linkUrl, linkText, linkTitle, linkNewTab]
+  );
+
+  const handleUnlink = useCallback(() => {
+    if (!editor) return;
+    editor.chain().focus().extendMarkRange("link").unsetLink().run();
+  }, [editor]);
+
+  const handleOpenLink = useCallback(() => {
+    if (!editor) return;
+    const href = editor.getAttributes("link").href;
+    if (href) window.open(href, "_blank", "noopener,noreferrer");
   }, [editor]);
 
   const handleImageFile = useCallback(
@@ -201,9 +286,63 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
         >
           ❝
         </button>
-        <button type="button" onClick={insertLink}>
-          🔗
-        </button>
+        <div className="editor-link-wrap" ref={linkPopoverRef}>
+          <button
+            type="button"
+            className={editor.isActive("link") ? "is-active" : ""}
+            onClick={openLinkPopover}
+          >
+            🔗
+          </button>
+          {linkPopoverOpen && (
+            <div className="editor-link-popover">
+              <label>
+                URL
+                <input
+                  type="url"
+                  value={linkUrl}
+                  onChange={(event) => setLinkUrl(event.target.value)}
+                  placeholder="https://example.com"
+                  autoFocus
+                />
+              </label>
+              <label>
+                Text
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(event) => setLinkText(event.target.value)}
+                  placeholder="Link text"
+                />
+              </label>
+              <label>
+                Title
+                <input
+                  type="text"
+                  value={linkTitle}
+                  onChange={(event) => setLinkTitle(event.target.value)}
+                  placeholder="Optional tooltip"
+                />
+              </label>
+              <label className="editor-link-checkbox">
+                <input
+                  type="checkbox"
+                  checked={linkNewTab}
+                  onChange={(event) => setLinkNewTab(event.target.checked)}
+                />
+                Open in new tab
+              </label>
+              <div className="editor-link-popover-actions">
+                <button type="button" onClick={() => setLinkPopoverOpen(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="editor-link-insert" onClick={confirmLink}>
+                  {editor.isActive("link") ? "Update" : "Insert"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
@@ -252,6 +391,23 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
       </div>
       {uploadError && <p className="form-error editor-inline-error">{uploadError}</p>}
       <EditorContent editor={editor} />
+      <BubbleMenu
+        editor={editor}
+        shouldShow={({ editor: current }) => current.isActive("link")}
+        options={{ placement: "bottom", offset: 8 }}
+      >
+        <div className="editor-link-bubble">
+          <button type="button" onClick={handleOpenLink} title="Open link">
+            ↗
+          </button>
+          <button type="button" onClick={openLinkPopover} title="Edit link">
+            ✎
+          </button>
+          <button type="button" onClick={handleUnlink} title="Remove link">
+            ✕
+          </button>
+        </div>
+      </BubbleMenu>
       <input type="hidden" name={name} value={html} />
     </div>
   );

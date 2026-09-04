@@ -25,7 +25,8 @@ export async function deletePublicImage(supabase, publicUrl) {
 // the upload is attributed to the signed-in user, matching the storage
 // RLS policies in supabase/schema.sql.
 export async function uploadPublicImage(supabase, file, folder, userId) {
-  const path = `${folder}/${userId}-${Date.now()}.${extensionFor(file)}`;
+  const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const path = `${folder}/${userId}-${unique}.${extensionFor(file)}`;
   const { error } = await supabase.storage
     .from("uploads")
     .upload(path, file, { contentType: file.type, upsert: true });

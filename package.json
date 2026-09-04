@@ -28,7 +28,8 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sanitize-html": "^2.17.7"
+    "sanitize-html": "^2.17.7",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "eslint": "^9.17.0",

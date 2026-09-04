@@ -85,7 +85,7 @@ const organizationSchema = {
   logo: `${siteUrl}/images/og-image.svg`,
   description: siteDescription,
   email: "greenpages.pk.com@gmail.com",
-  telephone: "+92 300 1234567",
+  telephone: "+92 303 2672509",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Karachi",
@@ -95,7 +95,7 @@ const organizationSchema = {
     "@type": "ContactPoint",
     contactType: "customer service",
     email: "greenpages.pk.com@gmail.com",
-    telephone: "+92 300 1234567",
+    telephone: "+92 303 2672509",
   },
   sameAs: [
     "https://www.facebook.com/greenpages.pk",
