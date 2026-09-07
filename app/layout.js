@@ -110,6 +110,13 @@ export default function RootLayout({ children }) {
     // inject attributes onto <html> before React hydrates, causing a false
     // mismatch warning that has nothing to do with app code.
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3259059838058421"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <script
           type="application/ld+json"
