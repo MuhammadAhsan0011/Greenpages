@@ -9,14 +9,15 @@ import PlanBadge from "./PlanBadge";
 // redesign pass).
 export default function FeaturedBusinessCard({ business, rating }) {
   const avgRating = rating ? rating.total / rating.count : null;
+  const photo = business.cover_image_url || business.logo_url;
 
   return (
     <article className="featured-business-card">
       <div className="featured-business-photo">
-        {business.logo_url ? (
+        {photo ? (
           <Image
-            src={business.logo_url}
-            alt={`${business.name} logo`}
+            src={photo}
+            alt={`${business.name} cover photo`}
             fill
             sizes="(max-width: 700px) 100vw, 320px"
             style={{ objectFit: "cover" }}

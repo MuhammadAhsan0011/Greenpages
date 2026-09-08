@@ -9,7 +9,7 @@ import PlanBadge from "./PlanBadge";
 // the Directory page's reference design calls for.
 export default function DirectoryListItem({ business, rating }) {
   const avgRating = rating ? rating.total / rating.count : null;
-  const photo = business.cover_image_url || business.logo_url;
+  const photo = business.logo_url || business.cover_image_url;
 
   return (
     <article className="directory-list-item">

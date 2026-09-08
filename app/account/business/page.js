@@ -277,7 +277,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                               🖼️
                             </span>
                           )}
-                          <ImageUploadField name="logo" label="Upload Logo" />
+                          <ImageUploadField
+                            name="logo"
+                            label="Upload Logo"
+                            hint="PNG, JPG, WebP, or GIF up to 5MB — square, at least 200×200px works best."
+                          />
                         </div>
                       )}
                     </div>
@@ -306,7 +310,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                               🖼️
                             </span>
                           )}
-                          <ImageUploadField name="coverImage" label="Upload Cover Image" />
+                          <ImageUploadField
+                            name="coverImage"
+                            label="Upload Cover Image"
+                            hint="PNG, JPG, WebP, or GIF up to 5MB — landscape, 1200×675px (16:9) recommended. Shown on the homepage."
+                          />
                         </div>
                       )}
                     </div>
