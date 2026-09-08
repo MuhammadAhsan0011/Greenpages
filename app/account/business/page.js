@@ -63,13 +63,21 @@ function LockedNotice({ feature }) {
 // Server Component — the form posts directly to a Server Action
 // (upsertBusiness), so no client-side JavaScript is needed to submit it.
 // The 5-step wizard is a pure-CSS radio-button widget (see .wizard-step-*
-// in globals.css): "Save & Continue"/"Back" are plain <label>s pointing at
-// the next/previous step's radio input, so navigating steps needs no
-// JavaScript either, and every field across every step still submits
-// together in one request regardless of which step is showing.
+// in globals.css); every field across every step still submits together
+// in one request regardless of which step is showing.
+// "Back" is always a plain <label> (no save needed going backwards). For a
+// brand-new listing, "Save & Continue" is also just a <label> — the whole
+// thing only actually saves once, at the final Review & Submit step. For an
+// existing business (business is truthy), "Save & Continue" is a real
+// formAction-bound submit button instead, so edits persist immediately
+// after each step instead of requiring a click-through to the end.
 export default async function BusinessProfilePage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
+  const requestedStep = params?.step;
+  const initialStepId = STEPS.some((step) => step.id === requestedStep)
+    ? requestedStep
+    : "info";
 
   const supabase = await createClient();
   const {
@@ -133,15 +141,15 @@ export default async function BusinessProfilePage({ searchParams }) {
 
           {error && <p className="form-error">{error}</p>}
 
-          <form action={upsertBusiness} className="wizard-form">
-            {STEPS.map((step, index) => (
+          <form action={upsertBusiness.bind(null, null)} className="wizard-form">
+            {STEPS.map((step) => (
               <input
                 key={step.id}
                 type="radio"
                 name="wizardStep"
                 id={`step-${step.id}`}
                 className="wizard-step-radio"
-                defaultChecked={index === 0}
+                defaultChecked={step.id === initialStepId}
               />
             ))}
 
@@ -315,9 +323,19 @@ export default async function BusinessProfilePage({ searchParams }) {
 
                   <div className="wizard-nav-buttons">
                     <span />
-                    <label htmlFor="step-contact" className="btn btn-primary">
-                      Save &amp; Continue →
-                    </label>
+                    {business ? (
+                      <button
+                        type="submit"
+                        formAction={upsertBusiness.bind(null, "contact")}
+                        className="btn btn-primary"
+                      >
+                        Save &amp; Continue →
+                      </button>
+                    ) : (
+                      <label htmlFor="step-contact" className="btn btn-primary">
+                        Save &amp; Continue →
+                      </label>
+                    )}
                   </div>
                 </div>
 
@@ -444,9 +462,19 @@ export default async function BusinessProfilePage({ searchParams }) {
                     <label htmlFor="step-info" className="btn btn-secondary">
                       ← Back
                     </label>
-                    <label htmlFor="step-location" className="btn btn-primary">
-                      Save &amp; Continue →
-                    </label>
+                    {business ? (
+                      <button
+                        type="submit"
+                        formAction={upsertBusiness.bind(null, "location")}
+                        className="btn btn-primary"
+                      >
+                        Save &amp; Continue →
+                      </button>
+                    ) : (
+                      <label htmlFor="step-location" className="btn btn-primary">
+                        Save &amp; Continue →
+                      </label>
+                    )}
                   </div>
                 </div>
 
@@ -506,9 +534,19 @@ export default async function BusinessProfilePage({ searchParams }) {
                     <label htmlFor="step-contact" className="btn btn-secondary">
                       ← Back
                     </label>
-                    <label htmlFor="step-media" className="btn btn-primary">
-                      Save &amp; Continue →
-                    </label>
+                    {business ? (
+                      <button
+                        type="submit"
+                        formAction={upsertBusiness.bind(null, "media")}
+                        className="btn btn-primary"
+                      >
+                        Save &amp; Continue →
+                      </button>
+                    ) : (
+                      <label htmlFor="step-media" className="btn btn-primary">
+                        Save &amp; Continue →
+                      </label>
+                    )}
                   </div>
                 </div>
 
@@ -529,9 +567,19 @@ export default async function BusinessProfilePage({ searchParams }) {
                     <label htmlFor="step-location" className="btn btn-secondary">
                       ← Back
                     </label>
-                    <label htmlFor="step-review" className="btn btn-primary">
-                      Save &amp; Continue →
-                    </label>
+                    {business ? (
+                      <button
+                        type="submit"
+                        formAction={upsertBusiness.bind(null, "review")}
+                        className="btn btn-primary"
+                      >
+                        Save &amp; Continue →
+                      </button>
+                    ) : (
+                      <label htmlFor="step-review" className="btn btn-primary">
+                        Save &amp; Continue →
+                      </label>
+                    )}
                   </div>
                 </div>
 

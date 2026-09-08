@@ -66,7 +66,7 @@ function readBusinessHours(formData) {
   return hasAny ? hours : null;
 }
 
-export async function upsertBusiness(formData) {
+export async function upsertBusiness(nextStep, formData) {
   const supabase = await createClient();
 
   const {
@@ -262,5 +262,8 @@ export async function upsertBusiness(formData) {
 
   revalidatePath("/account");
   revalidatePath("/businesses");
-  redirect("/account");
+  // A bound nextStep means this was an intermediate "Save & Continue" click
+  // while editing an existing business — land back on the wizard at that
+  // step instead of bouncing out to the dashboard.
+  redirect(nextStep ? `/account/business?step=${nextStep}` : "/account");
 }

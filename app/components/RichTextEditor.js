@@ -62,7 +62,11 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3, 4] } }),
+      // link/underline explicitly disabled here — StarterKit v3 bundles its
+      // own copies of both, which collided with the separately-configured
+      // Underline and LinkWithTitle below ("Duplicate extension names"),
+      // and was severe enough to crash the editor's renderer process.
+      StarterKit.configure({ heading: { levels: [2, 3, 4] }, link: false, underline: false }),
       Underline,
       TextStyle,
       Color,
