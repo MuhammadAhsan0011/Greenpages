@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createArticle } from "../actions";
 import ArticleEditor from "../../../components/ArticleEditor";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
+import SmartTextarea from "../../../components/SmartTextarea";
 
 export const metadata = {
   title: "Write a New Article",
@@ -127,7 +128,7 @@ export default async function NewArticlePage({ searchParams }) {
 
           <div className="form-field">
             <label htmlFor="excerpt">Short Excerpt</label>
-            <textarea
+            <SmartTextarea
               id="excerpt"
               name="excerpt"
               rows={2}
@@ -202,7 +203,7 @@ export default async function NewArticlePage({ searchParams }) {
                 <label htmlFor="metaDescription">
                   Custom Meta Description (optional)
                 </label>
-                <textarea
+                <SmartTextarea
                   id="metaDescription"
                   name="metaDescription"
                   rows={2}

@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import { submitContactMessage } from "../contact/actions";
+import { handleBlockAwarePaste } from "@/utils/textareaPaste";
 
 export default function ContactForm({ defaultMessage = "" }) {
   const [formData, setFormData] = useState({
@@ -91,6 +92,7 @@ export default function ContactForm({ defaultMessage = "" }) {
           required
           value={formData.message}
           onChange={handleChange}
+          onPaste={handleBlockAwarePaste}
         />
       </div>
 

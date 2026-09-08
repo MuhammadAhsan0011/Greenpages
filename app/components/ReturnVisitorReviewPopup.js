@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from "react";
 import { submitReviewInline } from "../reviews/actions";
+import { handleBlockAwarePaste } from "@/utils/textareaPaste";
 
 const VISITED_KEY = "gp_has_visited";
 const HANDLED_KEY = "gp_review_handled";
@@ -109,7 +110,13 @@ export default function ReturnVisitorReviewPopup() {
               <option value="2">★★☆☆☆ Poor</option>
               <option value="1">★☆☆☆☆ Terrible</option>
             </select>
-            <textarea name="message" rows={3} placeholder="Tell us about your experience" required />
+            <textarea
+              name="message"
+              rows={3}
+              placeholder="Tell us about your experience"
+              onPaste={handleBlockAwarePaste}
+              required
+            />
             <div className="review-popup-actions">
               <button type="button" className="btn btn-secondary btn-sm" onClick={dismiss}>
                 Maybe Later

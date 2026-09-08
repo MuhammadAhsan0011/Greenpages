@@ -1,4 +1,5 @@
 import { submitReview } from "../reviews/actions";
+import SmartTextarea from "./SmartTextarea";
 
 const STAR_OPTIONS = [
   { value: "5", label: "★★★★★ Excellent" },
@@ -36,7 +37,7 @@ export default function ReviewForm({ businessId, redirectTo }) {
 
       <div className="form-field">
         <label htmlFor="message">Your Review</label>
-        <textarea id="message" name="message" rows={4} required />
+        <SmartTextarea id="message" name="message" rows={4} required />
       </div>
 
       <p className="editor-hint">

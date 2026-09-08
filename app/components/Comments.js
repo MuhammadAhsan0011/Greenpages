@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { handleBlockAwarePaste } from "@/utils/textareaPaste";
 
 export default function Comments({ slug }) {
   const [comments, setComments] = useState([]);
@@ -115,6 +116,7 @@ export default function Comments({ slug }) {
             rows={4}
             value={body}
             onChange={(event) => setBody(event.target.value)}
+            onPaste={handleBlockAwarePaste}
             placeholder="Share your thoughts..."
             required
           />

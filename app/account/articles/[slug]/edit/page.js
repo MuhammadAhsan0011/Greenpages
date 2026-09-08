@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { updateArticle, removeArticleCoverImage } from "../../actions";
 import RichTextEditor from "../../../../components/RichTextEditorClientOnly";
+import SmartTextarea from "../../../../components/SmartTextarea";
 
 export const metadata = {
   title: "Edit Article",
@@ -143,7 +144,7 @@ export default async function EditArticlePage({ params, searchParams }) {
 
         <div className="form-field">
           <label htmlFor="excerpt">Short Excerpt</label>
-          <textarea
+          <SmartTextarea
             id="excerpt"
             name="excerpt"
             rows={2}
@@ -210,7 +211,7 @@ export default async function EditArticlePage({ params, searchParams }) {
 
           <div className="form-field">
             <label htmlFor="metaDescription">Custom Meta Description (optional)</label>
-            <textarea
+            <SmartTextarea
               id="metaDescription"
               name="metaDescription"
               rows={2}

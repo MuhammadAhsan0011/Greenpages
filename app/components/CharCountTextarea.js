@@ -6,6 +6,7 @@
 // needs JavaScript.
 
 import { useState } from "react";
+import { handleBlockAwarePaste } from "@/utils/textareaPaste";
 
 export default function CharCountTextarea({
   id,
@@ -29,6 +30,7 @@ export default function CharCountTextarea({
         placeholder={placeholder}
         defaultValue={defaultValue}
         onChange={(event) => setLength(event.target.value.length)}
+        onPaste={handleBlockAwarePaste}
       />
       <p className="editor-hint char-count-hint">
         {length} / {maxLength} characters

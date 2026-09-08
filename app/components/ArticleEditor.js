@@ -8,6 +8,7 @@
 // with zero extra client JavaScript required for the submission itself.
 
 import { useRef, useState } from "react";
+import { handleBlockAwarePaste } from "@/utils/textareaPaste";
 
 function wrapSelection(value, start, end, prefix, suffix) {
   const selected = value.slice(start, end) || "text";
@@ -104,6 +105,7 @@ export default function ArticleEditor({ defaultValue = "", extraFormatting = fal
         rows={14}
         value={value}
         onChange={(event) => setValue(event.target.value)}
+        onPaste={handleBlockAwarePaste}
         placeholder="Write your article here. Select text and use the buttons above to format it."
         required
       />
