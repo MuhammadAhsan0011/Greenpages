@@ -22,7 +22,7 @@ export default function Navbar() {
     <header className="site-header">
       <div className="top-utility-bar">
         <div className="container top-utility-bar-inner">
-          <span className="top-utility-item top-utility-tagline">
+          <span className="top-utility-item top-utility-tagline top-utility-tagline-full">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
                 d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z"
@@ -34,8 +34,20 @@ export default function Navbar() {
             </svg>
             Pakistan&apos;s Business Directory &amp; Digital Marketing Agency
           </span>
+          <span className="top-utility-item top-utility-tagline top-utility-tagline-short">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <circle cx="12" cy="10" r="2.3" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+            Pakistan&apos;s #1 Business Directory
+          </span>
           <span className="top-utility-right">
-            <a href="tel:+923032672509" className="top-utility-item">
+            <a href="tel:+923032672509" className="top-utility-item top-utility-contact">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M6 4h3l1.5 4.5L8 10.5a11 11 0 0 0 5.5 5.5l1.5-2.5 4.5 1.5v3c0 1.1-.9 2-2 2C10.5 20 4 13.5 4 6c0-1.1.9-2 2-2Z"
@@ -46,7 +58,7 @@ export default function Navbar() {
               </svg>
               +92 303 2672509
             </a>
-            <a href="mailto:greenpages.pk.com@gmail.com" className="top-utility-item">
+            <a href="mailto:greenpages.pk.com@gmail.com" className="top-utility-item top-utility-contact">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.6" />
                 <path

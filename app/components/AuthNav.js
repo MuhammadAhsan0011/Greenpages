@@ -198,10 +198,17 @@ export default function AuthNav() {
       )}
     </li>
 
-    {/* Mobile-only: a plain "My Profile" link instead of the desktop
-        dropdown, so the hamburger menu never has to nest a second
-        expand/collapse panel inside itself (see globals.css for the
-        breakpoint that swaps these). */}
+    {/* Mobile-only: plain links instead of the desktop dropdown, so the
+        hamburger menu never has to nest a second expand/collapse panel
+        inside itself (see globals.css for the breakpoint that swaps
+        these). Mirrors the desktop panel's "View Listing" + "Dashboard"
+        pair, which was previously missing here — mobile only had "My
+        Profile", with no way to jump straight to the listing. */}
+    {business && (
+      <li className="account-menu-mobile">
+        <Link href={`/businesses/${business.id}`}>View Listing</Link>
+      </li>
+    )}
     <li className="account-menu-mobile">
       <Link href="/account">My Profile</Link>
     </li>

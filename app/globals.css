@@ -114,6 +114,10 @@ button {
   flex-shrink: 0;
 }
 
+.top-utility-tagline-short {
+  display: none;
+}
+
 .top-utility-right {
   display: flex;
   align-items: center;
@@ -4667,13 +4671,27 @@ article.service-section h2 {
    menu at that width — well before the general content breakpoints below,
    which is why this lives in its own media query. */
 @media (max-width: 1100px) {
-  .top-utility-tagline,
-  .top-utility-item:not(.top-utility-cta) {
+  .top-utility-contact {
     display: none;
   }
 
+  /* Full tagline is too long once the phone/email items are gone and the
+     bar has to share the row with "Add Your Business" — swap to the short
+     "#1 Business Directory" wording instead of hiding it outright. */
+  .top-utility-tagline-full {
+    display: none;
+  }
+
+  .top-utility-tagline-short {
+    display: inline-flex;
+  }
+
   .top-utility-bar-inner {
-    justify-content: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    height: auto;
+    padding: 6px 0;
   }
 
   .nav-toggle-label {
