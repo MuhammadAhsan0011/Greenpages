@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import AdminPageSizeSelect from "../components/AdminPageSizeSelect";
 import {
   approveUpgrade,
   dismissRequest,
@@ -19,7 +20,7 @@ export const metadata = {
 const PLAN_LABELS = { free: "Free", verified: "Verified", featured: "Premium" };
 
 const ADMIN_PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100];
-const DEFAULT_ADMIN_PAGE_SIZE = 25;
+const DEFAULT_ADMIN_PAGE_SIZE = 10;
 
 function parseAdminPageSize(raw) {
   const n = Number(raw);
@@ -43,26 +44,32 @@ function buildAdminQueryString(params, overrides) {
   return qs ? `/admin?${qs}` : "/admin";
 }
 
-// Shared pagination controls for the Users/Articles tables below — plain
-// <Link>s reading/writing the URL's search params, so no client JS needed.
+// Shared pagination controls for the Users/Articles tables below. Page
+// number links are plain <Link>s (no JS needed); the page-size control is
+// a <select> that auto-submits a GET form scoped to just this table's
+// params — carrying the other table's current page/size along as hidden
+// fields so switching one grid's page size never resets the other.
 function AdminPaginationBar({ paramPrefix, currentPage, pageSize, totalItems, activeParams }) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const otherParams = { ...activeParams };
+  delete otherParams[`${paramPrefix}Page`];
+  delete otherParams[`${paramPrefix}PageSize`];
+
   return (
     <div className="admin-pagination-row">
-      <nav className="directory-pagination" aria-label={`${paramPrefix} rows per page`}>
-        {ADMIN_PAGE_SIZE_OPTIONS.map((size) => (
-          <Link
-            key={size}
-            href={buildAdminQueryString(activeParams, {
-              [`${paramPrefix}PageSize`]: size,
-              [`${paramPrefix}Page`]: "",
-            })}
-            className={size === pageSize ? "is-active" : ""}
-          >
-            {size}
-          </Link>
-        ))}
-      </nav>
+      <form method="GET" action="/admin" className="admin-inline-form">
+        {Object.entries(otherParams).map(([key, value]) =>
+          value !== undefined && value !== null && value !== "" ? (
+            <input key={key} type="hidden" name={key} value={value} />
+          ) : null
+        )}
+        <label htmlFor={`${paramPrefix}PageSize`}>Rows per page:</label>
+        <AdminPageSizeSelect
+          name={`${paramPrefix}PageSize`}
+          defaultValue={pageSize}
+          options={ADMIN_PAGE_SIZE_OPTIONS}
+        />
+      </form>
       {totalPages > 1 && (
         <nav className="directory-pagination" aria-label={`${paramPrefix} pagination`}>
           <Link
