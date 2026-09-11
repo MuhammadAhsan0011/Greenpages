@@ -2334,6 +2334,15 @@ article.service-section h2 {
   font-size: 0.85rem;
 }
 
+.admin-pagination-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 /* ---------- Business profile tabs ---------- */
 .profile-tabs {
   display: flex;

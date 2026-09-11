@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import {
@@ -17,10 +18,93 @@ export const metadata = {
 
 const PLAN_LABELS = { free: "Free", verified: "Verified", featured: "Premium" };
 
+const ADMIN_PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100];
+const DEFAULT_ADMIN_PAGE_SIZE = 25;
+
+function parseAdminPageSize(raw) {
+  const n = Number(raw);
+  return ADMIN_PAGE_SIZE_OPTIONS.includes(n) ? n : DEFAULT_ADMIN_PAGE_SIZE;
+}
+
+function parseAdminPage(raw) {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : 1;
+}
+
+function buildAdminQueryString(params, overrides) {
+  const merged = { ...params, ...overrides };
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(merged)) {
+    if (value !== undefined && value !== null && value !== "") {
+      search.set(key, String(value));
+    }
+  }
+  const qs = search.toString();
+  return qs ? `/admin?${qs}` : "/admin";
+}
+
+// Shared pagination controls for the Users/Articles tables below — plain
+// <Link>s reading/writing the URL's search params, so no client JS needed.
+function AdminPaginationBar({ paramPrefix, currentPage, pageSize, totalItems, activeParams }) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  return (
+    <div className="admin-pagination-row">
+      <nav className="directory-pagination" aria-label={`${paramPrefix} rows per page`}>
+        {ADMIN_PAGE_SIZE_OPTIONS.map((size) => (
+          <Link
+            key={size}
+            href={buildAdminQueryString(activeParams, {
+              [`${paramPrefix}PageSize`]: size,
+              [`${paramPrefix}Page`]: "",
+            })}
+            className={size === pageSize ? "is-active" : ""}
+          >
+            {size}
+          </Link>
+        ))}
+      </nav>
+      {totalPages > 1 && (
+        <nav className="directory-pagination" aria-label={`${paramPrefix} pagination`}>
+          <Link
+            href={buildAdminQueryString(activeParams, {
+              [`${paramPrefix}Page`]: Math.max(1, currentPage - 1),
+            })}
+            className={currentPage === 1 ? "is-disabled" : ""}
+            aria-disabled={currentPage === 1}
+          >
+            ←
+          </Link>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <Link
+              key={pageNum}
+              href={buildAdminQueryString(activeParams, { [`${paramPrefix}Page`]: pageNum })}
+              className={pageNum === currentPage ? "is-active" : ""}
+            >
+              {pageNum}
+            </Link>
+          ))}
+          <Link
+            href={buildAdminQueryString(activeParams, {
+              [`${paramPrefix}Page`]: Math.min(totalPages, currentPage + 1),
+            })}
+            className={currentPage === totalPages ? "is-disabled" : ""}
+            aria-disabled={currentPage === totalPages}
+          >
+            →
+          </Link>
+        </nav>
+      )}
+    </div>
+  );
+}
+
 // Server Component, gated to the single admin account (ADMIN_EMAIL). This
 // is where package upgrade requests from /pricing get approved, and where
 // any business's plan can be corrected manually.
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }) {
+  const params = (await searchParams) ?? {};
+  const activeParams = { ...params };
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -57,6 +141,23 @@ export default async function AdminPage() {
     ...profile,
     email: emailById.get(profile.id) ?? "—",
   }));
+
+  const usersPageSize = parseAdminPageSize(params?.usersPageSize);
+  const usersCurrentPage = Math.min(
+    parseAdminPage(params?.usersPage),
+    Math.max(1, Math.ceil(users.length / usersPageSize))
+  );
+  const usersPageStart = (usersCurrentPage - 1) * usersPageSize;
+  const usersPageItems = users.slice(usersPageStart, usersPageStart + usersPageSize);
+
+  const allArticles = articles ?? [];
+  const articlesPageSize = parseAdminPageSize(params?.articlesPageSize);
+  const articlesCurrentPage = Math.min(
+    parseAdminPage(params?.articlesPage),
+    Math.max(1, Math.ceil(allArticles.length / articlesPageSize))
+  );
+  const articlesPageStart = (articlesCurrentPage - 1) * articlesPageSize;
+  const articlesPageItems = allArticles.slice(articlesPageStart, articlesPageStart + articlesPageSize);
 
   return (
     <section aria-labelledby="admin-heading">
@@ -174,7 +275,7 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((profile) => (
+                {usersPageItems.map((profile) => (
                   <tr key={profile.id}>
                     <td>{profile.full_name}</td>
                     <td>{profile.email}</td>
@@ -190,6 +291,13 @@ export default async function AdminPage() {
               </tbody>
             </table>
           </div>
+          <AdminPaginationBar
+            paramPrefix="users"
+            currentPage={usersCurrentPage}
+            pageSize={usersPageSize}
+            totalItems={users.length}
+            activeParams={activeParams}
+          />
         </div>
 
         <div className="account-card">
@@ -254,7 +362,7 @@ export default async function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {(articles ?? []).map((article) => (
+                {articlesPageItems.map((article) => (
                   <tr key={article.id}>
                     <td>
                       <a href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer">
@@ -282,6 +390,13 @@ export default async function AdminPage() {
               </tbody>
             </table>
           </div>
+          <AdminPaginationBar
+            paramPrefix="articles"
+            currentPage={articlesCurrentPage}
+            pageSize={articlesPageSize}
+            totalItems={allArticles.length}
+            activeParams={activeParams}
+          />
         </div>
       </div>
     </section>
