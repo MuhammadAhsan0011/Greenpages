@@ -13,7 +13,7 @@ export const revalidate = 60;
 
 // Server Component — platform-wide reviews (business_id is null). Reviews
 // tied to a specific business live on that business's own listing page
-// instead (see app/businesses/[id]/page.js).
+// instead (see app/businesses/[slug]/page.js).
 export default async function ReviewsPage({ searchParams }) {
   const params = await searchParams;
   const reviewed = params?.reviewed;

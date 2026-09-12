@@ -7,6 +7,14 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+function slugify(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
@@ -109,12 +117,17 @@ export async function upsertBusiness(nextStep, formData) {
   const { data: existing } = await supabase
     .from("businesses")
     .select(
-      "logo_url, cover_image_url, photos, plan, facebook_url, instagram_url, linkedin_url, whatsapp_url, about_html"
+      "slug, logo_url, cover_image_url, photos, plan, facebook_url, instagram_url, linkedin_url, whatsapp_url, about_html"
     )
     .eq("owner_id", user.id)
     .maybeSingle();
 
   const isPaidPlan = existing?.plan === "verified" || existing?.plan === "featured";
+
+  // Generated once, on first creation, and never touched again — even if
+  // the name changes later, so a shared /businesses/[slug] link never
+  // breaks. The trailing suffix keeps it unique without an extra lookup.
+  const slug = existing?.slug ?? `${slugify(name)}-${Date.now().toString(36)}`;
 
   let logoUrl = existing?.logo_url ?? null;
   let oldLogoUrl = null;
@@ -216,6 +229,7 @@ export async function upsertBusiness(nextStep, formData) {
   const { error } = await supabase.from("businesses").upsert(
     {
       owner_id: user.id,
+      slug,
       name,
       category,
       subcategory,

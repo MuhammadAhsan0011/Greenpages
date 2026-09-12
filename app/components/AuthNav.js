@@ -60,7 +60,7 @@ export default function AuthNav() {
     }
     supabase
       .from("businesses")
-      .select("id, name, plan, logo_url, requested_plan")
+      .select("id, slug, name, plan, logo_url, requested_plan")
       .eq("owner_id", user.id)
       .maybeSingle()
       .then(({ data }) => setBusiness(data ?? null));
@@ -153,7 +153,7 @@ export default function AuthNav() {
               </p>
               <div className="account-menu-actions">
                 <Link
-                  href={`/businesses/${business.id}`}
+                  href={`/businesses/${business.slug}`}
                   className="btn btn-secondary btn-sm"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -206,7 +206,7 @@ export default function AuthNav() {
         Profile", with no way to jump straight to the listing. */}
     {business && (
       <li className="account-menu-mobile">
-        <Link href={`/businesses/${business.id}`}>View Listing</Link>
+        <Link href={`/businesses/${business.slug}`}>View Listing</Link>
       </li>
     )}
     <li className="account-menu-mobile">

@@ -62,10 +62,10 @@ export default async function sitemap() {
 
   const { data: businesses } = await supabase
     .from("businesses")
-    .select("id, created_at");
+    .select("slug, created_at");
 
   const businessRoutes = (businesses ?? []).map((business) => ({
-    url: `${siteUrl}/businesses/${business.id}`,
+    url: `${siteUrl}/businesses/${business.slug}`,
     lastModified: new Date(business.created_at),
     changeFrequency: "monthly",
     priority: 0.6,

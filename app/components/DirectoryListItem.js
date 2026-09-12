@@ -22,7 +22,7 @@ export default function DirectoryListItem({ business, rating }) {
       </div>
       <div className="directory-list-body">
         <h3>
-          <Link href={`/businesses/${business.id}`}>{business.name}</Link>
+          <Link href={`/businesses/${business.slug}`}>{business.name}</Link>
           <PlanBadge plan={business.plan} iconOnly />
         </h3>
         <div className="directory-list-meta">
@@ -42,7 +42,7 @@ export default function DirectoryListItem({ business, rating }) {
         )}
       </div>
       <div className="directory-list-actions">
-        <Link href={`/businesses/${business.id}`} className="btn btn-secondary btn-sm">
+        <Link href={`/businesses/${business.slug}`} className="btn btn-secondary btn-sm">
           View Details
         </Link>
       </div>

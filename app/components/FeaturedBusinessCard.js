@@ -31,7 +31,7 @@ export default function FeaturedBusinessCard({ business, rating }) {
       </div>
       <div className="featured-business-body">
         <h3>
-          <Link href={`/businesses/${business.id}`}>{business.name}</Link>
+          <Link href={`/businesses/${business.slug}`}>{business.name}</Link>
         </h3>
         <p className="featured-business-meta">
           <span>{business.category}</span>
@@ -42,7 +42,7 @@ export default function FeaturedBusinessCard({ business, rating }) {
             <span aria-hidden="true">★</span> {avgRating.toFixed(1)} ({rating.count})
           </p>
         )}
-        <Link href={`/businesses/${business.id}`} className="service-link">
+        <Link href={`/businesses/${business.slug}`} className="service-link">
           View Profile →
         </Link>
       </div>

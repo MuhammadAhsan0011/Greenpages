@@ -64,7 +64,7 @@ export async function setPlan(formData) {
 }
 
 // Makes a pending review publicly visible.
-export async function approveReview(reviewId, businessId) {
+export async function approveReview(reviewId, businessSlug) {
   const supabase = await requireAdmin();
 
   await supabase.from("reviews").update({ approved: true }).eq("id", reviewId);
@@ -72,8 +72,8 @@ export async function approveReview(reviewId, businessId) {
   revalidatePath("/admin");
   revalidatePath("/reviews");
   revalidatePath("/");
-  if (businessId) {
-    revalidatePath(`/businesses/${businessId}`);
+  if (businessSlug) {
+    revalidatePath(`/businesses/${businessSlug}`);
   }
 }
 

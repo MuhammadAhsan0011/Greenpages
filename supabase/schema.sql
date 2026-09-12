@@ -68,6 +68,12 @@ create trigger on_auth_user_created
 create table public.businesses (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references public.profiles(id) on delete cascade unique,
+  -- Generated once at creation (see app/account/actions.js) and never
+  -- changed afterwards, even if the name changes later — so a shared
+  -- /businesses/[slug] link never breaks. The [slug] route also still
+  -- accepts a raw id and 301s to the slug, for any link from before this
+  -- existed.
+  slug text not null unique,
   name text not null,
   category text not null,
   subcategory text,

@@ -22,14 +22,14 @@ export default function BusinessCard({ business }) {
       </div>
       <PlanBadge plan={business.plan} />
       <h3>
-        <Link href={`/businesses/${business.id}`}>{business.name}</Link>
+        <Link href={`/businesses/${business.slug}`}>{business.name}</Link>
       </h3>
       <div className="business-meta">
         <span>{business.category}</span>
         {business.city && <span>{business.city}</span>}
       </div>
       <p>{business.description}</p>
-      <Link href={`/businesses/${business.id}`} className="service-link">
+      <Link href={`/businesses/${business.slug}`} className="service-link">
         View Profile →
       </Link>
     </article>

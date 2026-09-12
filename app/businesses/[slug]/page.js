@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Button from "../../components/Button";
 import ReviewForm from "../../components/ReviewForm";
 import ReviewList from "../../components/ReviewList";
@@ -67,14 +67,21 @@ function isOpenNow(hoursToday, nowMinutes) {
   return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Slugs are the canonical URL now, but links shared (or already indexed)
+// from before slugs existed used the raw id — this still resolves those,
+// by id instead of slug, so old links keep working instead of 404ing.
+async function findBusinessBySlugParam(supabase, slugParam, columns) {
+  const column = UUID_PATTERN.test(slugParam) ? "id" : "slug";
+  const { data } = await supabase.from("businesses").select(columns).eq(column, slugParam).maybeSingle();
+  return data;
+}
+
 export async function generateMetadata({ params }) {
-  const { id } = await params;
+  const { slug } = await params;
   const supabase = createPublicClient();
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("name, category, description, city")
-    .eq("id", id)
-    .maybeSingle();
+  const business = await findBusinessBySlugParam(supabase, slug, "slug, name, category, description, city");
 
   if (!business) {
     return { title: "Business Not Found" };
@@ -86,7 +93,7 @@ export async function generateMetadata({ params }) {
       business.city ? ` in ${business.city}` : ""
     }. ${business.description}`.slice(0, 160),
     alternates: {
-      canonical: `/businesses/${id}`,
+      canonical: `/businesses/${business.slug}`,
     },
   };
 }
@@ -98,20 +105,23 @@ const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 // globals.css, shared with the business-edit wizard's own tabs but using
 // distinct IDs), so switching tabs needs no client-side JavaScript.
 export default async function BusinessProfilePage({ params, searchParams }) {
-  const { id } = await params;
+  const { slug } = await params;
   const search = await searchParams;
   const reviewed = search?.reviewed;
   const reviewError = search?.reviewError;
   const supabase = createPublicClient();
 
-  const { data: business } = await supabase
-    .from("businesses")
-    .select("*, profiles(full_name)")
-    .eq("id", id)
-    .maybeSingle();
+  const business = await findBusinessBySlugParam(supabase, slug, "*, profiles(full_name)");
 
   if (!business) {
     notFound();
+  }
+
+  // A legacy id-based link — send it to the canonical slug URL permanently,
+  // so old links and any already-indexed search results consolidate onto
+  // the new URL instead of living on as a second, duplicate address.
+  if (slug !== business.slug) {
+    permanentRedirect(`/businesses/${business.slug}`);
   }
 
   // Best-effort — a public visitor has no write access under RLS, so this
@@ -508,7 +518,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   </p>
                 )}
                 {reviewError && <p className="form-error">{reviewError}</p>}
-                <ReviewForm businessId={business.id} redirectTo={`/businesses/${business.id}`} />
+                <ReviewForm businessId={business.id} redirectTo={`/businesses/${business.slug}`} />
               </div>
 
               <div className="profile-tab-panel" id="panel-detail-articles">

@@ -131,7 +131,7 @@ export default async function AdminPage({ searchParams }) {
 
   const { data: pendingReviews } = await supabase
     .from("reviews")
-    .select("id, business_id, reviewer_name, rating, message, created_at, businesses(name)")
+    .select("id, business_id, reviewer_name, rating, message, created_at, businesses(name, slug)")
     .eq("approved", false)
     .order("created_at", { ascending: true });
 
@@ -253,7 +253,7 @@ export default async function AdminPage({ searchParams }) {
                       <td>{review.message}</td>
                       <td className="admin-table-actions">
                         <form
-                          action={approveReview.bind(null, review.id, review.business_id)}
+                          action={approveReview.bind(null, review.id, review.businesses?.slug)}
                         >
                           <button type="submit" className="btn btn-primary admin-btn-sm">
                             Approve
