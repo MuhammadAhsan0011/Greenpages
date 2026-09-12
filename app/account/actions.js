@@ -15,6 +15,25 @@ function slugify(name) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Plain "business-name" when that's free; only falls back to "business-
+// name-2", "-3", etc. on an actual collision, so most listings get a
+// clean URL instead of an always-on random suffix.
+async function generateUniqueBusinessSlug(supabase, name) {
+  const base = slugify(name);
+  let candidate = base;
+  let attempt = 2;
+  while (true) {
+    const { data } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+    if (!data) return candidate;
+    candidate = `${base}-${attempt}`;
+    attempt += 1;
+  }
+}
+
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
@@ -126,8 +145,8 @@ export async function upsertBusiness(nextStep, formData) {
 
   // Generated once, on first creation, and never touched again — even if
   // the name changes later, so a shared /businesses/[slug] link never
-  // breaks. The trailing suffix keeps it unique without an extra lookup.
-  const slug = existing?.slug ?? `${slugify(name)}-${Date.now().toString(36)}`;
+  // breaks.
+  const slug = existing?.slug ?? (await generateUniqueBusinessSlug(supabase, name));
 
   let logoUrl = existing?.logo_url ?? null;
   let oldLogoUrl = null;
