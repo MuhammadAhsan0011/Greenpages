@@ -109,6 +109,7 @@ export default async function HomePage() {
       .from("articles")
       .select("slug, title, category, published_at, excerpt, content, cover_image_url, tags")
       .eq("featured_on_homepage", true)
+      .eq("approved", true)
       .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })
       .limit(3),

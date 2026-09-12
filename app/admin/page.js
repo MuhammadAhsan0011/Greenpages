@@ -9,6 +9,7 @@ import {
   approveReview,
   dismissReview,
   deleteBusiness,
+  approveArticle,
   deleteArticle,
 } from "./actions";
 
@@ -136,8 +137,10 @@ export default async function AdminPage({ searchParams }) {
 
   const { data: articles } = await supabase
     .from("articles")
-    .select("id, slug, title, category, created_at, profiles(full_name)")
+    .select("id, slug, title, excerpt, category, created_at, approved, profiles(full_name)")
     .order("created_at", { ascending: false });
+
+  const pendingArticles = (articles ?? []).filter((a) => a.approved === false);
 
   const [{ data: profiles }, { data: userEmails }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, created_at").order("created_at", { ascending: false }),
@@ -271,6 +274,57 @@ export default async function AdminPage({ searchParams }) {
         </div>
 
         <div className="account-card">
+          <h2>Pending Articles ({pendingArticles.length})</h2>
+          {pendingArticles.length === 0 ? (
+            <p>No articles waiting for approval.</p>
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Excerpt</th>
+                    <th scope="col">Author</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Submitted</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingArticles.map((article) => (
+                    <tr key={article.id}>
+                      <td>{article.title}</td>
+                      <td>{article.excerpt}</td>
+                      <td>{article.profiles?.full_name ?? "—"}</td>
+                      <td>{article.category}</td>
+                      <td>
+                        {new Date(article.created_at).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </td>
+                      <td className="admin-table-actions">
+                        <form action={approveArticle.bind(null, article.id)}>
+                          <button type="submit" className="btn btn-primary admin-btn-sm">
+                            Approve
+                          </button>
+                        </form>
+                        <form action={deleteArticle.bind(null, article.id)}>
+                          <button type="submit" className="btn btn-secondary admin-btn-sm">
+                            Reject
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="account-card">
           <h2>All Users ({users.length})</h2>
           <div className="admin-table-wrap">
             <table className="admin-table">
@@ -364,6 +418,7 @@ export default async function AdminPage({ searchParams }) {
                   <th scope="col">Title</th>
                   <th scope="col">Author</th>
                   <th scope="col">Category</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Published</th>
                   <th scope="col">Delete</th>
                 </tr>
@@ -372,12 +427,17 @@ export default async function AdminPage({ searchParams }) {
                 {articlesPageItems.map((article) => (
                   <tr key={article.id}>
                     <td>
-                      <a href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer">
-                        {article.title}
-                      </a>
+                      {article.approved === false ? (
+                        article.title
+                      ) : (
+                        <a href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer">
+                          {article.title}
+                        </a>
+                      )}
                     </td>
                     <td>{article.profiles?.full_name ?? "—"}</td>
                     <td>{article.category}</td>
+                    <td>{article.approved === false ? "Pending" : "Live"}</td>
                     <td>
                       {new Date(article.created_at).toLocaleDateString("en-US", {
                         year: "numeric",

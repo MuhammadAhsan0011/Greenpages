@@ -194,6 +194,12 @@ create table public.articles (
   meta_title text,
   meta_description text,
   featured_on_homepage boolean not null default false,
+  -- Verified/Featured articles publish instantly (approved: true on
+  -- insert). Free-plan articles start unapproved and stay invisible to
+  -- everyone but their own author (as "Pending") until an admin approves
+  -- them in /admin — see app/account/articles/actions.js and
+  -- app/admin/actions.js.
+  approved boolean not null default true,
   -- Defaults to "now" (instant publish), but Verified/Featured members can
   -- set a future timestamp to schedule a post — public queries filter on
   -- this so it stays invisible until that time arrives.
@@ -203,13 +209,33 @@ create table public.articles (
 
 alter table public.articles enable row level security;
 
-create policy "Articles are publicly readable"
+-- A row is visible if it's approved (public) OR the requester is its own
+-- author (so a free-plan author can still see their own pending article
+-- on /account/articles, marked "Pending" — see app/account/articles/page.js).
+create policy "Approved articles are publicly readable"
   on public.articles for select
-  using (true);
+  using (approved = true);
 
+create policy "Users can read their own articles"
+  on public.articles for select
+  using (auth.uid() = author_id);
+
+-- A free-plan user can only ever insert as unapproved — approved = true is
+-- only allowed when their business plan is verified/featured — so a
+-- hand-crafted API call can't self-publish past the admin review gate that
+-- createArticle() enforces in the app itself.
 create policy "Users can publish their own articles"
   on public.articles for insert
-  with check (auth.uid() = author_id);
+  with check (
+    auth.uid() = author_id
+    and (
+      approved = false
+      or exists (
+        select 1 from public.businesses
+        where owner_id = auth.uid() and plan in ('verified', 'featured')
+      )
+    )
+  );
 
 create policy "Users can update their own articles"
   on public.articles for update
@@ -218,6 +244,13 @@ create policy "Users can update their own articles"
 create policy "Users can delete their own articles"
   on public.articles for delete
   using (auth.uid() = author_id);
+
+-- Required for the "Approve" button in /admin's Pending Articles section —
+-- without this, admin's update() call has nothing to match under RLS
+-- (the admin isn't the article's author) and silently updates zero rows.
+create policy "Admin can update any article"
+  on public.articles for update
+  using (auth.jwt() ->> 'email' = 'muhammadahsan3541@gmail.com');
 
 create policy "Admin can delete any article"
   on public.articles for delete

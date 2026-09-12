@@ -331,7 +331,12 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   </a>
                 )}
                 {business.website && (
-                  <a href={business.website} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                  <a
+                    href={business.website}
+                    target="_blank"
+                    rel={isPaidPlan ? "noopener noreferrer" : "noopener noreferrer nofollow"}
+                    className="btn btn-secondary"
+                  >
                     Website
                   </a>
                 )}
@@ -531,7 +536,11 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   {business.website && (
                     <li>
                       🌐{" "}
-                      <a href={business.website} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={business.website}
+                        target="_blank"
+                        rel={isPaidPlan ? "noopener noreferrer" : "noopener noreferrer nofollow"}
+                      >
                         {business.website}
                       </a>
                     </li>

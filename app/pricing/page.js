@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { requestUpgrade } from "./actions";
+import { FREE_PLAN_ARTICLE_LIMIT } from "../account/articles/constants";
 
 const WHATSAPP_NUMBER = "923032672509";
 
@@ -31,7 +32,7 @@ const packages = [
     features: [
       "Business profile listed in the directory",
       "Contact details, website & phone shown",
-      "Publish unlimited articles",
+      `Publish up to ${FREE_PLAN_ARTICLE_LIMIT} articles (reviewed before going live)`,
       "Comment on any article",
       "Standard placement in category & search results",
     ],

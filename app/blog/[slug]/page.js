@@ -39,8 +39,13 @@ async function getMergedPost(slug) {
     .maybeSingle();
 
   // Scheduled articles (published_at in the future) stay invisible to
-  // everyone, including the author, until that time arrives.
-  if (!article || new Date(article.published_at) > new Date()) return null;
+  // everyone, including the author, until that time arrives. A free-plan
+  // article awaiting admin approval (see /admin) stays invisible too,
+  // including to its own author — they see it listed as "Pending" on
+  // /account/articles instead.
+  if (!article || article.approved === false || new Date(article.published_at) > new Date()) {
+    return null;
+  }
 
   return {
     slug: article.slug,

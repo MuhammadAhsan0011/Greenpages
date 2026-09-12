@@ -27,6 +27,7 @@ export default async function BlogPage() {
   const { data: articles } = await supabase
     .from("articles")
     .select("slug, title, category, published_at, excerpt, content, cover_image_url, tags")
+    .eq("approved", true)
     .lte("published_at", new Date().toISOString());
 
   const allPosts = [...posts, ...(articles ?? []).map(normalizeDbArticle)].sort(

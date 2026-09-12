@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createArticle } from "../actions";
+import { FREE_PLAN_ARTICLE_LIMIT } from "../constants";
 import ArticleEditor from "../../../components/ArticleEditor";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import SmartTextarea from "../../../components/SmartTextarea";
@@ -25,7 +26,8 @@ const categories = [
 
 // Server Component — the form posts directly to a Server Action
 // (createArticle), so no client-side JavaScript is needed to submit it.
-// Published instantly on submit, with no review step.
+// Verified/Featured articles publish instantly; Free-plan articles are
+// held for admin approval before they go live (see /admin).
 export default async function NewArticlePage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
@@ -46,7 +48,6 @@ export default async function NewArticlePage({ searchParams }) {
     .maybeSingle();
   const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
 
-  const FREE_PLAN_ARTICLE_LIMIT = 5;
   let articleCount = 0;
   if (!isPaidPlan) {
     const { count } = await supabase
@@ -89,7 +90,7 @@ export default async function NewArticlePage({ searchParams }) {
       <p className="hero-description">
         {isPaidPlan
           ? "Your article publishes at the time you choose below, and appears on the blog and its category page."
-          : "Your article publishes immediately and appears on the blog and its category page as soon as you submit it."}
+          : "Free-plan articles are reviewed by our team before they go live — you'll see it on the blog once it's approved."}
       </p>
 
       {!isPaidPlan && (

@@ -5,8 +5,7 @@ import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-
-const FREE_PLAN_ARTICLE_LIMIT = 5;
+import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
 
 function slugify(title) {
   return title
@@ -145,6 +144,9 @@ export async function createArticle(formData) {
   // collide, without needing an extra lookup query first.
   const slug = `${slugify(title)}-${Date.now().toString(36)}`;
 
+  // Free-plan articles go live only once an admin approves them (see the
+  // "Pending Articles" section on /admin); Verified/Featured articles
+  // still publish immediately, same as before.
   const { error } = await supabase.from("articles").insert({
     author_id: user.id,
     slug,
@@ -159,6 +161,7 @@ export async function createArticle(formData) {
     meta_description: metaDescription,
     featured_on_homepage: featuredOnHomepage,
     published_at: publishedAt,
+    approved: isPaidPlan,
   });
 
   if (error) {
@@ -168,6 +171,14 @@ export async function createArticle(formData) {
   revalidatePath("/blog");
   revalidatePath("/");
   revalidatePath("/account");
+  revalidatePath("/account/articles");
+
+  // A free-plan article isn't public yet — send the author to their
+  // article list (which shows their own pending work) instead of the
+  // live post URL, which would 404 for everyone until it's approved.
+  if (!isPaidPlan) {
+    redirect("/account/articles?submitted=1");
+  }
   redirect(`/blog/${slug}`);
 }
 

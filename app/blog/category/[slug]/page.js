@@ -65,6 +65,7 @@ export default async function BlogCategoryPage({ params }) {
   const { data: articles } = await supabase
     .from("articles")
     .select("slug, title, category, published_at, excerpt, content, cover_image_url, tags")
+    .eq("approved", true)
     .lte("published_at", new Date().toISOString());
 
   const matchingArticles = (articles ?? [])

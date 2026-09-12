@@ -50,7 +50,8 @@ export default async function sitemap() {
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
-    .select("slug, created_at");
+    .select("slug, created_at")
+    .eq("approved", true);
 
   const articleRoutes = (articles ?? []).map((article) => ({
     url: `${siteUrl}/blog/${article.slug}`,

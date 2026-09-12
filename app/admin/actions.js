@@ -109,6 +109,25 @@ export async function deleteBusiness(businessId) {
   revalidatePath("/businesses");
 }
 
+// Makes a pending free-plan article publicly visible.
+export async function approveArticle(articleId) {
+  const supabase = await requireAdmin();
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({ approved: true })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidatePath("/admin");
+  revalidatePath("/blog");
+  revalidatePath("/");
+  if (article?.slug) {
+    revalidatePath(`/blog/${article.slug}`);
+  }
+}
+
 // Permanently removes an article (and its cover image file, if any).
 export async function deleteArticle(articleId) {
   const supabase = await requireAdmin();
