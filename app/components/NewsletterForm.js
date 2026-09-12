@@ -8,6 +8,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { subscribeToNewsletter } from "../actions/newsletter";
+import SubmitButton from "./SubmitButton";
 
 export default function NewsletterForm() {
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ export default function NewsletterForm() {
         placeholder="Enter your email"
         required
       />
-      <button type="submit" aria-label="Subscribe">
+      <SubmitButton aria-label="Subscribe">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
             d="M4 12h16M13 5l7 7-7 7"
@@ -39,7 +40,7 @@ export default function NewsletterForm() {
             strokeLinejoin="round"
           />
         </svg>
-      </button>
+      </SubmitButton>
     </form>
   );
 }

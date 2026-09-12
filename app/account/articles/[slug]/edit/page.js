@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { updateArticle, removeArticleCoverImage } from "../../actions";
 import RichTextEditor from "../../../../components/RichTextEditorClientOnly";
 import SmartTextarea from "../../../../components/SmartTextarea";
+import SubmitButton from "../../../../components/SubmitButton";
 
 export const metadata = {
   title: "Edit Article",
@@ -107,9 +108,9 @@ export default async function EditArticlePage({ params, searchParams }) {
             className="logo-preview"
           />
           <form action={removeArticleCoverImage.bind(null, article.slug)}>
-            <button type="submit" className="btn btn-secondary btn-sm">
+            <SubmitButton className="btn btn-secondary btn-sm" pendingLabel="Removing…">
               Remove Cover Image
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}
@@ -221,9 +222,9 @@ export default async function EditArticlePage({ params, searchParams }) {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary">
+        <SubmitButton className="btn btn-primary" pendingLabel="Saving…">
           Save Changes
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

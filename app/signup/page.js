@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signup } from "./actions";
 import AuthIllustration from "../components/AuthIllustration";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import SubmitButton from "../components/SubmitButton";
 
 export const metadata = {
   title: { absolute: "List Your Business Free | Green Pages" },
@@ -102,9 +103,9 @@ export default async function SignUpPage({ searchParams }) {
                 </label>
               </div>
 
-              <button type="submit" className="btn btn-primary">
+              <SubmitButton className="btn btn-primary" pendingLabel="Creating account…">
                 Register
-              </button>
+              </SubmitButton>
             </form>
 
             <p className="auth-footer-note">

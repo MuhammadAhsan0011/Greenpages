@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requestPasswordReset } from "./actions";
 import AuthIllustration from "../components/AuthIllustration";
+import SubmitButton from "../components/SubmitButton";
 
 export const metadata = {
   title: "Forgot Password",
@@ -46,9 +47,9 @@ export default async function ForgotPasswordPage({ searchParams }) {
                   <input id="email" name="email" type="email" autoComplete="email" required />
                 </div>
 
-                <button type="submit" className="btn btn-primary">
+                <SubmitButton className="btn btn-primary" pendingLabel="Sending…">
                   Send Reset Link
-                </button>
+                </SubmitButton>
               </form>
             )}
 

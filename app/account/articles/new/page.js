@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createArticle } from "../actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "../constants";
+import SubmitButton from "../../../components/SubmitButton";
 import ArticleEditor from "../../../components/ArticleEditor";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import SmartTextarea from "../../../components/SmartTextarea";
@@ -220,9 +221,9 @@ export default async function NewArticlePage({ searchParams }) {
             </p>
           )}
 
-        <button type="submit" className="btn btn-primary">
+        <SubmitButton className="btn btn-primary" pendingLabel="Publishing…">
           Publish Article
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

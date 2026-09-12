@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { requestUpgrade } from "./actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "../account/articles/constants";
+import SubmitButton from "../components/SubmitButton";
 
 const WHATSAPP_NUMBER = "923032672509";
 
@@ -200,9 +201,9 @@ export default async function PricingPage({ searchParams }) {
                     </span>
                   ) : (
                     <form action={requestUpgrade.bind(null, pkg.id)}>
-                      <button type="submit" className="btn btn-primary">
+                      <SubmitButton className="btn btn-primary" pendingLabel="Sending…">
                         Choose {pkg.name}
-                      </button>
+                      </SubmitButton>
                     </form>
                   )}
                 </article>

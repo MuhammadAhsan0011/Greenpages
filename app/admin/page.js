@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import AdminPageSizeSelect from "../components/AdminPageSizeSelect";
+import SubmitButton from "../components/SubmitButton";
 import {
   approveUpgrade,
   dismissRequest,
@@ -210,14 +211,14 @@ export default async function AdminPage({ searchParams }) {
                             business.requested_plan
                           )}
                         >
-                          <button type="submit" className="btn btn-primary admin-btn-sm">
+                          <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Approving…">
                             Approve
-                          </button>
+                          </SubmitButton>
                         </form>
                         <form action={dismissRequest.bind(null, business.id)}>
-                          <button type="submit" className="btn btn-secondary admin-btn-sm">
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Dismissing…">
                             Dismiss
-                          </button>
+                          </SubmitButton>
                         </form>
                       </td>
                     </tr>
@@ -255,14 +256,14 @@ export default async function AdminPage({ searchParams }) {
                         <form
                           action={approveReview.bind(null, review.id, review.businesses?.slug)}
                         >
-                          <button type="submit" className="btn btn-primary admin-btn-sm">
+                          <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Approving…">
                             Approve
-                          </button>
+                          </SubmitButton>
                         </form>
                         <form action={dismissReview.bind(null, review.id)}>
-                          <button type="submit" className="btn btn-secondary admin-btn-sm">
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Dismissing…">
                             Dismiss
-                          </button>
+                          </SubmitButton>
                         </form>
                       </td>
                     </tr>
@@ -306,14 +307,14 @@ export default async function AdminPage({ searchParams }) {
                       </td>
                       <td className="admin-table-actions">
                         <form action={approveArticle.bind(null, article.id)}>
-                          <button type="submit" className="btn btn-primary admin-btn-sm">
+                          <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Approving…">
                             Approve
-                          </button>
+                          </SubmitButton>
                         </form>
                         <form action={deleteArticle.bind(null, article.id)}>
-                          <button type="submit" className="btn btn-secondary admin-btn-sm">
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Rejecting…">
                             Reject
-                          </button>
+                          </SubmitButton>
                         </form>
                       </td>
                     </tr>
@@ -390,16 +391,16 @@ export default async function AdminPage({ searchParams }) {
                           <option value="verified">Verified</option>
                           <option value="featured">Premium</option>
                         </select>
-                        <button type="submit" className="btn btn-secondary admin-btn-sm">
+                        <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Saving…">
                           Save
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                     <td>
                       <form action={deleteBusiness.bind(null, business.id)}>
-                        <button type="submit" className="btn btn-danger admin-btn-sm">
+                        <SubmitButton className="btn btn-danger admin-btn-sm" pendingLabel="Deleting…">
                           Delete
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                   </tr>
@@ -447,9 +448,9 @@ export default async function AdminPage({ searchParams }) {
                     </td>
                     <td>
                       <form action={deleteArticle.bind(null, article.id)}>
-                        <button type="submit" className="btn btn-danger admin-btn-sm">
+                        <SubmitButton className="btn btn-danger admin-btn-sm" pendingLabel="Deleting…">
                           Delete
-                        </button>
+                        </SubmitButton>
                       </form>
                     </td>
                   </tr>

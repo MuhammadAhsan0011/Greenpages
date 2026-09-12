@@ -2,6 +2,7 @@ import Link from "next/link";
 import { login } from "./actions";
 import AuthIllustration from "../components/AuthIllustration";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import SubmitButton from "../components/SubmitButton";
 
 export const metadata = {
   title: "Log In",
@@ -65,9 +66,9 @@ export default async function LoginPage({ searchParams }) {
                 <Link href="/forgot-password">Forgot Password?</Link>
               </div>
 
-              <button type="submit" className="btn btn-primary">
+              <SubmitButton className="btn btn-primary" pendingLabel="Logging in…">
                 Login
-              </button>
+              </SubmitButton>
             </form>
 
             <p className="auth-footer-note">

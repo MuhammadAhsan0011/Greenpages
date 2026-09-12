@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import Button from "../../components/Button";
 import { deleteOwnArticle } from "./actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
+import SubmitButton from "../../components/SubmitButton";
 
 export const metadata = {
   title: "My Articles",
@@ -91,9 +92,9 @@ export default async function MyArticlesPage({ searchParams }) {
                   </span>
                 )}
                 <form action={deleteOwnArticle.bind(null, article.id)}>
-                  <button type="submit" className="btn btn-danger btn-sm">
+                  <SubmitButton className="btn btn-danger btn-sm" pendingLabel="Deleting…">
                     Delete
-                  </button>
+                  </SubmitButton>
                 </form>
               </div>
             </li>

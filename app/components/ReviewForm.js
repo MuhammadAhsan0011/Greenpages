@@ -1,5 +1,6 @@
 import { submitReview } from "../reviews/actions";
 import SmartTextarea from "./SmartTextarea";
+import SubmitButton from "./SubmitButton";
 
 const STAR_OPTIONS = [
   { value: "5", label: "★★★★★ Excellent" },
@@ -45,9 +46,9 @@ export default function ReviewForm({ businessId, redirectTo }) {
         a day.
       </p>
 
-      <button type="submit" className="btn btn-primary">
+      <SubmitButton className="btn btn-primary" pendingLabel="Submitting…">
         Submit Review
-      </button>
+      </SubmitButton>
     </form>
   );
 }

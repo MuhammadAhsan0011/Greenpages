@@ -9,6 +9,7 @@ import TagInput from "../../components/TagInput";
 import CharCountTextarea from "../../components/CharCountTextarea";
 import ImageUploadField from "../../components/ImageUploadField";
 import PhotoDropzone from "../../components/PhotoDropzone";
+import SubmitButton from "../../components/SubmitButton";
 
 export const metadata = {
   title: "Add Your Business Listing",
@@ -332,13 +333,13 @@ export default async function BusinessProfilePage({ searchParams }) {
                   <div className="wizard-nav-buttons">
                     <span />
                     {business ? (
-                      <button
-                        type="submit"
+                      <SubmitButton
                         formAction={upsertBusiness.bind(null, "contact")}
                         className="btn btn-primary"
+                        pendingLabel="Saving…"
                       >
                         Save &amp; Continue →
-                      </button>
+                      </SubmitButton>
                     ) : (
                       <label htmlFor="step-contact" className="btn btn-primary">
                         Save &amp; Continue →
@@ -471,13 +472,13 @@ export default async function BusinessProfilePage({ searchParams }) {
                       ← Back
                     </label>
                     {business ? (
-                      <button
-                        type="submit"
+                      <SubmitButton
                         formAction={upsertBusiness.bind(null, "location")}
                         className="btn btn-primary"
+                        pendingLabel="Saving…"
                       >
                         Save &amp; Continue →
-                      </button>
+                      </SubmitButton>
                     ) : (
                       <label htmlFor="step-location" className="btn btn-primary">
                         Save &amp; Continue →
@@ -543,13 +544,13 @@ export default async function BusinessProfilePage({ searchParams }) {
                       ← Back
                     </label>
                     {business ? (
-                      <button
-                        type="submit"
+                      <SubmitButton
                         formAction={upsertBusiness.bind(null, "media")}
                         className="btn btn-primary"
+                        pendingLabel="Saving…"
                       >
                         Save &amp; Continue →
-                      </button>
+                      </SubmitButton>
                     ) : (
                       <label htmlFor="step-media" className="btn btn-primary">
                         Save &amp; Continue →
@@ -576,13 +577,13 @@ export default async function BusinessProfilePage({ searchParams }) {
                       ← Back
                     </label>
                     {business ? (
-                      <button
-                        type="submit"
+                      <SubmitButton
                         formAction={upsertBusiness.bind(null, "review")}
                         className="btn btn-primary"
+                        pendingLabel="Saving…"
                       >
                         Save &amp; Continue →
-                      </button>
+                      </SubmitButton>
                     ) : (
                       <label htmlFor="step-review" className="btn btn-primary">
                         Save &amp; Continue →
@@ -611,9 +612,9 @@ export default async function BusinessProfilePage({ searchParams }) {
                     <label htmlFor="step-media" className="btn btn-secondary">
                       ← Back
                     </label>
-                    <button type="submit" className="btn btn-primary">
+                    <SubmitButton className="btn btn-primary" pendingLabel="Saving…">
                       {business ? "Save Changes" : "Create Business Profile"}
-                    </button>
+                    </SubmitButton>
                   </div>
                 </div>
               </div>
