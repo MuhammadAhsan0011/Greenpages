@@ -15,6 +15,21 @@ function slugify(title) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Plain "article-title" when that's free; only falls back to "article-
+// title-2", "-3", etc. on an actual collision, so most articles get a
+// clean URL instead of an always-on random suffix.
+async function generateUniqueArticleSlug(supabase, title) {
+  const base = slugify(title);
+  let candidate = base;
+  let attempt = 2;
+  while (true) {
+    const { data } = await supabase.from("articles").select("id").eq("slug", candidate).maybeSingle();
+    if (!data) return candidate;
+    candidate = `${base}-${attempt}`;
+    attempt += 1;
+  }
+}
+
 async function getIsPaidPlan(supabase, userId) {
   const { data: business } = await supabase
     .from("businesses")
@@ -140,9 +155,7 @@ export async function createArticle(formData) {
     }
   }
 
-  // Appends a short unique suffix so two articles with the same title never
-  // collide, without needing an extra lookup query first.
-  const slug = `${slugify(title)}-${Date.now().toString(36)}`;
+  const slug = await generateUniqueArticleSlug(supabase, title);
 
   // Free-plan articles go live only once an admin approves them (see the
   // "Pending Articles" section on /admin); Verified/Featured articles
