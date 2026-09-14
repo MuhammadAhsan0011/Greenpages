@@ -45,20 +45,47 @@ const MIN_PHOTO_HEIGHT = 600;
 // a portrait or square photo never gets its edges cut off in the gallery.
 const MIN_PHOTO_ASPECT_RATIO = 1.3;
 
-// Backstops PhotoDropzone.js's client-side dimension/aspect-ratio check —
-// reads the real pixel size server-side so a direct form post can't skip
-// it. Reading the file here doesn't consume it — the caller can still pass
-// the same File to uploadPublicImage afterward.
-async function validatePhotoDimensions(file) {
+// The cover image's own display spots (homepage/business card banner) show
+// it with object-fit: contain — see FeaturedBusinessCard.js — so a too-thin
+// or too-small image never gets cropped, just letterboxed. These minimums
+// exist to reject anything that would look cramped or blurry once fit in,
+// not to prevent cropping (contain already does that).
+const MIN_COVER_WIDTH = 800;
+const MIN_COVER_HEIGHT = 400;
+const MIN_COVER_ASPECT_RATIO = 1.3;
+
+// Shared by validatePhotoDimensions and validateCoverImageDimensions below
+// — reads the real pixel size server-side so a direct form post can't skip
+// the equivalent client-side check. Reading the file here doesn't consume
+// it — the caller can still pass the same File to uploadPublicImage after.
+async function validateImageDimensions(file, { minWidth, minHeight, minAspectRatio, label }) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const { width, height } = await sharp(buffer).metadata();
-  if (!width || !height || width < MIN_PHOTO_WIDTH || height < MIN_PHOTO_HEIGHT) {
-    return `"${file.name}" is ${width ?? "?"}×${height ?? "?"}px — photos need to be at least ${MIN_PHOTO_WIDTH}×${MIN_PHOTO_HEIGHT}px.`;
+  if (!width || !height || width < minWidth || height < minHeight) {
+    return `"${file.name}" is ${width ?? "?"}×${height ?? "?"}px — ${label} need to be at least ${minWidth}×${minHeight}px.`;
   }
-  if (width / height < MIN_PHOTO_ASPECT_RATIO) {
-    return `"${file.name}" is ${width}×${height}px — that's too tall/square and would get cropped. Upload a landscape photo (at least ${MIN_PHOTO_ASPECT_RATIO}:1 wide, e.g. 1000×750px).`;
+  if (width / height < minAspectRatio) {
+    return `"${file.name}" is ${width}×${height}px — that's too tall/square and would look cramped. Upload a landscape image (at least ${minAspectRatio}:1 wide).`;
   }
   return null;
+}
+
+function validatePhotoDimensions(file) {
+  return validateImageDimensions(file, {
+    minWidth: MIN_PHOTO_WIDTH,
+    minHeight: MIN_PHOTO_HEIGHT,
+    minAspectRatio: MIN_PHOTO_ASPECT_RATIO,
+    label: "photos",
+  });
+}
+
+function validateCoverImageDimensions(file) {
+  return validateImageDimensions(file, {
+    minWidth: MIN_COVER_WIDTH,
+    minHeight: MIN_COVER_HEIGHT,
+    minAspectRatio: MIN_COVER_ASPECT_RATIO,
+    label: "cover images",
+  });
 }
 
 // Backstops ImageUploadField.js's client-side check — a friendly, specific
@@ -176,6 +203,10 @@ export async function upsertBusiness(nextStep, formData) {
     const coverIssue = validateImageFile(coverFile, "Cover Image");
     if (coverIssue) {
       redirect(`/account/business?error=${encodeURIComponent(coverIssue)}`);
+    }
+    const coverDimensionIssue = await validateCoverImageDimensions(coverFile);
+    if (coverDimensionIssue) {
+      redirect(`/account/business?error=${encodeURIComponent(coverDimensionIssue)}`);
     }
     const upload = await uploadPublicImage(supabase, coverFile, "business-covers", user.id);
     if (upload.error) {

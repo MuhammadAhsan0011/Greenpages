@@ -20,7 +20,7 @@ export default function FeaturedBusinessCard({ business, rating }) {
             alt={`${business.name} cover photo`}
             fill
             sizes="(max-width: 700px) 100vw, 320px"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "contain" }}
           />
         ) : (
           <div className="featured-business-photo-placeholder" aria-hidden="true">

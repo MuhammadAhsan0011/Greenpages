@@ -8,6 +8,7 @@ import RichTextEditor from "../../components/RichTextEditorClientOnly";
 import TagInput from "../../components/TagInput";
 import CharCountTextarea from "../../components/CharCountTextarea";
 import ImageUploadField from "../../components/ImageUploadField";
+import CoverImageUploadField from "../../components/CoverImageUploadField";
 import PhotoDropzone from "../../components/PhotoDropzone";
 import SubmitButton from "../../components/SubmitButton";
 
@@ -311,11 +312,7 @@ export default async function BusinessProfilePage({ searchParams }) {
                               🖼️
                             </span>
                           )}
-                          <ImageUploadField
-                            name="coverImage"
-                            label="Upload Cover Image"
-                            hint="PNG, JPG, WebP, or GIF up to 5MB — landscape, 1200×675px (16:9) recommended. Shown on the homepage."
-                          />
+                          <CoverImageUploadField name="coverImage" label="Upload Cover Image" />
                         </div>
                       )}
                     </div>
