@@ -3213,6 +3213,14 @@ article.service-section h2 {
   margin: 0;
 }
 
+.hours-copy-row {
+  margin: 6px 0 4px;
+}
+
+.hours-copy-row .editor-hint {
+  margin: 4px 0 0;
+}
+
 .listing-photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

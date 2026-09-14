@@ -11,6 +11,8 @@ import ImageUploadField from "../../components/ImageUploadField";
 import CoverImageUploadField from "../../components/CoverImageUploadField";
 import PhotoDropzone from "../../components/PhotoDropzone";
 import SubmitButton from "../../components/SubmitButton";
+import BusinessHoursFields from "../../components/BusinessHoursFields";
+import WhatsAppUrlField from "../../components/WhatsAppUrlField";
 
 export const metadata = {
   title: "Add Your Business Listing",
@@ -18,16 +20,6 @@ export const metadata = {
 };
 
 const categories = BUSINESS_CATEGORIES.map((category) => category.name);
-
-const DAYS = [
-  { key: "monday", label: "Monday" },
-  { key: "tuesday", label: "Tuesday" },
-  { key: "wednesday", label: "Wednesday" },
-  { key: "thursday", label: "Thursday" },
-  { key: "friday", label: "Friday" },
-  { key: "saturday", label: "Saturday" },
-  { key: "sunday", label: "Sunday" },
-];
 
 const FEATURES = [
   { value: "24/7 Service", icon: "🕐" },
@@ -380,38 +372,7 @@ export default async function BusinessProfilePage({ searchParams }) {
 
                   <div className="form-field">
                     <span className="form-field-label-standalone">Business Hours (optional)</span>
-                    <div className="hours-input-list">
-                      {DAYS.map((day) => {
-                        const saved = business?.business_hours?.[day.key];
-                        return (
-                          <div className="hours-input-row" key={day.key}>
-                            <span className="hours-day-label">{day.label}</span>
-                            <input
-                              type="time"
-                              name={`hours_${day.key}_open`}
-                              defaultValue={saved?.open ?? ""}
-                              aria-label={`${day.label} opening time`}
-                            />
-                            <span aria-hidden="true">to</span>
-                            <input
-                              type="time"
-                              name={`hours_${day.key}_close`}
-                              defaultValue={saved?.close ?? ""}
-                              aria-label={`${day.label} closing time`}
-                            />
-                            <label className="hours-closed-checkbox">
-                              <input
-                                type="checkbox"
-                                name={`hours_${day.key}_closed`}
-                                value="yes"
-                                defaultChecked={saved?.closed ?? false}
-                              />
-                              Closed
-                            </label>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <BusinessHoursFields savedHours={business?.business_hours} />
                   </div>
 
                   <div className="account-card">
@@ -450,13 +411,7 @@ export default async function BusinessProfilePage({ searchParams }) {
                         </div>
                         <div className="form-field">
                           <label htmlFor="whatsappUrl">WhatsApp (optional)</label>
-                          <input
-                            id="whatsappUrl"
-                            name="whatsappUrl"
-                            type="url"
-                            placeholder="https://wa.me/923XXXXXXXXX"
-                            defaultValue={business?.whatsapp_url ?? ""}
-                          />
+                          <WhatsAppUrlField defaultValue={business?.whatsapp_url} />
                         </div>
                       </>
                     ) : (
