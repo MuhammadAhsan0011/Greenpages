@@ -470,6 +470,15 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   <div className="listing-photo-grid">
                     {galleryImages.map((src) => (
                       <div className="listing-photo-grid-item" key={src}>
+                        <Image
+                          src={src}
+                          alt=""
+                          aria-hidden="true"
+                          fill
+                          sizes="240px"
+                          className="listing-gallery-bg"
+                          style={{ objectFit: "cover" }}
+                        />
                         <Image src={src} alt={`${business.name} photo`} fill sizes="240px" style={{ objectFit: "contain" }} />
                       </div>
                     ))}

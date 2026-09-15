@@ -3032,6 +3032,11 @@ article.service-section h2 {
   box-shadow: var(--shadow-sm);
 }
 
+.listing-gallery-bg {
+  filter: blur(20px) brightness(0.7);
+  transform: scale(1.15);
+}
+
 .listing-gallery-empty {
   display: flex;
   align-items: center;
@@ -3742,6 +3747,7 @@ article.service-section h2 {
 .featured-business-photo {
   position: relative;
   height: 170px;
+  overflow: hidden;
   background: var(--color-primary-light);
 }
 

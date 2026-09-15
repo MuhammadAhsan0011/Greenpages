@@ -15,13 +15,24 @@ export default function FeaturedBusinessCard({ business, rating }) {
     <article className="featured-business-card">
       <div className="featured-business-photo">
         {photo ? (
-          <Image
-            src={photo}
-            alt={`${business.name} cover photo`}
-            fill
-            sizes="(max-width: 700px) 100vw, 320px"
-            style={{ objectFit: "contain" }}
-          />
+          <>
+            <Image
+              src={photo}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 700px) 100vw, 320px"
+              className="listing-gallery-bg"
+              style={{ objectFit: "cover" }}
+            />
+            <Image
+              src={photo}
+              alt={`${business.name} cover photo`}
+              fill
+              sizes="(max-width: 700px) 100vw, 320px"
+              style={{ objectFit: "contain" }}
+            />
+          </>
         ) : (
           <div className="featured-business-photo-placeholder" aria-hidden="true">
             🏢
