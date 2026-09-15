@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <article className="legal-article">
       <h2>Terms &amp; Conditions</h2>
-      <p className="legal-updated">Last updated: August 27, 2026</p>
+      <p className="legal-updated">Last updated: September 15, 2026</p>
 
       <p>
         These Terms &amp; Conditions (&quot;Terms&quot;) govern your use of
@@ -57,7 +57,7 @@ export default function TermsPage() {
 
       <h3>4. Paid Packages (Verified &amp; Premium)</h3>
       <p>
-        Verified and Premium are paid, prepaid annual upgrades to a business
+        Verified and Premium are paid, one-time upgrades to a business
         listing. Payment is made manually via bank transfer or Easypaisa
         using the account details on our{" "}
         <a href="/pricing">Pricing page</a>, and your package is activated by
