@@ -35,7 +35,7 @@ export default function GallerySlider({ images, alt }) {
         alt={alt}
         fill
         sizes="(max-width: 900px) 100vw, 480px"
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "contain" }}
       />
 
       {hasMultiple && (

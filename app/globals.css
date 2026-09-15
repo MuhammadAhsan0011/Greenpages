@@ -3232,6 +3232,7 @@ article.service-section h2 {
   height: 160px;
   border-radius: var(--radius-sm);
   overflow: hidden;
+  background: #ffffff;
 }
 
 .rating-breakdown {
