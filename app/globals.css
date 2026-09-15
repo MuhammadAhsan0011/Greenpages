@@ -985,6 +985,7 @@ section {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .blog-card:hover {

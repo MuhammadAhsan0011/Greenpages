@@ -7,6 +7,14 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
 
+// Pasted text (from Word, PDF viewers, some web pages) can carry literal
+// non-breaking spaces instead of regular ones — invisible in a plain input,
+// but unlike a real space they never let a title wrap, so a long one
+// overflows its card instead of breaking onto multiple lines.
+function normalizeSpaces(text) {
+  return text.replace(/ /g, " ").replace(/ {2,}/g, " ").trim();
+}
+
 function slugify(title) {
   return title
     .toLowerCase()
@@ -99,7 +107,7 @@ export async function createArticle(formData) {
     }
   }
 
-  const title = formData.get("title")?.toString().trim();
+  const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
   const category = formData.get("category")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
@@ -223,7 +231,7 @@ export async function updateArticle(slug, formData) {
     redirect("/account/articles");
   }
 
-  const title = formData.get("title")?.toString().trim();
+  const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
   const category = formData.get("category")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
