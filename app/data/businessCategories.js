@@ -11,7 +11,6 @@
 // getAllChildren / findBySlug etc.) rather than reading this array's shape
 // directly, so a future taxonomy change doesn't ripple through every page.
 import { createTaxonomyHelpers } from "@/lib/taxonomy";
-import { BUSINESS_LEGACY_NAMES } from "./legacyCategoryNames";
 
 export const BUSINESS_CATEGORIES = [
   {
@@ -367,19 +366,18 @@ export const {
   isValidCategorySlug,
 } = createTaxonomyHelpers(BUSINESS_CATEGORIES);
 
-// Resolves a raw businesses.category name (old flat name or new taxonomy
-// name) to the right /businesses/category/... path — used anywhere a
-// stored category string needs to become a link (business detail page
-// breadcrumbs, etc). Falls back to the top-level directory if truly
-// unmatched, e.g. a business still sitting in the retired "Other" bucket.
+// Resolves a raw businesses.category name to the right
+// /businesses/category/... path — used anywhere a stored category string
+// needs to become a link (business detail page breadcrumbs, etc). Falls
+// back to the top-level directory if unmatched, e.g. a business still
+// sitting in the retired "Other" bucket (needs_review, not categorized).
 export function getCategoryLinkPath(categoryName) {
   for (const parent of BUSINESS_CATEGORIES) {
-    if (parent.name === categoryName || (BUSINESS_LEGACY_NAMES[parent.slug] ?? []).includes(categoryName)) {
+    if (parent.name === categoryName) {
       return `/businesses/category/${parent.slug}`;
     }
     for (const child of parent.children) {
-      const key = `${parent.slug}/${child.slug}`;
-      if (child.name === categoryName || (BUSINESS_LEGACY_NAMES[key] ?? []).includes(categoryName)) {
+      if (child.name === categoryName) {
         return `/businesses/category/${parent.slug}/${child.slug}`;
       }
     }

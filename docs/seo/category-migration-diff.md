@@ -11,6 +11,17 @@ Business counts are live, queried directly from Supabase on the day this was
 originally written (41 businesses, 6 approved articles + the static blog
 posts).
 
+**Update:** the DB-side migration described below (`other-bucket-migration.sql`,
+`article-category-migration.sql`, `business-category-normalization.sql`) has
+been run. All 41 businesses and 6 approved articles now hold valid
+new-taxonomy category/subcategory values directly — the only exception is
+`ganzay`, deliberately left uncategorized (`needs_review = true`). Because
+of that, `app/data/legacyCategoryNames.js` (the old-name -> new-name bridge
+this doc originally described) has been deleted, and every consumer now
+matches taxonomy names directly with no translation layer. If you're
+reading this file to understand *why* a mapping was chosen, it's still
+accurate — just note the bridge it originally justified no longer exists.
+
 ---
 
 ## Directory categories (`businessCategories.js`, 33 old slugs)

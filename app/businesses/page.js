@@ -7,7 +7,6 @@ import SortSelect from "../components/SortSelect";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
 import { BUSINESS_CATEGORIES, getAllParents, getParent } from "../data/businessCategories";
-import { BUSINESS_LEGACY_NAMES, namesForParent } from "../data/legacyCategoryNames";
 
 export const metadata = {
   title: "Pakistan Business Directory",
@@ -107,13 +106,7 @@ export default async function BusinessesPage({ searchParams }) {
     request = request.ilike("city", `%${city}%`);
   }
   if (category) {
-    // The select below submits a new-taxonomy parent name, but the DB
-    // still holds old flat category names for most rows until Task 3's
-    // normalization runs — match every name that should count as this
-    // parent (see legacyCategoryNames.js).
-    const matchedParent = BUSINESS_CATEGORIES.find((c) => c.name === category);
-    const matchNames = matchedParent ? namesForParent(BUSINESS_LEGACY_NAMES, matchedParent) : [category];
-    request = request.in("category", matchNames);
+    request = request.eq("category", category);
   }
 
   const [{ data }, { data: reviewRows }, { data: allCategories }] = await Promise.all([
@@ -139,9 +132,7 @@ export default async function BusinessesPage({ searchParams }) {
 
   const sidebarCategories = SIDEBAR_CATEGORY_SLUGS.map((slug) => {
     const found = getParent(slug);
-    const matchNames = namesForParent(BUSINESS_LEGACY_NAMES, found);
-    const count = matchNames.reduce((sum, name) => sum + (categoryCounts[name] ?? 0), 0);
-    return { ...found, count };
+    return { ...found, count: categoryCounts[found.name] ?? 0 };
   });
 
   let businesses = (data ?? []).filter((business) => !business.needs_review);

@@ -8,7 +8,6 @@ import FeaturedBusinessCard from "./components/FeaturedBusinessCard";
 import { services } from "./data/services";
 import { normalizeDbArticle } from "./data/blog";
 import { getAllParents, getParent } from "./data/businessCategories";
-import { BUSINESS_LEGACY_NAMES, namesForParent } from "./data/legacyCategoryNames";
 import { PK_CITIES } from "./data/directoryCities";
 import { createPublicClient } from "@/utils/supabase/public";
 import pkHeroPhoto from "../public/images/pakistan-hero-photo.png";
@@ -159,11 +158,7 @@ export default async function HomePage() {
 
   const featuredCategories = FEATURED_CATEGORY_SLUGS.map(({ slug, icon }) => {
     const category = getParent(slug);
-    // Old flat category names still live in the DB until Task 3's
-    // normalization runs — count every name that maps to this parent
-    // (see legacyCategoryNames.js), not just its new display name.
-    const matchNames = namesForParent(BUSINESS_LEGACY_NAMES, category);
-    const count = matchNames.reduce((sum, name) => sum + (categoryCounts[name] ?? 0), 0);
+    const count = categoryCounts[category.name] ?? 0;
     return { ...category, icon, count };
   });
 

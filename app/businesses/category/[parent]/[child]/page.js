@@ -4,7 +4,6 @@ import Button from "../../../../components/Button";
 import BusinessCard from "../../../../components/BusinessCard";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getAllParents, getParent, getChild } from "../../../../data/businessCategories";
-import { BUSINESS_LEGACY_NAMES, namesForChild } from "../../../../data/legacyCategoryNames";
 
 export const revalidate = 60;
 
@@ -49,10 +48,12 @@ export default async function ChildCategoryDirectoryPage({ params }) {
     notFound();
   }
 
-  const matchNames = namesForChild(BUSINESS_LEGACY_NAMES, parent, child);
-
   const supabase = createPublicClient();
-  const { data } = await supabase.from("businesses").select("*").in("category", matchNames);
+  const { data } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("category", parent.name)
+    .eq("subcategory", child.name);
 
   const businesses = (data ?? [])
     .filter((business) => !business.needs_review)

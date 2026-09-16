@@ -13,16 +13,22 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+// Kept as its own fixed list rather than the full 183-child blog taxonomy
+// (app/data/blog.js) - a free-plan submission form showing every possible
+// subcategory would be overwhelming. Every value here must be an exact
+// parent or child name that actually exists in that taxonomy, or the
+// article silently stops showing up on any /blog/category page - see
+// docs/seo/category-migration-diff.md ("article form category list").
 const categories = [
   "SEO",
+  "Local SEO",
   "Web Development",
   "Content Marketing",
-  "Accounting",
+  "Digital Marketing",
+  "Finance",
   "Business",
-  "Online",
-  "Marketing",
+  "E-commerce",
   "Technology",
-  "Services",
 ];
 
 // Server Component — the form posts directly to a Server Action

@@ -4,7 +4,6 @@ import Button from "../../../components/Button";
 import BusinessCard from "../../../components/BusinessCard";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getAllParents, getParent } from "../../../data/businessCategories";
-import { BUSINESS_LEGACY_NAMES, namesForParent } from "../../../data/legacyCategoryNames";
 
 export const revalidate = 60;
 
@@ -38,9 +37,9 @@ export async function generateMetadata({ params }) {
 const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Server Component — a directory landing page scoped to one parent
-// category, aggregating businesses across every one of its children (plus
-// any not yet migrated off their old flat category name — see
-// legacyCategoryNames.js).
+// category. businesses.category always holds a parent-level name (never a
+// child name — those live in .subcategory), so a plain equality match is
+// enough to pick up every business under this parent, children included.
 export default async function ParentCategoryDirectoryPage({ params }) {
   const { parent: parentSlug } = await params;
   const parent = getParent(parentSlug);
@@ -49,10 +48,8 @@ export default async function ParentCategoryDirectoryPage({ params }) {
     notFound();
   }
 
-  const matchNames = namesForParent(BUSINESS_LEGACY_NAMES, parent);
-
   const supabase = createPublicClient();
-  const { data } = await supabase.from("businesses").select("*").in("category", matchNames);
+  const { data } = await supabase.from("businesses").select("*").eq("category", parent.name);
 
   const businesses = (data ?? [])
     .filter((business) => !business.needs_review)

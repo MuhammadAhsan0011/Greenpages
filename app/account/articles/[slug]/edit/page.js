@@ -12,16 +12,18 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+// Must stay identical to app/account/articles/new/page.js's list - see the
+// comment there.
 const categories = [
   "SEO",
+  "Local SEO",
   "Web Development",
   "Content Marketing",
-  "Accounting",
+  "Digital Marketing",
+  "Finance",
   "Business",
-  "Online",
-  "Marketing",
+  "E-commerce",
   "Technology",
-  "Services",
 ];
 
 // Server Component — editing a published article is a Verified/Featured

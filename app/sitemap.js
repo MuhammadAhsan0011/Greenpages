@@ -67,10 +67,6 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  // select("*") rather than naming needs_review explicitly — that column
-  // doesn't exist until the Task 3 migration runs, and naming a column
-  // that isn't there yet errors instead of just omitting it. See
-  // legacyCategoryNames.js for the same reasoning on the category pages.
   const { data: businesses } = await supabase.from("businesses").select("*");
 
   // Excluded from the sitemap while flagged for manual review (e.g. a

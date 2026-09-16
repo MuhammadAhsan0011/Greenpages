@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BlogCard from "../../../../components/BlogCard";
 import { posts, getAllParents, getParent, getChild, normalizeDbArticle } from "../../../../data/blog";
-import { BLOG_LEGACY_NAMES, namesForChild } from "../../../../data/legacyCategoryNames";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const revalidate = 60;
@@ -50,8 +49,6 @@ export default async function BlogChildCategoryPage({ params }) {
     notFound();
   }
 
-  const matchNames = new Set(namesForChild(BLOG_LEGACY_NAMES, parent, child));
-
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
@@ -59,9 +56,9 @@ export default async function BlogChildCategoryPage({ params }) {
     .eq("approved", true)
     .lte("published_at", new Date().toISOString());
 
-  const matchingStaticPosts = posts.filter((post) => matchNames.has(post.category));
+  const matchingStaticPosts = posts.filter((post) => post.category === child.name);
   const matchingArticles = (articles ?? [])
-    .filter((article) => matchNames.has(article.category))
+    .filter((article) => article.category === child.name)
     .map(normalizeDbArticle);
 
   const categoryPosts = [...matchingStaticPosts, ...matchingArticles].sort(

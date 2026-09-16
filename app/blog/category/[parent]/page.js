@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import BlogCard from "../../../components/BlogCard";
 import Button from "../../../components/Button";
 import { posts, getAllParents, getParent, normalizeDbArticle } from "../../../data/blog";
-import { BLOG_LEGACY_NAMES, namesForParent } from "../../../data/legacyCategoryNames";
+import { getNamesUnderParent } from "@/lib/taxonomy";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const revalidate = 60;
@@ -39,7 +39,10 @@ export async function generateMetadata({ params }) {
 }
 
 // Server Component — aggregates every post/article whose category matches
-// this parent or any of its children (plus not-yet-migrated legacy names).
+// this parent or any of its children. Articles have a single flat
+// category field (no separate subcategory column like businesses), so a
+// value there might be either level — checking both is how a parent page
+// rolls up its children, not a data-cleanliness workaround.
 export default async function BlogParentCategoryPage({ params }) {
   const { parent: parentSlug } = await params;
   const parent = getParent(parentSlug);
@@ -48,7 +51,7 @@ export default async function BlogParentCategoryPage({ params }) {
     notFound();
   }
 
-  const matchNames = new Set(namesForParent(BLOG_LEGACY_NAMES, parent));
+  const matchNames = new Set(getNamesUnderParent(parent));
 
   const supabase = createPublicClient();
   const { data: articles } = await supabase

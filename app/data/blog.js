@@ -2,7 +2,6 @@
 // /blog/[slug] (detail pages, generateStaticParams, generateMetadata)
 // read from this single array so content stays consistent in one place.
 import { createTaxonomyHelpers } from "@/lib/taxonomy";
-import { BLOG_LEGACY_NAMES } from "./legacyCategoryNames";
 
 export const posts = [
   {
@@ -567,12 +566,11 @@ export const {
 // businessCategories.js's getCategoryLinkPath.
 export function getCategoryLinkPath(categoryName) {
   for (const parent of BLOG_CATEGORIES) {
-    if (parent.name === categoryName || (BLOG_LEGACY_NAMES[parent.slug] ?? []).includes(categoryName)) {
+    if (parent.name === categoryName) {
       return `/blog/category/${parent.slug}`;
     }
     for (const child of parent.children) {
-      const key = `${parent.slug}/${child.slug}`;
-      if (child.name === categoryName || (BLOG_LEGACY_NAMES[key] ?? []).includes(categoryName)) {
+      if (child.name === categoryName) {
         return `/blog/category/${parent.slug}/${child.slug}`;
       }
     }
