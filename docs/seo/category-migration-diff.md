@@ -1,12 +1,15 @@
 # Category taxonomy migration — old slug diff
 
-Generated during the category-taxonomy planning pass (Task 2). Nothing in this
-file has been applied — `businessCategories.js`, `blog.js`, and
-`next.config.js` are all untouched. This is the input to that decision, not a
-record of a change already made.
+Originally generated during the category-taxonomy planning pass (Task 2), as
+an input to a decision rather than a record of one. That decision has since
+been made: all 7 ambiguous slugs were resolved, the redirect map is live in
+`next.config.js`, and `businessCategories.js`/`blog.js` have been rewritten
+into the two-level structure this diff describes. This file is kept as the
+historical record of *why* each mapping was chosen.
 
 Business counts are live, queried directly from Supabase on the day this was
-written (41 businesses, 6 approved articles + the static blog posts).
+originally written (41 businesses, 6 approved articles + the static blog
+posts).
 
 ---
 
@@ -113,15 +116,58 @@ remaining **180 children (98%)** are brand new.
 
 ---
 
-## Open decisions blocking a finalized redirect map
+## Decisions made on the 7 ambiguous slugs
 
-1. `other` (5 real businesses, no target exists) — reassign per-row or keep a
-   permanent catch-all page?
-2. `packaging-printing`, `chemicals-rubber-plastics`, `electrical-electronics`,
-   `furniture-interior-design`, `sports-fitness`, `content-marketing`
-   (directory) — pick between the alternatives listed, or provide a different
-   target.
-3. `online`, `accounting` (blog) — pick between the alternatives listed.
+All resolved. `other` is retired outright (301 to `/businesses`, no
+taxonomy home) rather than kept as a catch-all — its 5 businesses are
+reassigned individually (see below), not auto-mapped. `packaging-printing`
+→ `industrial-manufacturing/plastic-packaging`. `chemicals-rubber-plastics`
+→ `industrial-manufacturing/chemicals-industrial`. `electrical-electronics`
+→ `shopping-retail/electronics-appliances`. `furniture-interior-design` →
+`shopping-retail/furniture-stores`. `sports-fitness` →
+`beauty-wellness/gyms-fitness`. `content-marketing` (directory) →
+`technology-digital/digital-marketing-agencies`. `online` (blog) → read the
+one post in it (an Akhuwat loan application guide) and, since it fit
+neither of the two options it was scoped to, reassigned to
+`finance/loans-and-credit` instead. `accounting` (blog) →
+`blog/category/finance`.
 
-Everything else in List B is proposed at "high" or "medium" confidence and
-will be applied as written unless you override it.
+## Taxonomy addition: "Watches"
+
+`Timezone watches` (one of the 5 "Other" businesses) didn't fit any
+existing child under `shopping-retail` — closest was `jewellery`, but a
+watch store isn't really a jewellery shop. Rather than force a wrong fit,
+a new child was added: **Watches = `watches`**, under `shopping-retail`,
+positioned right after `jewellery` (sortOrder 4, shifting `mobile-shops`
+and everything after it down by one). The taxonomy is allowed to flex when
+a real listing doesn't fit — that's the standing rule going forward, not
+just for this one case.
+
+## Needs manual review
+
+**Ganzay** (one of the 5 "Other" businesses) — description reads "Ganzay
+LLC is a global travel and experiences company... worldwide," with no
+Pakistan mention, and its stored city is "Claymont" (Delaware, US), not any
+real Pakistani city. A US-based "global travel company" with no visible
+Pakistan presence dilutes the topical relevance of a Pakistan business
+directory. Rather than categorize it (my best guess would have been
+`travel-hospitality/travel-agencies`), it's flagged `needs_review = true`
+(new `businesses` column, see `supabase/schema.sql`) and excluded from the
+main directory, city pages, category pages, and the sitemap until someone
+manually verifies it's a genuine PK-serving business and clears the flag.
+Its own `/businesses/ganzay` page still resolves if someone has the direct
+link — only listing surfaces exclude it.
+
+## The 5 "Other" businesses — final disposition
+
+| business | disposition |
+|---|---|
+| umrahmurshadpk | → `travel-hospitality/hajj-umrah-services` |
+| Khatri Enterprises | → `home-services/pest-control` |
+| tinytinkers | → `shopping-retail/toys-kids` |
+| Timezone watches | → `shopping-retail/watches` (new child, see above) |
+| Ganzay | **not categorized** — flagged `needs_review`, see above |
+
+Applied via `other-bucket-migration.sql` (handed to the user to run in the
+Supabase SQL Editor — RLS blocks anonymous writes, so this session can't
+run it directly).

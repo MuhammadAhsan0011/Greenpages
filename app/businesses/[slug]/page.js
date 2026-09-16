@@ -11,7 +11,7 @@ import BusinessCard from "../../components/BusinessCard";
 import PlanBadge from "../../components/PlanBadge";
 import GallerySlider from "../../components/GallerySlider";
 import { createPublicClient } from "@/utils/supabase/public";
-import { BUSINESS_CATEGORIES } from "../../data/businessCategories";
+import { getCategoryLinkPath } from "../../data/businessCategories";
 
 export const revalidate = 60;
 
@@ -162,7 +162,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
     count: reviews.filter((review) => review.rating === stars).length,
   }));
 
-  const categorySlug = BUSINESS_CATEGORIES.find((c) => c.name === business.category)?.slug;
+  const categoryLinkPath = business.category ? getCategoryLinkPath(business.category) : null;
 
   const addressParts = [
     business.address_line1,
@@ -285,10 +285,10 @@ export default async function BusinessProfilePage({ params, searchParams }) {
         <div className="container">
           <p className="breadcrumbs">
             <Link href="/">Home</Link> / <Link href="/businesses">Directory</Link>
-            {categorySlug && (
+            {categoryLinkPath && (
               <>
                 {" "}
-                / <Link href={`/businesses/category/${categorySlug}`}>{business.category}</Link>
+                / <Link href={categoryLinkPath}>{business.category}</Link>
               </>
             )}{" "}
             / {business.name}

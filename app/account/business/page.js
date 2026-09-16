@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { upsertBusiness } from "../actions";
-import { BUSINESS_CATEGORIES } from "../../data/businessCategories";
+import { getAllParents } from "../../data/businessCategories";
 import RichTextEditor from "../../components/RichTextEditorClientOnly";
 import TagInput from "../../components/TagInput";
 import CharCountTextarea from "../../components/CharCountTextarea";
@@ -19,7 +19,11 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const categories = BUSINESS_CATEGORIES.map((category) => category.name);
+// Stopgap for the taxonomy migration: lists the 20 new parent categories,
+// still as a single free-text-backed <select> (same as before). Task 3
+// replaces this with a real parent+child dependent dropdown and
+// server-side slug validation — see docs/seo/category-migration-diff.md.
+const categories = getAllParents().map((category) => category.name);
 
 const FEATURES = [
   { value: "24/7 Service", icon: "🕐" },

@@ -5,7 +5,7 @@ import Button from "../../components/Button";
 import Comments from "../../components/Comments";
 import RichArticleBody from "../../components/RichArticleBody";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
-import { posts, getPostBySlug, categorySlug, estimateReadTime } from "../../data/blog";
+import { posts, getPostBySlug, getCategoryLinkPath, estimateReadTime } from "../../data/blog";
 import { getServiceBySlug } from "../../data/services";
 import { createPublicClient } from "@/utils/supabase/public";
 
@@ -139,7 +139,7 @@ export default async function BlogPostPage({ params }) {
             <Link href="/blog">Blog</Link> / {post.title}
           </p>
           <Link
-            href={`/blog/category/${categorySlug(post.category)}`}
+            href={getCategoryLinkPath(post.category)}
             className="category-badge"
           >
             {post.category}

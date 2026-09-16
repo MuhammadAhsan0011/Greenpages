@@ -126,7 +126,15 @@ create table public.businesses (
   -- UPDATE is restricted to the owner by RLS (see "Users can update their
   -- own business profile").
   view_count integer not null default 0,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Manual quality-control flag, unrelated to `plan`. True hides a listing
+  -- from the main directory, city pages, category pages, and the sitemap
+  -- (but not its own /businesses/[slug] page) until an admin clears it —
+  -- e.g. a submission with no verified Pakistan presence. Set/cleared
+  -- directly in the Supabase Table Editor for now; there's no admin UI
+  -- toggle yet. See docs/seo/category-migration-diff.md's "needs manual
+  -- review" section for the first case this was added for.
+  needs_review boolean not null default false
 );
 
 alter table public.businesses enable row level security;

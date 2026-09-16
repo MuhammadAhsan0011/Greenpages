@@ -1,7 +1,7 @@
 import { services } from "./data/services";
-import { posts, getCategories } from "./data/blog";
+import { posts, getAllParents as getAllBlogParents, getAllChildren as getAllBlogChildren } from "./data/blog";
 import { PK_CITIES } from "./data/directoryCities";
-import { BUSINESS_CATEGORIES } from "./data/businessCategories";
+import { getAllParents as getAllBusinessParents, getAllChildren as getAllBusinessChildren } from "./data/businessCategories";
 import { LEGAL_PAGES } from "./data/legalPages";
 import { createPublicClient } from "@/utils/supabase/public";
 import { SITE_URL } from "@/lib/site";
@@ -40,11 +40,18 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  const categoryRoutes = getCategories().map((category) => ({
-    url: `${siteUrl}/blog/category/${category.slug}`,
+  const categoryRoutes = getAllBlogParents().map((parent) => ({
+    url: `${siteUrl}/blog/category/${parent.slug}`,
     lastModified,
     changeFrequency: "weekly",
     priority: 0.65,
+  }));
+
+  const subcategoryRoutes = getAllBlogChildren().map((child) => ({
+    url: `${siteUrl}/blog/category/${child.parentSlug}/${child.slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.55,
   }));
 
   const supabase = createPublicClient();
@@ -60,11 +67,18 @@ export default async function sitemap() {
     priority: 0.6,
   }));
 
-  const { data: businesses } = await supabase
-    .from("businesses")
-    .select("slug, created_at");
+  // select("*") rather than naming needs_review explicitly — that column
+  // doesn't exist until the Task 3 migration runs, and naming a column
+  // that isn't there yet errors instead of just omitting it. See
+  // legacyCategoryNames.js for the same reasoning on the category pages.
+  const { data: businesses } = await supabase.from("businesses").select("*");
 
-  const businessRoutes = (businesses ?? []).map((business) => ({
+  // Excluded from the sitemap while flagged for manual review (e.g. a
+  // listing with no verified Pakistan presence) — see
+  // docs/seo/category-migration-diff.md's "needs manual review" section.
+  const indexableBusinesses = (businesses ?? []).filter((business) => !business.needs_review);
+
+  const businessRoutes = indexableBusinesses.map((business) => ({
     url: `${siteUrl}/businesses/${business.slug}`,
     lastModified: new Date(business.created_at),
     changeFrequency: "monthly",
@@ -78,11 +92,18 @@ export default async function sitemap() {
     priority: 0.7,
   }));
 
-  const businessCategoryRoutes = BUSINESS_CATEGORIES.map((category) => ({
-    url: `${siteUrl}/businesses/category/${category.slug}`,
+  const businessCategoryRoutes = getAllBusinessParents().map((parent) => ({
+    url: `${siteUrl}/businesses/category/${parent.slug}`,
     lastModified,
     changeFrequency: "weekly",
     priority: 0.65,
+  }));
+
+  const businessSubcategoryRoutes = getAllBusinessChildren().map((child) => ({
+    url: `${siteUrl}/businesses/category/${child.parentSlug}/${child.slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.55,
   }));
 
   const legalRoutes = LEGAL_PAGES.map((page) => ({
@@ -97,10 +118,12 @@ export default async function sitemap() {
     ...serviceRoutes,
     ...blogRoutes,
     ...categoryRoutes,
+    ...subcategoryRoutes,
     ...articleRoutes,
     ...businessRoutes,
     ...cityRoutes,
     ...businessCategoryRoutes,
+    ...businessSubcategoryRoutes,
     ...legalRoutes,
   ];
 }

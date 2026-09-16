@@ -48,10 +48,11 @@ const categoryRedirects = [
   { source: "/blog/category/content-marketing", destination: "/blog/category/digital-marketing/content-marketing" },
   { source: "/blog/category/services", destination: "/blog" },
   { source: "/blog/category/accounting", destination: "/blog/category/finance" },
-  // /blog/category/online deliberately omitted — the one post in it turned
-  // out to be about an Akhuwat loan application, which doesn't fit either
-  // option it was scoped to (e-commerce vs. internet-and-networking). Held
-  // pending a decision — see the chat reply for the recommendation.
+  // The one post in "online" turned out to be about an Akhuwat loan
+  // application - neither of the two options it was scoped to (e-commerce
+  // vs. internet-and-networking) fit, so it's reassigned to finance's
+  // "Loans & Credit" child instead. See docs/seo/category-migration-diff.md.
+  { source: "/blog/category/online", destination: "/blog/category/finance/loans-and-credit" },
 ].map((entry) => ({ ...entry, permanent: true }));
 
 /** @type {import('next').NextConfig} */

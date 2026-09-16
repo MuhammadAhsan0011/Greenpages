@@ -52,11 +52,13 @@ export default async function CityDirectoryPage({ params }) {
     .select("*")
     .ilike("city", `%${city.name}%`);
 
-  const businesses = (data ?? []).sort((a, b) => {
-    const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
-    if (planDiff !== 0) return planDiff;
-    return new Date(b.created_at) - new Date(a.created_at);
-  });
+  const businesses = (data ?? [])
+    .filter((business) => !business.needs_review)
+    .sort((a, b) => {
+      const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
+      if (planDiff !== 0) return planDiff;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
 
   const otherCities = PK_CITIES.filter((c) => c.slug !== city.slug);
 

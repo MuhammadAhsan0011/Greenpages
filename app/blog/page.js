@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BlogCard from "../components/BlogCard";
 import Button from "../components/Button";
-import { posts, getCategories, normalizeDbArticle } from "../data/blog";
+import { posts, getAllParents, normalizeDbArticle } from "../data/blog";
 import { createPublicClient } from "@/utils/supabase/public";
 
 export const metadata = {
@@ -21,7 +21,7 @@ export const revalidate = 60;
 // Server Component — merges the site's static posts with user-submitted
 // articles from Supabase into one list.
 export default async function BlogPage() {
-  const categories = getCategories();
+  const categories = getAllParents();
 
   const supabase = createPublicClient();
   const { data: articles } = await supabase

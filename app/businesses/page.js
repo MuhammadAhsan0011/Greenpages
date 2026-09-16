@@ -6,7 +6,8 @@ import DirectoryListItem from "../components/DirectoryListItem";
 import SortSelect from "../components/SortSelect";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
-import { BUSINESS_CATEGORIES } from "../data/businessCategories";
+import { BUSINESS_CATEGORIES, getAllParents, getParent } from "../data/businessCategories";
+import { BUSINESS_LEGACY_NAMES, namesForParent } from "../data/legacyCategoryNames";
 
 export const metadata = {
   title: "Pakistan Business Directory",
@@ -26,33 +27,36 @@ const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Real categories, chosen for broad recognizability — not literally "Doctors"
 // or "Plumbers" like a generic template might show, since those aren't real
-// categories in this directory.
+// categories in this directory. Parent-level slugs from the two-level
+// taxonomy (see docs/seo/category-migration-diff.md).
 const POPULAR_SEARCH_SLUGS = [
-  "food-beverage",
-  "healthcare-medical",
-  "real-estate",
+  "food-dining",
+  "health-medical",
+  "real-estate-construction",
   "automotive",
-  "retail-e-commerce",
+  "shopping-retail",
 ];
-const popularSearchCategories = POPULAR_SEARCH_SLUGS.map((slug) =>
-  BUSINESS_CATEGORIES.find((c) => c.slug === slug)
-);
+const popularSearchCategories = POPULAR_SEARCH_SLUGS.map((slug) => getParent(slug));
 
-// A curated subset shown in the sidebar (the full 33 already live on the
-// "All Categories" link below them) — same curation as the homepage's
-// category grid, for consistency.
+// A curated subset shown in the sidebar (the full 20 parent categories
+// already live on the "All Categories" link below them) — same curation
+// intent as the homepage's category grid. Some old entries collapsed into
+// the same new parent during the taxonomy migration (e.g. "Real Estate"
+// and "Construction & Real Estate" both became real-estate-construction),
+// so this list was deduped and padded back out to 11 distinct parents
+// rather than showing the same link twice.
 const SIDEBAR_CATEGORY_SLUGS = [
-  "it-software-services",
-  "healthcare-medical",
-  "food-beverage",
-  "real-estate",
+  "technology-digital",
+  "health-medical",
+  "food-dining",
+  "real-estate-construction",
   "automotive",
   "education-training",
-  "retail-e-commerce",
+  "shopping-retail",
   "professional-services",
-  "construction-real-estate",
-  "fashion-apparel",
-  "legal-services",
+  "home-services",
+  "events-weddings",
+  "travel-hospitality",
 ];
 
 function buildQueryString(params, overrides) {
@@ -103,7 +107,13 @@ export default async function BusinessesPage({ searchParams }) {
     request = request.ilike("city", `%${city}%`);
   }
   if (category) {
-    request = request.eq("category", category);
+    // The select below submits a new-taxonomy parent name, but the DB
+    // still holds old flat category names for most rows until Task 3's
+    // normalization runs — match every name that should count as this
+    // parent (see legacyCategoryNames.js).
+    const matchedParent = BUSINESS_CATEGORIES.find((c) => c.name === category);
+    const matchNames = matchedParent ? namesForParent(BUSINESS_LEGACY_NAMES, matchedParent) : [category];
+    request = request.in("category", matchNames);
   }
 
   const [{ data }, { data: reviewRows }, { data: allCategories }] = await Promise.all([
@@ -128,11 +138,13 @@ export default async function BusinessesPage({ searchParams }) {
   }, {});
 
   const sidebarCategories = SIDEBAR_CATEGORY_SLUGS.map((slug) => {
-    const found = BUSINESS_CATEGORIES.find((c) => c.slug === slug);
-    return { ...found, count: categoryCounts[found.name] ?? 0 };
+    const found = getParent(slug);
+    const matchNames = namesForParent(BUSINESS_LEGACY_NAMES, found);
+    const count = matchNames.reduce((sum, name) => sum + (categoryCounts[name] ?? 0), 0);
+    return { ...found, count };
   });
 
-  let businesses = [...(data ?? [])];
+  let businesses = (data ?? []).filter((business) => !business.needs_review);
 
   if (sort === "oldest") {
     businesses.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -230,7 +242,7 @@ export default async function BusinessesPage({ searchParams }) {
                 </label>
                 <select id="category" name="category" defaultValue={category}>
                   <option value="">All Categories</option>
-                  {BUSINESS_CATEGORIES.map((c) => (
+                  {getAllParents().map((c) => (
                     <option value={c.name} key={c.slug}>
                       {c.name}
                     </option>
@@ -395,7 +407,7 @@ export default async function BusinessesPage({ searchParams }) {
             <h2 id="browse-category-heading">Directories by Category</h2>
           </div>
           <nav className="directory-browse-links" aria-label="Browse by category">
-            {BUSINESS_CATEGORIES.map((categoryOption) => (
+            {getAllParents().map((categoryOption) => (
               <Link
                 href={`/businesses/category/${categoryOption.slug}`}
                 key={categoryOption.slug}

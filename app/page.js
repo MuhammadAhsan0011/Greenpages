@@ -7,7 +7,8 @@ import ReviewList from "./components/ReviewList";
 import FeaturedBusinessCard from "./components/FeaturedBusinessCard";
 import { services } from "./data/services";
 import { normalizeDbArticle } from "./data/blog";
-import { BUSINESS_CATEGORIES } from "./data/businessCategories";
+import { getAllParents, getParent } from "./data/businessCategories";
+import { BUSINESS_LEGACY_NAMES, namesForParent } from "./data/legacyCategoryNames";
 import { PK_CITIES } from "./data/directoryCities";
 import { createPublicClient } from "@/utils/supabase/public";
 import pkHeroPhoto from "../public/images/pakistan-hero-photo.png";
@@ -26,18 +27,20 @@ export const metadata = {
   },
 };
 
-// A curated subset of BUSINESS_CATEGORIES (real data — name/slug always
-// sourced from there, never duplicated) shown on the homepage. Showing all
-// 33 would crowd the page; the full list already lives on /businesses.
+// A curated subset of the top-level directory taxonomy (real data —
+// name/slug always sourced from there, never duplicated) shown on the
+// homepage. Showing all 20 parents would crowd the page; the full list
+// already lives on /businesses. "legal-services" is a child now (under
+// professional-services), not a parent, so it was swapped for that parent.
 const FEATURED_CATEGORY_SLUGS = [
-  { slug: "it-software-services", icon: "💻" },
-  { slug: "healthcare-medical", icon: "🏥" },
-  { slug: "food-beverage", icon: "🍔" },
-  { slug: "real-estate", icon: "🏠" },
+  { slug: "technology-digital", icon: "💻" },
+  { slug: "health-medical", icon: "🏥" },
+  { slug: "food-dining", icon: "🍔" },
+  { slug: "real-estate-construction", icon: "🏠" },
   { slug: "automotive", icon: "🚗" },
   { slug: "education-training", icon: "🎓" },
-  { slug: "retail-e-commerce", icon: "🛍️" },
-  { slug: "legal-services", icon: "⚖️" },
+  { slug: "shopping-retail", icon: "🛍️" },
+  { slug: "professional-services", icon: "⚖️" },
 ];
 
 const howItWorks = [
@@ -128,6 +131,7 @@ export default async function HomePage() {
   const featured = (featuredArticles ?? []).map(normalizeDbArticle);
 
   const featuredBusinesses = (allBusinesses ?? [])
+    .filter((business) => !business.needs_review)
     .sort((a, b) => {
       const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
       if (planDiff !== 0) return planDiff;
@@ -154,8 +158,13 @@ export default async function HomePage() {
   }, {});
 
   const featuredCategories = FEATURED_CATEGORY_SLUGS.map(({ slug, icon }) => {
-    const category = BUSINESS_CATEGORIES.find((c) => c.slug === slug);
-    return { ...category, icon, count: categoryCounts[category.name] ?? 0 };
+    const category = getParent(slug);
+    // Old flat category names still live in the DB until Task 3's
+    // normalization runs — count every name that maps to this parent
+    // (see legacyCategoryNames.js), not just its new display name.
+    const matchNames = namesForParent(BUSINESS_LEGACY_NAMES, category);
+    const count = matchNames.reduce((sum, name) => sum + (categoryCounts[name] ?? 0), 0);
+    return { ...category, icon, count };
   });
 
   return (
@@ -235,7 +244,7 @@ export default async function HomePage() {
                     <option value="" disabled>
                       Choose a category
                     </option>
-                    {BUSINESS_CATEGORIES.map((category) => (
+                    {getAllParents().map((category) => (
                       <option value={category.name} key={category.slug}>
                         {category.name}
                       </option>

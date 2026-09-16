@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { categorySlug } from "../data/blog";
+import { getCategoryLinkPath } from "../data/blog";
 
 // Server Component — renders static content driven entirely by props,
 // so it never needs client-side JavaScript.
@@ -25,7 +25,7 @@ export default function BlogCard({ post }) {
           />
         </div>
       )}
-      <Link href={`/blog/category/${categorySlug(category)}`} className="category-badge">
+      <Link href={getCategoryLinkPath(category)} className="category-badge">
         {category}
       </Link>
       <h3>
