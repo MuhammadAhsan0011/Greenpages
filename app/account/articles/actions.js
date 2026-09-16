@@ -285,6 +285,11 @@ export async function updateArticle(slug, formData) {
       title,
       excerpt,
       content,
+      // Editing is Verified/Premium-only (isPaidPlan already checked above)
+      // and always goes through the rich HTML editor, so the saved content
+      // is always real HTML from here on — even if the article was first
+      // created on the Free plan (content_format: "markdown" back then).
+      content_format: "html",
       category,
       cover_image_url: coverImageUrl,
       tags,
