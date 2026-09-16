@@ -4,9 +4,9 @@ import { PK_CITIES } from "./data/directoryCities";
 import { BUSINESS_CATEGORIES } from "./data/businessCategories";
 import { LEGAL_PAGES } from "./data/legalPages";
 import { createPublicClient } from "@/utils/supabase/public";
+import { SITE_URL } from "@/lib/site";
 
-// If you later attach a custom domain, update this to match.
-const siteUrl = "https://www.greenpagespk.com";
+const siteUrl = SITE_URL;
 
 export default async function sitemap() {
   const lastModified = new Date();

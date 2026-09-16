@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../components/Button";
 import { services, getServiceBySlug } from "../../data/services";
+import { SITE_URL } from "@/lib/site";
 
 // Pre-renders /services/seo, /services/web-development, and
 // /services/content-marketing at build time as static pages.
@@ -55,11 +56,11 @@ export default async function ServiceDetailPage({ params }) {
     provider: {
       "@type": "Organization",
       name: "Green Pages",
-      url: "https://www.greenpagespk.com/",
+      url: `${SITE_URL}/`,
     },
     areaServed: { "@type": "Country", name: "Pakistan" },
     description: service.metaDescription,
-    url: `https://www.greenpagespk.com/services/${service.slug}`,
+    url: `${SITE_URL}/services/${service.slug}`,
   };
 
   return (

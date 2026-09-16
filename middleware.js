@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { updateSession } from "./utils/supabase/middleware";
+import { SITE_HOST } from "@/lib/site";
 
-const CANONICAL_HOST = "www.greenpagespk.com";
+const CANONICAL_HOST = SITE_HOST;
 
 export async function middleware(request) {
   // Permanently redirect the old *.vercel.app deployment URL to the custom

@@ -3,12 +3,11 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
+import { SITE_URL } from "@/lib/site";
 
 const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
 
-// If you later attach a custom domain, update this (and app/sitemap.js /
-// app/robots.js) to match.
-const siteUrl = "https://www.greenpagespk.com";
+const siteUrl = SITE_URL;
 const siteName = "Green Pages";
 const siteDescription =
   "Green Pages is a full-service digital marketing agency helping businesses grow through SEO, web development, and content marketing.";

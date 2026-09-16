@@ -1,5 +1,6 @@
-// If you later attach a custom domain, update this to match.
-const siteUrl = "https://www.greenpagespk.com";
+import { SITE_URL } from "@/lib/site";
+
+const siteUrl = SITE_URL;
 
 export default function robots() {
   return {
