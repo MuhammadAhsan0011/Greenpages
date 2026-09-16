@@ -11,16 +11,28 @@ Business counts are live, queried directly from Supabase on the day this was
 originally written (41 businesses, 6 approved articles + the static blog
 posts).
 
-**Update:** the DB-side migration described below (`other-bucket-migration.sql`,
-`article-category-migration.sql`, `business-category-normalization.sql`) has
-been run. All 41 businesses and 6 approved articles now hold valid
-new-taxonomy category/subcategory values directly — the only exception is
-`ganzay`, deliberately left uncategorized (`needs_review = true`). Because
-of that, `app/data/legacyCategoryNames.js` (the old-name -> new-name bridge
-this doc originally described) has been deleted, and every consumer now
-matches taxonomy names directly with no translation layer. If you're
-reading this file to understand *why* a mapping was chosen, it's still
-accurate — just note the bridge it originally justified no longer exists.
+## Final state (end of this migration session)
+
+- **`businessCategories.js`:** 20 parents / 139 children (138 original +
+  `watches`, see below).
+- **`blog.js`:** 20 parents / 183 children.
+- **Data:** the DB-side migration described below
+  (`other-bucket-migration.sql`, `article-category-migration.sql`,
+  `business-category-normalization.sql`) has been run. All 41 businesses
+  and 6 approved articles hold valid new-taxonomy category/subcategory
+  values directly — the only exception is `ganzay`, deliberately left
+  uncategorized (`needs_review = true`, see below).
+- **The legacy bridge existed and was removed.** `app/data/
+  legacyCategoryNames.js` was a temporary old-name → new-name translation
+  layer (every category-page query had to check both the new taxonomy name
+  and whatever old flat name used to mean the same thing). Once the DB rows
+  above were normalized, it became pure dead weight — two code paths for
+  reading the same category — so it was deleted, and every consumer now
+  matches taxonomy names directly with no translation layer.
+
+If you're reading this file to understand *why* a mapping was chosen, it's
+still accurate — just note the bridge it originally justified no longer
+exists.
 
 ---
 
@@ -154,6 +166,19 @@ and everything after it down by one). The taxonomy is allowed to flex when
 a real listing doesn't fit — that's the standing rule going forward, not
 just for this one case.
 
+## Taxonomy gap: "Cosmetics & Personal Care"
+
+`Exprescents` (old category "Cosmetics & Personal Care") was normalized to
+the **`beauty-wellness` parent only** — none of that parent's children
+(Beauty Salons, Barbers & Men's Salons, Bridal Makeup Artists, Spa &
+Massage, Skin & Laser Clinics, Gyms & Fitness Centers, Yoga & Pilates
+Studios) is a real fit for a cosmetics/personal-care-products retailer;
+they're all service venues, not a retail category. Sitting at parent level
+is intentional, not an oversight — same "don't force a wrong fit" principle
+as the Watches addition below, just resolved by leaving `subcategory` empty
+instead of adding a new child. Revisit if more cosmetics-retail businesses
+sign up and a dedicated child becomes worth adding.
+
 ## Needs manual review
 
 **Ganzay** (one of the 5 "Other" businesses) — description reads "Ganzay
@@ -167,7 +192,25 @@ directory. Rather than categorize it (my best guess would have been
 main directory, city pages, category pages, and the sitemap until someone
 manually verifies it's a genuine PK-serving business and clears the flag.
 Its own `/businesses/ganzay` page still resolves if someone has the direct
-link — only listing surfaces exclude it.
+link — only listing surfaces exclude it. **Still open** — nobody has
+verified/cleared this yet as of the end of this session.
+
+**VirtualVetDesk** and **Ninja Aviation** — both were renamed onto their
+old category's approved new slug during normalization, but flagged as
+probably still wrong: VirtualVetDesk is a veterinary consultation service
+that landed in Travel & Hospitality (because its old category was
+"Hospitality & Tourism"), and Ninja Aviation is an Umrah travel agency
+that landed in Professional Services / Lawyers & Legal Services (because
+its old category was "Legal Services"). Fix SQL was written and handed to
+the user at the end of this session:
+- `virtualvetdesk` → `Pets & Animals` (parent only — no child fits
+  "veterinary consultations" specifically, same gap as Cosmetics & Personal
+  Care above)
+- `ninja-aviation-umrah-agency-in-lahore` → `Travel & Hospitality` /
+  `Hajj & Umrah Services`
+
+**Not yet confirmed run** as of the end of this session — verify these two
+rows before relying on their category being correct.
 
 ## The 5 "Other" businesses — final disposition
 
