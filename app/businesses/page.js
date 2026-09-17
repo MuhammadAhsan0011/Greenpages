@@ -7,7 +7,7 @@ import SortSelect from "../components/SortSelect";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
-import { BUSINESS_CATEGORIES, getAllParents, getParent } from "../data/businessCategories";
+import { getAllParents, getParent, resolveCategoryNodes } from "../data/businessCategories";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
 import { SITE_URL } from "@/lib/site";
 
@@ -88,8 +88,8 @@ export default async function BusinessesPage({ searchParams }) {
   // /businesses/category/[slug] — redirect messy query-string links
   // (?category=Food+%26+Beverage) there instead of rendering them here.
   if (category && !query && !city) {
-    const matchedCategory = BUSINESS_CATEGORIES.find((c) => c.name === category);
-    if (matchedCategory) {
+    const { parent: matchedCategory, child } = resolveCategoryNodes(category);
+    if (matchedCategory && !child) {
       redirect(`/businesses/category/${matchedCategory.slug}`);
     }
   }

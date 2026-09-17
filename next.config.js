@@ -1,13 +1,7 @@
-// Permanent (301) redirects from the old flat category taxonomy to the new
-// two-level one. Source of truth for why each mapping was chosen is
-// docs/seo/category-migration-diff.md — do not add/remove an entry here
-// without updating that file too.
-//
-// NOTE: several destinations below are nested `[parent]/[child]` category
-// pages that don't exist until the taxonomy files are rewritten (Task 1 of
-// this migration). Until that lands, these redirects are correct in shape
-// (verified by curling for a 301 + Location header) but will land on a 404.
-// Do not deploy this branch until the nested category routes exist.
+// Permanent redirects (308, via Next's `permanent: true`) from the old flat
+// category taxonomy to the new two-level one. Source of truth for why each
+// mapping was chosen is docs/seo/category-migration-diff.md — do not
+// add/remove an entry here without updating that file too.
 const categoryRedirects = [
   // --- Directory categories (/businesses/category/...) ---
   { source: "/businesses/category/healthcare-medical", destination: "/businesses/category/health-medical" },
