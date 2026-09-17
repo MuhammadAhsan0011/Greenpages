@@ -6,6 +6,15 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
+import { resolveCategoryNodes } from "../../data/blog";
+
+// Articles have a single flat category field that can legitimately hold
+// either a parent- or child-level taxonomy name (see the same note on
+// app/data/blog.js's getCategoryLinkPath) — so "valid" here means it
+// resolves to a real node at either level, not just that it's non-empty.
+function isValidArticleCategory(category) {
+  return Boolean(category) && Boolean(resolveCategoryNodes(category).parent);
+}
 
 function slugify(title) {
   return title
@@ -111,10 +120,17 @@ export async function createArticle(formData) {
       ? content.replace(/<[^>]*>/g, "").trim().length === 0
       : content.length === 0;
 
-  if (!title || !category || !excerpt || contentIsEmpty) {
+  if (!title || !excerpt || contentIsEmpty) {
     redirect(
       `/account/articles/new?error=${encodeURIComponent("All fields are required.")}`
     );
+  }
+
+  // Never trusted as free text past the curated <select> — a stale tab or
+  // a crafted request could still submit anything, so this is the actual
+  // enforcement point, same as the business category/subcategory fix.
+  if (!isValidArticleCategory(category)) {
+    redirect(`/account/articles/new?error=${encodeURIComponent("Please choose a valid category.")}`);
   }
 
   let coverImageUrl = null;
@@ -230,10 +246,14 @@ export async function updateArticle(slug, formData) {
   const content = sanitizeArticleHtml(rawContent);
   const contentIsEmpty = content.replace(/<[^>]*>/g, "").trim().length === 0;
 
-  if (!title || !category || !excerpt || contentIsEmpty) {
+  if (!title || !excerpt || contentIsEmpty) {
     redirect(
       `/account/articles/${slug}/edit?error=${encodeURIComponent("All fields are required.")}`
     );
+  }
+
+  if (!isValidArticleCategory(category)) {
+    redirect(`/account/articles/${slug}/edit?error=${encodeURIComponent("Please choose a valid category.")}`);
   }
 
   let coverImageUrl = article.cover_image_url;

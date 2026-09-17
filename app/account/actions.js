@@ -6,6 +6,7 @@ import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getParent, getChild } from "../data/businessCategories";
 
 function slugify(name) {
   return name
@@ -132,8 +133,13 @@ export async function upsertBusiness(nextStep, formData) {
   }
 
   const name = formData.get("name")?.toString().trim();
-  const category = formData.get("category")?.toString().trim();
-  const subcategory = formData.get("subcategory")?.toString().trim() || null;
+  // The form submits taxonomy slugs (see CategorySubcategoryFields.js), not
+  // free text — resolved and validated against the real taxonomy below,
+  // never trusted as-is. A stale tab or a hand-crafted request can still
+  // send anything in these two fields, so this has to be the place that
+  // actually enforces it, not the <select> in the form.
+  const categorySlug = formData.get("category")?.toString().trim();
+  const subcategorySlug = formData.get("subcategory")?.toString().trim();
   const description = formData.get("description")?.toString().trim();
   const website = formData.get("website")?.toString().trim() || null;
   const phone = formData.get("phone")?.toString().trim() || null;
@@ -148,13 +154,40 @@ export async function upsertBusiness(nextStep, formData) {
   const features = formData.getAll("features").filter(Boolean).join(", ") || null;
   const businessHours = readBusinessHours(formData);
 
-  if (!name || !category || !description) {
+  if (!name || !description) {
     redirect(
       `/account/business?error=${encodeURIComponent(
-        "Business name, category, and description are required."
+        "Business name and description are required."
       )}`
     );
   }
+
+  // category must resolve to a real parent in the taxonomy; subcategory,
+  // if present, must be a real child OF that specific parent — not just
+  // any valid slug elsewhere in the tree. Reject rather than silently
+  // coercing to a default or dropping the value, so a bad submission
+  // never quietly becomes bad data.
+  const categoryParent = categorySlug ? getParent(categorySlug) : null;
+  if (!categoryParent) {
+    redirect(
+      `/account/business?error=${encodeURIComponent("Please choose a valid business category.")}`
+    );
+  }
+
+  let subcategory = null;
+  if (subcategorySlug) {
+    const categoryChild = getChild(categorySlug, subcategorySlug);
+    if (!categoryChild) {
+      redirect(
+        `/account/business?error=${encodeURIComponent(
+          "Please choose a valid subcategory for the selected category, or leave it blank."
+        )}`
+      );
+    }
+    subcategory = categoryChild.name;
+  }
+
+  const category = categoryParent.name;
 
   // Keep the existing logo/social links/about content unless this plan is
   // actually allowed to change them — a Free-plan submission never carries

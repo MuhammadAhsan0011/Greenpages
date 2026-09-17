@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { upsertBusiness } from "../actions";
-import { getAllParents } from "../../data/businessCategories";
+import { getAllParents, resolveCategoryNodes } from "../../data/businessCategories";
 import RichTextEditor from "../../components/RichTextEditorClientOnly";
 import TagInput from "../../components/TagInput";
 import CharCountTextarea from "../../components/CharCountTextarea";
@@ -13,17 +13,12 @@ import PhotoDropzone from "../../components/PhotoDropzone";
 import SubmitButton from "../../components/SubmitButton";
 import BusinessHoursFields from "../../components/BusinessHoursFields";
 import WhatsAppUrlField from "../../components/WhatsAppUrlField";
+import CategorySubcategoryFields from "../../components/CategorySubcategoryFields";
 
 export const metadata = {
   title: "Add Your Business Listing",
   robots: { index: false, follow: false },
 };
-
-// Stopgap for the taxonomy migration: lists the 20 new parent categories,
-// still as a single free-text-backed <select> (same as before). Task 3
-// replaces this with a real parent+child dependent dropdown and
-// server-side slug validation — see docs/seo/category-migration-diff.md.
-const categories = getAllParents().map((category) => category.name);
 
 const FEATURES = [
   { value: "24/7 Service", icon: "🕐" },
@@ -103,6 +98,18 @@ export default async function BusinessProfilePage({ searchParams }) {
     .map((p) => p.trim())
     .filter(Boolean);
 
+  // Resolve the stored category/subcategory NAMES back to slugs for the
+  // dropdown's default selection. Parent is resolved from `category`
+  // directly (always the source of truth for the parent level) rather than
+  // from `subcategory`, so a subcategory value that doesn't match any real
+  // child under that parent — old free-text data — only leaves the
+  // subcategory unselected instead of also blanking the parent.
+  const categoryParent = business?.category ? resolveCategoryNodes(business.category).parent : null;
+  const categoryChild =
+    categoryParent && business?.subcategory
+      ? (categoryParent.children.find((c) => c.name === business.subcategory) ?? null)
+      : null;
+
   return (
     <>
       <section className="hero">
@@ -181,36 +188,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                     />
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-field">
-                      <label htmlFor="category">Business Category *</label>
-                      <select
-                        id="category"
-                        name="category"
-                        defaultValue={business?.category ?? ""}
-                        required
-                      >
-                        <option value="" disabled>
-                          Select primary category
-                        </option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-field">
-                      <label htmlFor="subcategory">Sub Category (optional)</label>
-                      <input
-                        id="subcategory"
-                        name="subcategory"
-                        type="text"
-                        placeholder="e.g. Digital Marketing Agency"
-                        defaultValue={business?.subcategory ?? ""}
-                      />
-                    </div>
-                  </div>
+                  <CategorySubcategoryFields
+                    parents={getAllParents()}
+                    defaultParentSlug={categoryParent?.slug ?? ""}
+                    defaultChildSlug={categoryChild?.slug ?? ""}
+                  />
 
                   <div className="form-field">
                     <label htmlFor="description">Business Description *</label>

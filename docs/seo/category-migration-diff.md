@@ -195,36 +195,52 @@ Its own `/businesses/ganzay` page still resolves if someone has the direct
 link — only listing surfaces exclude it. **Still open** — nobody has
 verified/cleared this yet as of the end of this session.
 
-**"Let's Rank Online"** (`lets-rank-online`) — its stored `category` is
+**"Let's Rank Online"** (`let-s-rank-online`) — its stored `category` was
 `"IT & Software Services"`, the *old* pre-migration parent name, not
 `"Technology & Digital"`. Found while wiring up the indexing-threshold work
 (`lib/seo/indexing.js`) because category matching is a strict `===` against
 the current taxonomy's parent names (`lib/seo/businessListings.js`'s
 `matchesParent`) — anything that doesn't match exactly is invisible to
 every category archive, every count, and its own breadcrumb, without
-erroring. This row was presumably added after the migration normalized the
-other 41 businesses, so it never got the update. Needs a one-row `UPDATE
-businesses SET category = 'Technology & Digital' WHERE slug =
-'lets-rank-online'` — this session can't run it directly (RLS blocks
-anonymous writes, same as the other-bucket migration above). **Still open.**
+erroring. Its `created_at` (2026-09-17 08:26 AM PKT) is ~7 hours *after*
+the migration was committed and verified 41/41 clean (`85cf761`,
+01:20 AM PKT), which rules out a migration-script gap — the script correctly
+normalized everything that existed when it ran. The actual cause was a
+write-path gap: `app/account/actions.js` validated `category` for
+truthiness only, never against the real taxonomy (the form's own dropdown
+only *offered* current parent names, but nothing stopped a stale tab or a
+crafted request from submitting something else). **Resolved**: the write
+path now validates `category`/`subcategory` against the real taxonomy
+server-side (`getParent`/`getChild`, reject-don't-coerce) and the form uses
+a real dependent parent→child dropdown instead of free text — see
+`app/components/CategorySubcategoryFields.js`. This row's `category` was
+updated to `Technology & Digital` via `docs/seo/subcategory-cleanup.sql`
+and reverified clean.
 
-**Several "Health & Medical" businesses have free-text `subcategory` values
-that don't match any real child** (e.g. `"Home Health Care"`, `"Health Care
-Home Service"`, `"Health Home Care"` — three near-duplicate spellings
-across different rows — and `"Uterine Fibroid Embolization ...radiofrequency
-Ablation of Osteoid Osteoma Pelvic Congestion Syndrome Treatment..."`, a
-clearly free-text overflow). Same for `"Professional Services / Digital
-Marketing Agency"` and `"Financial Services / Financial service"`. Unlike
-the "IT & Software Services" case above, the `category` (parent) on all of
-these is still valid, so they aren't invisible — but the `subcategory`
-doesn't resolve to a real child, so it can't be counted toward any child's
-threshold and its detail-page breadcrumb only shows the parent, not a
-child crumb (`lib/taxonomy.js`'s `resolveCategoryNodes` returns `child:
-null` rather than guessing). This degrades safely by design rather than
-erroring, but the underlying subcategory values are still worth
-normalizing (likely a free-text field in the submission form that should
-be a dropdown constrained to the real taxonomy, similar to how the
-category field already is). **Still open.**
+**Several "Health & Medical" businesses had free-text `subcategory` values
+that didn't match any real child** (`"Home Health Care"`, `"Health Care Home
+Service"`, `"Health Home Care"` — three near-duplicate spellings across
+different rows — and a long free-text procedure list on IRCC Pakistan's
+row). **Resolved** via `docs/seo/subcategory-cleanup.sql`: the three
+near-duplicates were set to `NULL` (parent-only — no real child fits a
+home-visit nursing service; same "don't force a wrong fit" rule as
+Cosmetics & Personal Care and VirtualVetDesk below) and IRCC Pakistan was
+set to `Clinics & Doctors` (closest real fit, a judgment call). Three
+independent businesses converging on the same missing category is a real
+signal — worth adding an actual "Home Health Care" child to
+`businessCategories.js` later, same precedent as the "Watches" addition,
+if it keeps coming up.
+
+The same free-text problem exists on a few rows **outside** the scope of
+that cleanup pass (not Health & Medical, not touched):
+`"Professional Services / Digital Marketing Agency"` (`green-pages-pk` —
+this one likely also has the wrong *parent*, since "Digital Marketing
+Agency" is a real child name, just under `Technology & Digital`, not
+`Professional Services`), `"Financial Services / Financial service"`
+(`leaosagitrades`), and a full-sentence subcategory on
+`experts-force-corporation`. **Still open** — the write path is closed now,
+so these won't get worse, but they still need the same kind of cleanup SQL
+whenever it's convenient.
 
 **VirtualVetDesk** and **Ninja Aviation** — both were renamed onto their
 old category's approved new slug during normalization, but flagged as
