@@ -10,8 +10,10 @@ import NoPhotoPlaceholder from "../../components/NoPhotoPlaceholder";
 import BusinessCard from "../../components/BusinessCard";
 import PlanBadge from "../../components/PlanBadge";
 import GallerySlider from "../../components/GallerySlider";
+import Breadcrumbs from "../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
-import { getCategoryLinkPath } from "../../data/businessCategories";
+import { resolveCategoryNodes } from "../../data/businessCategories";
+import { PK_CITIES } from "../../data/directoryCities";
 
 export const revalidate = 60;
 
@@ -162,7 +164,18 @@ export default async function BusinessProfilePage({ params, searchParams }) {
     count: reviews.filter((review) => review.rating === stars).length,
   }));
 
-  const categoryLinkPath = business.category ? getCategoryLinkPath(business.category) : null;
+  // business.category always holds a valid parent-level name, so resolve
+  // the parent from it directly rather than trying subcategory first — a
+  // subcategory value that doesn't match any real taxonomy child (bad
+  // historical data) must not also cost the page its parent breadcrumb.
+  const categoryParent = business.category ? resolveCategoryNodes(business.category).parent : null;
+  const categoryChild =
+    categoryParent && business.subcategory
+      ? (categoryParent.children.find((c) => c.name === business.subcategory) ?? null)
+      : null;
+  const cityMatch = business.city
+    ? PK_CITIES.find((c) => business.city.toLowerCase().includes(c.name.toLowerCase()))
+    : null;
 
   const addressParts = [
     business.address_line1,
@@ -283,16 +296,24 @@ export default async function BusinessProfilePage({ params, searchParams }) {
 
       <section className="listing-header">
         <div className="container">
-          <p className="breadcrumbs">
-            <Link href="/">Home</Link> / <Link href="/businesses">Directory</Link>
-            {categoryLinkPath && (
-              <>
-                {" "}
-                / <Link href={categoryLinkPath}>{business.category}</Link>
-              </>
-            )}{" "}
-            / {business.name}
-          </p>
+          <Breadcrumbs
+            items={[
+              { name: "Home", path: "/" },
+              { name: "Directory", path: "/businesses" },
+              ...(categoryParent
+                ? [{ name: categoryParent.name, path: `/businesses/category/${categoryParent.slug}` }]
+                : []),
+              ...(categoryChild
+                ? [
+                    {
+                      name: categoryChild.name,
+                      path: `/businesses/category/${categoryParent.slug}/${categoryChild.slug}`,
+                    },
+                  ]
+                : []),
+              { name: business.name },
+            ]}
+          />
 
           <div className="listing-header-grid">
             <div className="listing-header-info">
@@ -328,7 +349,16 @@ export default async function BusinessProfilePage({ params, searchParams }) {
 
               <div className="listing-badges">
                 <span className="category-badge">{business.category}</span>
-                {business.city && <span className="listing-location">📍 {fullAddress || business.city}</span>}
+                {business.city && (
+                  <span className="listing-location">
+                    📍{" "}
+                    {cityMatch ? (
+                      <Link href={`/businesses/city/${cityMatch.slug}`}>{fullAddress || business.city}</Link>
+                    ) : (
+                      fullAddress || business.city
+                    )}
+                  </span>
+                )}
               </div>
 
               <div className="listing-actions">

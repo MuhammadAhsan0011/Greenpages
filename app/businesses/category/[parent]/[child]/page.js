@@ -2,8 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../../../components/Button";
 import BusinessCard from "../../../../components/BusinessCard";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getAllParents, getParent, getChild } from "../../../../data/businessCategories";
+import { filterForChild } from "@/lib/seo/businessListings";
+import { getArchiveRobots } from "@/lib/seo/indexing";
+import { buildCollectionPageSchema } from "@/lib/seo/schema";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -23,15 +28,39 @@ export async function generateMetadata({ params }) {
     return { title: "Category Not Found" };
   }
 
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("category", parent.name)
+    .eq("subcategory", child.name);
+  const businesses = filterForChild(data ?? [], parent.name, child.name);
+
+  const title = child.metaTitle || `${child.name} in Pakistan | Green Pages`;
+  const description =
+    child.metaDescription ||
+    `Find verified ${child.name} businesses across Pakistan on Green Pages — search by city, or list your own business free.`.slice(
+      0,
+      155
+    );
+
   return {
-    title: `${child.name} in Pakistan`,
-    description:
-      `Find verified ${child.name} businesses across Pakistan on Green Pages — search by city, or list your own business free.`.slice(
-        0,
-        160
-      ),
+    title,
+    description,
     alternates: {
       canonical: `/businesses/category/${parent.slug}/${child.slug}`,
+    },
+    robots: getArchiveRobots(businesses.length),
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `${SITE_URL}/businesses/category/${parent.slug}/${child.slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }
@@ -55,24 +84,40 @@ export default async function ChildCategoryDirectoryPage({ params }) {
     .eq("category", parent.name)
     .eq("subcategory", child.name);
 
-  const businesses = (data ?? [])
-    .filter((business) => !business.needs_review)
-    .sort((a, b) => {
-      const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
-      if (planDiff !== 0) return planDiff;
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
+  const businesses = filterForChild(data ?? [], parent.name, child.name).sort((a, b) => {
+    const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
+    if (planDiff !== 0) return planDiff;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   const siblingCategories = parent.children.filter((c) => c.slug !== child.slug);
 
+  const collectionSchema = buildCollectionPageSchema(
+    {
+      name: `${child.name} in Pakistan`,
+      description: child.description || undefined,
+      path: `/businesses/category/${parent.slug}/${child.slug}`,
+    },
+    SITE_URL
+  );
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+
       <section className="hero">
         <div className="container">
-          <p className="breadcrumbs">
-            <Link href="/businesses">Business Directory</Link> /{" "}
-            <Link href={`/businesses/category/${parent.slug}`}>{parent.name}</Link> / {child.name}
-          </p>
+          <Breadcrumbs
+            items={[
+              { name: "Business Directory", path: "/businesses" },
+              { name: parent.name, path: `/businesses/category/${parent.slug}` },
+              { name: child.name },
+            ]}
+          />
           <span className="hero-eyebrow">Business Directory</span>
           <h1>{child.name} in Pakistan</h1>
           {child.description && <p className="hero-description">{child.description}</p>}
@@ -107,7 +152,7 @@ export default async function ChildCategoryDirectoryPage({ params }) {
         </div>
       </section>
 
-      {siblingCategories.length > 0 && (
+      {businesses.length > 0 && siblingCategories.length > 0 && (
         <section className="section-alt" aria-labelledby="other-categories-heading">
           <div className="container">
             <div className="section-header">

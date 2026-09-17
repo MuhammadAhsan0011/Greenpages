@@ -195,6 +195,37 @@ Its own `/businesses/ganzay` page still resolves if someone has the direct
 link — only listing surfaces exclude it. **Still open** — nobody has
 verified/cleared this yet as of the end of this session.
 
+**"Let's Rank Online"** (`lets-rank-online`) — its stored `category` is
+`"IT & Software Services"`, the *old* pre-migration parent name, not
+`"Technology & Digital"`. Found while wiring up the indexing-threshold work
+(`lib/seo/indexing.js`) because category matching is a strict `===` against
+the current taxonomy's parent names (`lib/seo/businessListings.js`'s
+`matchesParent`) — anything that doesn't match exactly is invisible to
+every category archive, every count, and its own breadcrumb, without
+erroring. This row was presumably added after the migration normalized the
+other 41 businesses, so it never got the update. Needs a one-row `UPDATE
+businesses SET category = 'Technology & Digital' WHERE slug =
+'lets-rank-online'` — this session can't run it directly (RLS blocks
+anonymous writes, same as the other-bucket migration above). **Still open.**
+
+**Several "Health & Medical" businesses have free-text `subcategory` values
+that don't match any real child** (e.g. `"Home Health Care"`, `"Health Care
+Home Service"`, `"Health Home Care"` — three near-duplicate spellings
+across different rows — and `"Uterine Fibroid Embolization ...radiofrequency
+Ablation of Osteoid Osteoma Pelvic Congestion Syndrome Treatment..."`, a
+clearly free-text overflow). Same for `"Professional Services / Digital
+Marketing Agency"` and `"Financial Services / Financial service"`. Unlike
+the "IT & Software Services" case above, the `category` (parent) on all of
+these is still valid, so they aren't invisible — but the `subcategory`
+doesn't resolve to a real child, so it can't be counted toward any child's
+threshold and its detail-page breadcrumb only shows the parent, not a
+child crumb (`lib/taxonomy.js`'s `resolveCategoryNodes` returns `child:
+null` rather than guessing). This degrades safely by design rather than
+erroring, but the underlying subcategory values are still worth
+normalizing (likely a free-text field in the submission form that should
+be a dropdown constrained to the real taxonomy, similar to how the
+category field already is). **Still open.**
+
 **VirtualVetDesk** and **Ninja Aviation** — both were renamed onto their
 old category's approved new slug during normalization, but flagged as
 probably still wrong: VirtualVetDesk is a veterinary consultation service
@@ -225,3 +256,28 @@ rows before relying on their category being correct.
 Applied via `other-bucket-migration.sql` (handed to the user to run in the
 Supabase SQL Editor — RLS blocks anonymous writes, so this session can't
 run it directly).
+
+## Indexing threshold: what counts as a "published item" for blog categories
+
+Added when the per-category `robots`/sitemap threshold work landed
+(`lib/seo/indexing.js`, `INDEXING_THRESHOLD = 3`). Directory categories have
+no ambiguity — every business lives in Supabase, full stop. Blog categories
+are different: `app/data/blog.js`'s static `posts` array (6 seed posts,
+permanently part of the build) sits alongside the `articles` table (6
+approved rows today) as real, currently-rendered content on the same
+archive pages.
+
+**Decision: a blog category's indexing count is static seed posts + approved
+Supabase articles, combined** — the same merged list
+`getPublishedPostsForCategoryNames()` (`lib/seo/blogContent.js`) already
+produces for the page's own rendered grid. The count is never computed
+separately from the render list; it is always that same array's `.length`.
+
+Why: the point of gating indexing on a count is "does this page have real
+content a visitor would find useful." A seed post is exactly that, whether
+it lives in a JS array or a database row. Counting Supabase rows only would
+noindex several child categories (e.g. `digital-marketing/web-development`)
+that visibly render real articles today — punishing pages for where their
+content happens to be stored, which is the opposite of what this fix is
+for. If the static `posts` array is ever retired in favor of 100% DB-backed
+articles, this note (and the merge in `blogContent.js`) should go with it.

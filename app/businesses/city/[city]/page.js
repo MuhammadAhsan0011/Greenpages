@@ -2,8 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../../components/Button";
 import BusinessCard from "../../../components/BusinessCard";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES, getCityBySlug } from "../../../data/directoryCities";
+import { filterForCity } from "@/lib/seo/businessListings";
+import { getArchiveRobots } from "@/lib/seo/indexing";
+import { buildCollectionPageSchema } from "@/lib/seo/schema";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -20,15 +25,33 @@ export async function generateMetadata({ params }) {
     return { title: "City Not Found" };
   }
 
+  const supabase = createPublicClient();
+  const { data } = await supabase.from("businesses").select("*").ilike("city", `%${city.name}%`);
+  const businesses = filterForCity(data ?? [], city.name);
+
+  const title = `Business Directory in ${city.name} | Green Pages`;
+  const description = `Find verified businesses in ${city.name}, Pakistan on Green Pages — search by category, or list your own business free.`.slice(
+    0,
+    155
+  );
+
   return {
-    title: `Business Directory in ${city.name}`,
-    description:
-      `Find verified businesses in ${city.name}, Pakistan on Green Pages — search by category, or list your own business free.`.slice(
-        0,
-        160
-      ),
+    title,
+    description,
     alternates: {
       canonical: `/businesses/city/${city.slug}`,
+    },
+    robots: getArchiveRobots(businesses.length),
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `${SITE_URL}/businesses/city/${city.slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }
@@ -52,23 +75,39 @@ export default async function CityDirectoryPage({ params }) {
     .select("*")
     .ilike("city", `%${city.name}%`);
 
-  const businesses = (data ?? [])
-    .filter((business) => !business.needs_review)
-    .sort((a, b) => {
-      const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
-      if (planDiff !== 0) return planDiff;
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
+  const businesses = filterForCity(data ?? [], city.name).sort((a, b) => {
+    const planDiff = (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2);
+    if (planDiff !== 0) return planDiff;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   const otherCities = PK_CITIES.filter((c) => c.slug !== city.slug);
 
+  const collectionSchema = buildCollectionPageSchema(
+    {
+      name: `Business Directory in ${city.name}`,
+      description: city.intro,
+      path: `/businesses/city/${city.slug}`,
+    },
+    SITE_URL
+  );
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+
       <section className="hero">
         <div className="container">
-          <p className="breadcrumbs">
-            <Link href="/businesses">Business Directory</Link> / {city.name}
-          </p>
+          <Breadcrumbs
+            items={[
+              { name: "Business Directory", path: "/businesses" },
+              { name: city.name },
+            ]}
+          />
           <span className="hero-eyebrow">Business Directory</span>
           <h1>Business Directory in {city.name}</h1>
           <p className="hero-description">{city.intro}</p>

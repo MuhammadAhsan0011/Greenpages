@@ -175,7 +175,8 @@ export default async function AdminPage({ searchParams }) {
       <div className="container">
         <h1 id="admin-heading">Admin</h1>
         <p className="hero-description">
-          Approve package upgrade requests and manage listing plans.
+          Approve package upgrade requests and manage listing plans.{" "}
+          <Link href="/admin/seo">View SEO indexing status →</Link>
         </p>
 
         <div className="account-card">

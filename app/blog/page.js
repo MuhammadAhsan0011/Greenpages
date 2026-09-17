@@ -1,8 +1,13 @@
 import Link from "next/link";
 import BlogCard from "../components/BlogCard";
 import Button from "../components/Button";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { posts, getAllParents, normalizeDbArticle } from "../data/blog";
+import { getNamesUnderParent } from "@/lib/taxonomy";
 import { createPublicClient } from "@/utils/supabase/public";
+import { getPublishedPostsForCategoryNames } from "@/lib/seo/blogContent";
+import { buildCollectionPageSchema } from "@/lib/seo/schema";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata = {
   title: "Blog",
@@ -21,23 +26,42 @@ export const revalidate = 60;
 // Server Component — merges the site's static posts with user-submitted
 // articles from Supabase into one list.
 export default async function BlogPage() {
-  const categories = getAllParents();
-
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
     .select("slug, title, category, published_at, excerpt, content, cover_image_url, tags")
     .eq("approved", true)
     .lte("published_at", new Date().toISOString());
+  const normalizedArticles = (articles ?? []).map(normalizeDbArticle);
 
-  const allPosts = [...posts, ...(articles ?? []).map(normalizeDbArticle)].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
+  const allPosts = [...posts, ...normalizedArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Only link parents that have at least one post — computed from the same
+  // merged list above, so the nav never points at an empty archive.
+  const categoriesWithPosts = getAllParents().filter(
+    (parent) => getPublishedPostsForCategoryNames(getNamesUnderParent(parent), posts, normalizedArticles).length > 0
+  );
+
+  const collectionSchema = buildCollectionPageSchema(
+    {
+      name: "Green Pages Blog",
+      description: "Practical, no-fluff articles on SEO, web development, and content marketing.",
+      path: "/blog",
+    },
+    SITE_URL
   );
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+
       <section className="hero">
         <div className="container">
+          <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Blog" }]} />
           <span className="hero-eyebrow">Blog</span>
           <h1>Insights on SEO, Web Development & Content Marketing</h1>
           <p className="hero-description">
@@ -46,7 +70,7 @@ export default async function BlogPage() {
             now.
           </p>
           <nav className="related-links" aria-label="Browse by category">
-            {categories.map((category) => (
+            {categoriesWithPosts.map((category) => (
               <Link href={`/blog/category/${category.slug}`} key={category.slug}>
                 {category.name}
               </Link>

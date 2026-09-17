@@ -559,6 +559,7 @@ export const {
   getChild,
   findBySlug,
   isValidCategorySlug,
+  resolveCategoryNodes,
 } = createTaxonomyHelpers(BLOG_CATEGORIES);
 
 // Resolves a raw post/article category name to the right

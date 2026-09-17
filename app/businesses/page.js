@@ -4,9 +4,12 @@ import { redirect } from "next/navigation";
 import Button from "../components/Button";
 import DirectoryListItem from "../components/DirectoryListItem";
 import SortSelect from "../components/SortSelect";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
 import { BUSINESS_CATEGORIES, getAllParents, getParent } from "../data/businessCategories";
+import { buildCollectionPageSchema } from "@/lib/seo/schema";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata = {
   title: "Pakistan Business Directory",
@@ -130,10 +133,12 @@ export default async function BusinessesPage({ searchParams }) {
     return acc;
   }, {});
 
+  // Only categories with 1+ published items appear in the sidebar — an
+  // empty entry here would be a dead-end nav link with nothing behind it.
   const sidebarCategories = SIDEBAR_CATEGORY_SLUGS.map((slug) => {
     const found = getParent(slug);
     return { ...found, count: categoryCounts[found.name] ?? 0 };
-  });
+  }).filter((c) => c.count > 0);
 
   let businesses = (data ?? []).filter((business) => !business.needs_review);
 
@@ -164,14 +169,27 @@ export default async function BusinessesPage({ searchParams }) {
 
   const activeParams = { q: query, city, category, sort: sort !== "newest" ? sort : "", page: "" };
 
+  const collectionSchema = buildCollectionPageSchema(
+    {
+      name: "Pakistan Business Directory",
+      description: "Search verified businesses across Pakistan by category or city.",
+      path: "/businesses",
+    },
+    SITE_URL
+  );
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+
       <section className="hero directory-hero">
         <div className="container hero-inner">
           <div>
-            <p className="breadcrumbs">
-              <Link href="/">Home</Link> / Directory
-            </p>
+            <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Directory" }]} />
             <span className="hero-eyebrow">Business Directory</span>
             <h1>
               Find Verified Businesses Across <span className="text-accent">Pakistan</span>

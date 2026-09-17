@@ -364,23 +364,5 @@ export const {
   getChild,
   findBySlug,
   isValidCategorySlug,
+  resolveCategoryNodes,
 } = createTaxonomyHelpers(BUSINESS_CATEGORIES);
-
-// Resolves a raw businesses.category name to the right
-// /businesses/category/... path — used anywhere a stored category string
-// needs to become a link (business detail page breadcrumbs, etc). Falls
-// back to the top-level directory if unmatched, e.g. a business still
-// sitting in the retired "Other" bucket (needs_review, not categorized).
-export function getCategoryLinkPath(categoryName) {
-  for (const parent of BUSINESS_CATEGORIES) {
-    if (parent.name === categoryName) {
-      return `/businesses/category/${parent.slug}`;
-    }
-    for (const child of parent.children) {
-      if (child.name === categoryName) {
-        return `/businesses/category/${parent.slug}/${child.slug}`;
-      }
-    }
-  }
-  return "/businesses";
-}

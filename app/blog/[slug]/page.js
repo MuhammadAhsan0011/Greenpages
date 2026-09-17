@@ -5,7 +5,8 @@ import Button from "../../components/Button";
 import Comments from "../../components/Comments";
 import RichArticleBody from "../../components/RichArticleBody";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
-import { posts, getPostBySlug, getCategoryLinkPath, estimateReadTime } from "../../data/blog";
+import Breadcrumbs from "../../components/Breadcrumbs";
+import { posts, getPostBySlug, resolveCategoryNodes, estimateReadTime } from "../../data/blog";
 import { getServiceBySlug } from "../../data/services";
 import { createPublicClient } from "@/utils/supabase/public";
 
@@ -105,6 +106,7 @@ export default async function BlogPostPage({ params }) {
   }
 
   const relatedService = getServiceBySlug(post.relatedServiceSlug);
+  const { parent: categoryParent, child: categoryChild } = resolveCategoryNodes(post.category);
   const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -135,11 +137,29 @@ export default async function BlogPostPage({ params }) {
 
       <section className="service-hero">
         <div className="container">
-          <p className="breadcrumbs">
-            <Link href="/blog">Blog</Link> / {post.title}
-          </p>
+          <Breadcrumbs
+            items={[
+              { name: "Blog", path: "/blog" },
+              ...(categoryParent ? [{ name: categoryParent.name, path: `/blog/category/${categoryParent.slug}` }] : []),
+              ...(categoryChild
+                ? [
+                    {
+                      name: categoryChild.name,
+                      path: `/blog/category/${categoryParent.slug}/${categoryChild.slug}`,
+                    },
+                  ]
+                : []),
+              { name: post.title },
+            ]}
+          />
           <Link
-            href={getCategoryLinkPath(post.category)}
+            href={
+              categoryChild
+                ? `/blog/category/${categoryParent.slug}/${categoryChild.slug}`
+                : categoryParent
+                  ? `/blog/category/${categoryParent.slug}`
+                  : "/blog"
+            }
             className="category-badge"
           >
             {post.category}
