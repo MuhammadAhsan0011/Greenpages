@@ -16,6 +16,14 @@ function isValidArticleCategory(category) {
   return Boolean(category) && Boolean(resolveCategoryNodes(category).parent);
 }
 
+// Pasted text (from Word, PDF viewers, some web pages) can carry literal
+// non-breaking spaces instead of regular ones — invisible in a plain input,
+// but unlike a real space they never let a title wrap, so a long one
+// overflows its card instead of breaking onto multiple lines.
+function normalizeSpaces(text) {
+  return text.replace(/ /g, " ").replace(/ {2,}/g, " ").trim();
+}
+
 function slugify(title) {
   return title
     .toLowerCase()
@@ -108,7 +116,7 @@ export async function createArticle(formData) {
     }
   }
 
-  const title = formData.get("title")?.toString().trim();
+  const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
   const category = formData.get("category")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
@@ -239,7 +247,7 @@ export async function updateArticle(slug, formData) {
     redirect("/account/articles");
   }
 
-  const title = formData.get("title")?.toString().trim();
+  const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
   const category = formData.get("category")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
@@ -297,6 +305,11 @@ export async function updateArticle(slug, formData) {
       title,
       excerpt,
       content,
+      // Editing is Verified/Premium-only (isPaidPlan already checked above)
+      // and always goes through the rich HTML editor, so the saved content
+      // is always real HTML from here on — even if the article was first
+      // created on the Free plan (content_format: "markdown" back then).
+      content_format: "html",
       category,
       cover_image_url: coverImageUrl,
       tags,

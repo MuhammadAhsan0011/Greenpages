@@ -9,12 +9,12 @@ export default function RefundPolicyPage() {
   return (
     <article className="legal-article">
       <h2>Refund Policy</h2>
-      <p className="legal-updated">Last updated: August 27, 2026</p>
+      <p className="legal-updated">Last updated: September 15, 2026</p>
 
       <p>
         This policy covers payments for our paid listing packages, Verified
-        (Rs. 2,000/year) and Premium (Rs. 4,500/year). The Free plan never
-        requires payment.
+        (Rs. 2,000, one-time) and Premium (Rs. 4,500, one-time). The Free plan
+        never requires payment.
       </p>
 
       <h3>1. How Activation Works</h3>
@@ -36,9 +36,8 @@ export default function RefundPolicyPage() {
       <p>
         Once a package has been activated and delivered as described (badge,
         priority placement, and included features live on your listing),
-        payments are non-refundable for that annual period. This includes
-        changing your mind after activation or closing your business
-        listing voluntarily.
+        the payment is non-refundable. This includes changing your mind
+        after activation or closing your business listing voluntarily.
       </p>
 
       <h3>4. Requesting a Refund</h3>

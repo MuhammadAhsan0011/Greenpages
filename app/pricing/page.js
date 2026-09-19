@@ -58,7 +58,7 @@ const packages = [
       </svg>
     ),
     price: "Rs. 2,000",
-    period: "/annually",
+    period: "one-time",
     description: "Stand out with a trust badge and better visibility.",
     features: [
       "Everything in Free",
@@ -76,7 +76,7 @@ const packages = [
       <Image src="/images/premium-plan-icon.png" alt="" width={28} height={23} aria-hidden="true" />
     ),
     price: "Rs. 4,500",
-    period: "/annually",
+    period: "one-time",
     description: "Maximum visibility across the entire directory.",
     features: [
       "Everything in Verified",

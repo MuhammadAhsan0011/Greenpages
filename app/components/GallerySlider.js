@@ -29,13 +29,26 @@ export default function GallerySlider({ images, alt }) {
       }}
       tabIndex={hasMultiple ? 0 : -1}
     >
+      {/* Blurred, scaled-up copy fills the frame behind the real photo, so a
+          shape that doesn't match the frame's ratio never leaves plain empty
+          bars — the actual photo on top still shows uncropped. */}
+      <Image
+        key={`${images[index]}-bg`}
+        src={images[index]}
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes="(max-width: 900px) 100vw, 480px"
+        className="listing-gallery-bg"
+        style={{ objectFit: "cover" }}
+      />
       <Image
         key={images[index]}
         src={images[index]}
         alt={alt}
         fill
         sizes="(max-width: 900px) 100vw, 480px"
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "contain" }}
       />
 
       {hasMultiple && (

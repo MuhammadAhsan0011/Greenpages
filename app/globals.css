@@ -985,6 +985,7 @@ section {
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .blog-card:hover {
@@ -3032,6 +3033,11 @@ article.service-section h2 {
   box-shadow: var(--shadow-sm);
 }
 
+.listing-gallery-bg {
+  filter: blur(20px) brightness(0.7);
+  transform: scale(1.15);
+}
+
 .listing-gallery-empty {
   display: flex;
   align-items: center;
@@ -3232,6 +3238,7 @@ article.service-section h2 {
   height: 160px;
   border-radius: var(--radius-sm);
   overflow: hidden;
+  background: #ffffff;
 }
 
 .rating-breakdown {
@@ -3741,6 +3748,7 @@ article.service-section h2 {
 .featured-business-photo {
   position: relative;
   height: 170px;
+  overflow: hidden;
   background: var(--color-primary-light);
 }
 
