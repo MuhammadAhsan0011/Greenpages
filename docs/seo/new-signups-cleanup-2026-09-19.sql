@@ -154,13 +154,13 @@ where slug = 'herboria'
   and category = 'Retail & E-Commerce'
   and subcategory is null;
 
--- LOW CONFIDENCE — curtains/sofa cloth is soft furnishings retail with no
--- dedicated taxonomy child; "Furniture Stores" is the closest real one but
--- an imperfect fit (same open gap as furniture-interior-design in the
--- original migration diff — it genuinely splits into two categories).
+-- Parent-only — curtains/sofa cloth is soft furnishings retail with no
+-- dedicated taxonomy child; "Furniture Stores" would be a wrong guess
+-- (same open gap as furniture-interior-design in the original migration
+-- diff), so this is left NULL rather than forced into an inaccurate fit.
 update businesses
 set category = 'Shopping & Retail',
-    subcategory = 'Furniture Stores'
+    subcategory = null
 where slug = 'noor-curtain-and-sofa-cloth'
   and category = 'Furniture & Interior Design'
   and subcategory = 'Curtain and Sofa Cloth';

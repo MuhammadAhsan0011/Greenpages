@@ -1,10 +1,8 @@
 -- Fixes for the 3 pre-existing free-text-subcategory rows flagged as
 -- "still open" in docs/seo/category-migration-diff.md ("Needs manual
 -- review" section) and re-confirmed still broken during this session's
--- verification pass. Decisions below are my suggested defaults (see the
--- conversation) — edit before running if you want a different call,
--- especially on leaosagitrades and experts-force-corporation where no
--- single real child is a clean fit.
+-- verification pass. Final decisions below are the user's calls, not
+-- defaults.
 --
 -- Run the SELECT first to confirm these are still the 3 rows expected,
 -- then the UPDATE block. Both wrapped in one transaction.
@@ -18,25 +16,24 @@ order by slug;
 
 -- 1. Green Pages Pk — category was "Professional Services" (wrong parent)
 --    with subcategory "Digital Marketing Agency" (not a real child of that
---    parent). The business's own description is entirely about web
---    development, not marketing — moved to Technology & Digital's real
---    "Web Development Agencies" child.
+--    parent). It's a directory plus digital marketing agency — web
+--    development is one service, not the business — so this lands on
+--    Technology & Digital's real "Digital Marketing & SEO Agencies" child,
+--    not Web Development Agencies.
 update businesses
 set category = 'Technology & Digital',
-    subcategory = 'Web Development Agencies'
+    subcategory = 'Digital Marketing & SEO Agencies'
 where slug = 'green-pages-pk'
   and category = 'Professional Services'
   and subcategory = 'Digital Marketing Agency';
 
 -- 2. LeaosagiTrades — category "Financial Services" is the right parent;
---    subcategory "Financial service" was free text. No real child is a
---    clean fit for a forex signals/education/mentorship community —
---    "Investment & Wealth Advisors" is the closest available, not a
---    confident match. Reconsider if that reads as inaccurate; NULL
---    (parent-only) is the fallback, same precedent as Cosmetics & Personal
---    Care / VirtualVetDesk.
+--    subcategory "Financial service" was free text. Left NULL (parent-only)
+--    rather than "Investment & Wealth Advisors" — that label means a
+--    licensed advisory firm, and this is a forex signals/mentorship group;
+--    someone browsing that page for an actual advisor would be misled.
 update businesses
-set subcategory = 'Investment & Wealth Advisors'
+set subcategory = null
 where slug = 'leaosagitrades'
   and category = 'Financial Services'
   and subcategory = 'Financial service';
