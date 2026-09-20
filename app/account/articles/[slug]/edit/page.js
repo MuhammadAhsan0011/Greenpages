@@ -6,25 +6,13 @@ import { updateArticle, removeArticleCoverImage } from "../../actions";
 import RichTextEditor from "../../../../components/RichTextEditorClientOnly";
 import SmartTextarea from "../../../../components/SmartTextarea";
 import SubmitButton from "../../../../components/SubmitButton";
+import ArticleCategoryFields from "../../../../components/ArticleCategoryFields";
+import { getAllParents, resolveCategoryNodes } from "../../../../data/blog";
 
 export const metadata = {
   title: "Edit Article",
   robots: { index: false, follow: false },
 };
-
-// Must stay identical to app/account/articles/new/page.js's list - see the
-// comment there.
-const categories = [
-  "SEO",
-  "Local SEO",
-  "Web Development",
-  "Content Marketing",
-  "Digital Marketing",
-  "Finance",
-  "Business",
-  "E-commerce",
-  "Technology",
-];
 
 // Server Component — editing a published article is a Verified/Featured
 // perk (server-enforced in actions.js, not just hidden here). Free-plan
@@ -81,6 +69,11 @@ export default async function EditArticlePage({ params, searchParams }) {
     );
   }
 
+  // The article's stored category is a single flat NAME that could be
+  // either level (see ArticleCategoryFields.js) — resolve it back to the
+  // right parent/child slugs so the dependent dropdown opens pre-selected.
+  const { parent: currentParent, child: currentChild } = resolveCategoryNodes(article.category);
+
   const publishedLocal = article.published_at
     ? new Date(
         new Date(article.published_at).getTime() -
@@ -131,19 +124,11 @@ export default async function EditArticlePage({ params, searchParams }) {
           <p className="editor-hint">PNG, JPEG, WebP, or GIF — max 5MB.</p>
         </div>
 
-        <div className="form-field">
-          <label htmlFor="category">Category</label>
-          <select id="category" name="category" defaultValue={article.category} required>
-            <option value="" disabled>
-              Select a category
-            </option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
+        <ArticleCategoryFields
+          parents={getAllParents()}
+          defaultParentSlug={currentParent?.slug}
+          defaultChildSlug={currentChild?.slug}
+        />
 
         <div className="form-field">
           <label htmlFor="excerpt">Short Excerpt</label>

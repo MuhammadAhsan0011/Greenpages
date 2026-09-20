@@ -6,14 +6,31 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
-import { resolveCategoryNodes } from "../../data/blog";
+import { getParent, getChild } from "../../data/blog";
 
-// Articles have a single flat category field that can legitimately hold
-// either a parent- or child-level taxonomy name (see the same note on
-// app/data/blog.js's getCategoryLinkPath) — so "valid" here means it
-// resolves to a real node at either level, not just that it's non-empty.
-function isValidArticleCategory(category) {
-  return Boolean(category) && Boolean(resolveCategoryNodes(category).parent);
+// The form submits taxonomy SLUGS (see ArticleCategoryFields.js), not free
+// text — resolved and validated against the real taxonomy here, never
+// trusted as-is, same enforcement point as the business category/subcategory
+// fix. Articles have a single flat category *column* (no separate
+// subcategory column like businesses — see the note on
+// app/blog/category/[parent]/page.js for why), so the resolved child name
+// (if a subcategory was picked) or otherwise the parent name is what
+// actually gets stored.
+function resolveArticleCategory(categorySlug, subcategorySlug) {
+  const categoryParent = categorySlug ? getParent(categorySlug) : null;
+  if (!categoryParent) return { error: "Please choose a valid category." };
+
+  if (subcategorySlug) {
+    const categoryChild = getChild(categorySlug, subcategorySlug);
+    if (!categoryChild) {
+      return {
+        error: "Please choose a valid subcategory for the selected category, or leave it blank.",
+      };
+    }
+    return { category: categoryChild.name };
+  }
+
+  return { category: categoryParent.name };
 }
 
 // Pasted text (from Word, PDF viewers, some web pages) can carry literal
@@ -117,7 +134,8 @@ export async function createArticle(formData) {
   }
 
   const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
-  const category = formData.get("category")?.toString().trim();
+  const categorySlug = formData.get("category")?.toString().trim();
+  const subcategorySlug = formData.get("subcategory")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
 
@@ -134,12 +152,11 @@ export async function createArticle(formData) {
     );
   }
 
-  // Never trusted as free text past the curated <select> — a stale tab or
-  // a crafted request could still submit anything, so this is the actual
-  // enforcement point, same as the business category/subcategory fix.
-  if (!isValidArticleCategory(category)) {
-    redirect(`/account/articles/new?error=${encodeURIComponent("Please choose a valid category.")}`);
+  const categoryResult = resolveArticleCategory(categorySlug, subcategorySlug);
+  if (categoryResult.error) {
+    redirect(`/account/articles/new?error=${encodeURIComponent(categoryResult.error)}`);
   }
+  const category = categoryResult.category;
 
   let coverImageUrl = null;
   const coverImageFile = formData.get("coverImage");
@@ -248,7 +265,8 @@ export async function updateArticle(slug, formData) {
   }
 
   const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
-  const category = formData.get("category")?.toString().trim();
+  const categorySlug = formData.get("category")?.toString().trim();
+  const subcategorySlug = formData.get("subcategory")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim();
   const rawContent = formData.get("content")?.toString() ?? "";
   const content = sanitizeArticleHtml(rawContent);
@@ -260,9 +278,11 @@ export async function updateArticle(slug, formData) {
     );
   }
 
-  if (!isValidArticleCategory(category)) {
-    redirect(`/account/articles/${slug}/edit?error=${encodeURIComponent("Please choose a valid category.")}`);
+  const categoryResult = resolveArticleCategory(categorySlug, subcategorySlug);
+  if (categoryResult.error) {
+    redirect(`/account/articles/${slug}/edit?error=${encodeURIComponent(categoryResult.error)}`);
   }
+  const category = categoryResult.category;
 
   let coverImageUrl = article.cover_image_url;
   const oldCoverImageUrl = article.cover_image_url;

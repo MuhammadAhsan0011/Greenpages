@@ -7,29 +7,13 @@ import SubmitButton from "../../../components/SubmitButton";
 import ArticleEditor from "../../../components/ArticleEditor";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import SmartTextarea from "../../../components/SmartTextarea";
+import ArticleCategoryFields from "../../../components/ArticleCategoryFields";
+import { getAllParents } from "../../../data/blog";
 
 export const metadata = {
   title: "Write a New Article",
   robots: { index: false, follow: false },
 };
-
-// Kept as its own fixed list rather than the full 183-child blog taxonomy
-// (app/data/blog.js) - a free-plan submission form showing every possible
-// subcategory would be overwhelming. Every value here must be an exact
-// parent or child name that actually exists in that taxonomy, or the
-// article silently stops showing up on any /blog/category page - see
-// docs/seo/category-migration-diff.md ("article form category list").
-const categories = [
-  "SEO",
-  "Local SEO",
-  "Web Development",
-  "Content Marketing",
-  "Digital Marketing",
-  "Finance",
-  "Business",
-  "E-commerce",
-  "Technology",
-];
 
 // Server Component — the form posts directly to a Server Action
 // (createArticle), so no client-side JavaScript is needed to submit it.
@@ -120,19 +104,7 @@ export default async function NewArticlePage({ searchParams }) {
             <p className="editor-hint">PNG, JPEG, WebP, or GIF — max 5MB.</p>
           </div>
 
-          <div className="form-field">
-            <label htmlFor="category">Category</label>
-            <select id="category" name="category" defaultValue="" required>
-              <option value="" disabled>
-                Select a category
-              </option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+          <ArticleCategoryFields parents={getAllParents()} />
 
           <div className="form-field">
             <label htmlFor="excerpt">Short Excerpt</label>
