@@ -35,17 +35,33 @@ currently open.
 
 ## Deployment — never deploy without explicit, same-conversation permission
 
-- **Never run `npx vercel --prod` (or any other production deploy) unless the
-  user explicitly asks for it in that conversation** — e.g. "deploy kardo",
-  "deploy this", "push it live", "haan deploy kardo" in answer to a direct
-  question. Committing and pushing to git is a completely separate action
-  from deploying, and pushing must never trigger a deploy by itself.
+- **CORRECTION (2026-09-20, verified directly): this project's Vercel
+  project IS connected via GitHub integration and DOES auto-deploy to
+  production on every push to `main`.** Confirmed by pushing commit
+  `40a34e8`: within ~2 minutes, a new "Ready" production deployment appeared
+  and `vercel alias ls` showed it already aliased to
+  `www.greenpagespk.com` — with no `vercel --prod` ever run for it (that
+  manual call separately failed with "Not authorized" and is unrelated).
+  So the assumption below this line — that pushing and deploying are
+  cleanly separable — does **not** hold operationally for this repo:
+  **`git push origin main` puts the change on production regardless of
+  whether `vercel --prod` is ever run.** Treat "just push, don't deploy" as
+  currently impossible to honor literally; if the user asks for that,
+  tell them push-to-main auto-deploys here and confirm they still want to
+  push before doing so, rather than silently pushing under a false
+  assurance that production is unaffected.
+- **Never run `npx vercel --prod` (or any other manual production deploy)
+  unless the user explicitly asks for it in that conversation** — e.g.
+  "deploy kardo", "deploy this", "push it live", "haan deploy kardo" in
+  answer to a direct question. This still governs the manual CLI command;
+  it just doesn't add the safety margin it implies once you know push
+  already deploys.
 - If the user says "just push to git, don't deploy" (or anything similar in
-  Urdu/English), only run `git add` / `git commit` / `git push` and stop
-  there. Do not deploy later in the same turn, later in the same
-  conversation, or "since it's a small fix" — always wait to be asked again.
+  Urdu/English): per the correction above, a push to `main` will deploy
+  regardless — say so and get their explicit confirmation before pushing,
+  rather than pushing and assuming production is untouched.
 - If it's unclear whether "push" means git-push-only or push-and-deploy, ask
-  before running `vercel --prod`.
+  before pushing to `main` at all (not just before running `vercel --prod`).
 - A standing "don't deploy right now" from the user is durable — it holds
   until the user explicitly says to deploy, even across separate
   conversations/sessions/devices working in this same repo. Conversely, "do
