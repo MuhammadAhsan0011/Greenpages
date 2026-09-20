@@ -25,7 +25,10 @@ export const revalidate = 60;
 
 // Server Component — merges the site's static posts with user-submitted
 // articles from Supabase into one list.
-export default async function BlogPage() {
+export default async function BlogPage({ searchParams }) {
+  const params = await searchParams;
+  const query = params?.q?.trim() ?? "";
+
   const supabase = createPublicClient();
   const { data: articles } = await supabase
     .from("articles")
@@ -34,7 +37,18 @@ export default async function BlogPage() {
     .lte("published_at", new Date().toISOString());
   const normalizedArticles = (articles ?? []).map(normalizeDbArticle);
 
-  const allPosts = [...posts, ...normalizedArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
+  let allPosts = [...posts, ...normalizedArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Sidebar's "Search Articles" box and this page's own search both land
+  // here via a plain GET — matching against title/excerpt/category covers
+  // what a visitor would actually be looking for, without needing a
+  // separate search index for a blog this size.
+  if (query) {
+    const needle = query.toLowerCase();
+    allPosts = allPosts.filter((post) =>
+      [post.title, post.excerpt, post.category].some((field) => field?.toLowerCase().includes(needle))
+    );
+  }
 
   // Only link parents that have at least one post — computed from the same
   // merged list above, so the nav never points at an empty archive.
@@ -81,14 +95,21 @@ export default async function BlogPage() {
 
       <section aria-labelledby="blog-list-heading">
         <div className="container">
-          <h2 id="blog-list-heading" className="visually-hidden">
-            All Articles
+          <h2 id="blog-list-heading" className={query ? undefined : "visually-hidden"}>
+            {query ? `Search Results for "${query}"` : "All Articles"}
           </h2>
-          <div className="grid grid-3">
-            {allPosts.map((post) => (
-              <BlogCard key={post.slug} post={post} />
-            ))}
-          </div>
+          {allPosts.length > 0 ? (
+            <div className="grid grid-3">
+              {allPosts.map((post) => (
+                <BlogCard key={post.slug} post={post} />
+              ))}
+            </div>
+          ) : (
+            <p>
+              No articles match &quot;{query}&quot;.{" "}
+              <Link href="/blog">Browse all articles</Link> instead.
+            </p>
+          )}
         </div>
       </section>
 
