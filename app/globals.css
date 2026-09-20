@@ -2887,6 +2887,15 @@ article.service-section h2 {
   aspect-ratio: 4 / 3;
 }
 
+/* next/image's `fill` mode needs an explicit object-fit or the browser
+   default (stretch-to-fill) distorts any cover image whose real aspect
+   ratio isn't already 4:3 — a real bug, not a style choice: every other
+   `fill` image on the site (.article-cover-image, .blog-card-image) already
+   sets this, this one was just missed. */
+.post-hero-image img {
+  object-fit: cover;
+}
+
 .blog-detail-section {
   padding: 64px 0 96px;
 }
