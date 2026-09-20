@@ -2883,26 +2883,16 @@ article.service-section h2 {
 }
 
 /* ---------- Blog article detail: two-column layout + sticky sidebar ---------- */
-.post-hero-image {
-  /* next/image's `fill` mode positions itself absolutely and needs its
-     parent to establish the containing block — the shared .hero-image base
-     class doesn't set this (its other, non-fill usages elsewhere never
-     needed it), so without this the image was positioning against some
-     far-off ancestor instead of this box, ballooning to fill most of the
-     viewport instead of its grid column. Same fix .article-cover-image
-     already has for the same reason. */
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-}
-
-/* next/image's `fill` mode needs an explicit object-fit or the browser
-   default (stretch-to-fill) distorts any cover image whose real aspect
-   ratio isn't already 4:3 — a real bug, not a style choice: every other
-   `fill` image on the site (.article-cover-image, .blog-card-image) already
-   sets this, this one was just missed. */
-.post-hero-image img {
-  object-fit: cover;
+/* The brand banner (2103x748, a wide strip, not a 4:3 photo) sits below the
+   breadcrumb/title/meta rather than beside them — forcing it into a side
+   column cropped most of the actual graphic out of view. Rendered at its
+   own natural width/height ratio (see the <Image> usage) so nothing here
+   needs to fake an aspect-ratio box or an object-fit crop. */
+.post-hero-banner {
+  margin-top: 28px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 .blog-detail-section {
@@ -3126,13 +3116,6 @@ article.service-section h2 {
 
   .blog-main {
     max-width: none;
-  }
-
-  /* Unlike every other .hero-image (which leads on mobile via order: -1),
-     the article's feature image stays after the breadcrumb/category/
-     heading/meta on mobile, per the requested stacking order. */
-  .post-hero .hero-image {
-    order: 0;
   }
 }
 
