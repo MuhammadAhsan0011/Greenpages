@@ -216,66 +216,69 @@ export default async function BlogPostPage({ params }) {
 
       <section className="hero post-hero">
         <div className="container">
-          <Breadcrumbs
-            items={[
-              { name: "Home", path: "/" },
-              { name: "Blog", path: "/blog" },
-              ...(categoryParent ? [{ name: categoryParent.name, path: `/blog/category/${categoryParent.slug}` }] : []),
-              ...(categoryChild
-                ? [
-                    {
-                      name: categoryChild.name,
-                      path: `/blog/category/${categoryParent.slug}/${categoryChild.slug}`,
-                    },
-                  ]
-                : []),
-              { name: post.title },
-            ]}
-          />
-          <Link
-            href={
-              categoryChild
-                ? `/blog/category/${categoryParent.slug}/${categoryChild.slug}`
-                : categoryParent
-                  ? `/blog/category/${categoryParent.slug}`
-                  : "/blog"
-            }
-            className="category-badge"
-          >
-            {post.category}
-          </Link>
-          <h1>{post.title}</h1>
-          <div className="post-meta">
-            <span>By {post.author}</span>
-            <span aria-hidden="true">·</span>
-            <time dateTime={post.date}>{formattedDate}</time>
-            <span aria-hidden="true">·</span>
-            <span>{post.readTime}</span>
-          </div>
-          {post.tags && (
-            <div className="tag-list">
-              {post.tags.split(",").map((tag) => (
-                <span className="tag-chip" key={tag}>
-                  {tag.trim()}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Fixed brand banner, not the article's own cover image — that
-              one only appears below, at the top of the article body
-              (.article-cover-image). Same graphic on every article, so it's
-              a static asset rather than per-post data. Rendered at its own
-              natural 2103x748 proportions (no fill/crop box) so the full
-              graphic always shows intact regardless of container width. */}
-          <div className="post-hero-banner">
-            <Image
-              src={blogHeroImage}
-              alt="Green Pages PK Blog"
-              sizes="(max-width: 900px) 100vw, 1120px"
-              style={{ width: "100%", height: "auto" }}
-              priority
+          <div className="post-hero-card">
+            <Breadcrumbs
+              items={[
+                { name: "Home", path: "/" },
+                { name: "Blog", path: "/blog" },
+                ...(categoryParent ? [{ name: categoryParent.name, path: `/blog/category/${categoryParent.slug}` }] : []),
+                ...(categoryChild
+                  ? [
+                      {
+                        name: categoryChild.name,
+                        path: `/blog/category/${categoryParent.slug}/${categoryChild.slug}`,
+                      },
+                    ]
+                  : []),
+                { name: post.title },
+              ]}
             />
+            <Link
+              href={
+                categoryChild
+                  ? `/blog/category/${categoryParent.slug}/${categoryChild.slug}`
+                  : categoryParent
+                    ? `/blog/category/${categoryParent.slug}`
+                    : "/blog"
+              }
+              className="category-badge"
+            >
+              {post.category}
+            </Link>
+            <h1>{post.title}</h1>
+            <div className="post-meta">
+              <span>By {post.author}</span>
+              <span aria-hidden="true">·</span>
+              <time dateTime={post.date}>{formattedDate}</time>
+              <span aria-hidden="true">·</span>
+              <span>{post.readTime}</span>
+            </div>
+            {post.tags && (
+              <div className="tag-list">
+                {post.tags.split(",").map((tag) => (
+                  <span className="tag-chip" key={tag}>
+                    {tag.trim()}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Fixed brand banner, not the article's own cover image — that
+                one only appears below, at the top of the article body
+                (.article-cover-image). Same graphic on every article, so
+                it's a static asset rather than per-post data. Rendered at
+                its own natural 2103x748 proportions (no fill/crop box) so
+                the full graphic always shows intact regardless of
+                container width. */}
+            <div className="post-hero-banner">
+              <Image
+                src={blogHeroImage}
+                alt="Green Pages PK Blog"
+                sizes="(max-width: 900px) 100vw, 1120px"
+                style={{ width: "100%", height: "auto" }}
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>
