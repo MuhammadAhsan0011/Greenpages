@@ -2884,6 +2884,15 @@ article.service-section h2 {
 
 /* ---------- Blog article detail: two-column layout + sticky sidebar ---------- */
 .post-hero-image {
+  /* next/image's `fill` mode positions itself absolutely and needs its
+     parent to establish the containing block — the shared .hero-image base
+     class doesn't set this (its other, non-fill usages elsewhere never
+     needed it), so without this the image was positioning against some
+     far-off ancestor instead of this box, ballooning to fill most of the
+     viewport instead of its grid column. Same fix .article-cover-image
+     already has for the same reason. */
+  position: relative;
+  width: 100%;
   aspect-ratio: 4 / 3;
 }
 
