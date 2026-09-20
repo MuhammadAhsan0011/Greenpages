@@ -24,6 +24,17 @@ export default function Breadcrumbs({ items }) {
         {items.map((item, index) => (
           <span key={item.name}>
             {index > 0 && " / "}
+            {index === 0 && item.name === "Home" && (
+              <svg className="breadcrumb-home-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 11.5 12 4l8 7.5M6 9.5V20h5v-5h2v5h5V9.5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
             {item.path ? <Link href={item.path}>{item.name}</Link> : item.name}
           </span>
         ))}

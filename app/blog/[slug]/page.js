@@ -246,12 +246,33 @@ export default async function BlogPostPage({ params }) {
               {post.category}
             </Link>
             <h1>{post.title}</h1>
-            <div className="post-meta">
-              <span>By {post.author}</span>
-              <span aria-hidden="true">·</span>
-              <time dateTime={post.date}>{formattedDate}</time>
-              <span aria-hidden="true">·</span>
-              <span>{post.readTime}</span>
+            <div className="post-meta post-meta-icons">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.7" />
+                  <path
+                    d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                By {post.author}
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <rect x="4" y="5.5" width="16" height="14.5" rx="2" stroke="currentColor" strokeWidth="1.7" />
+                  <path d="M4 9.5h16M8 3.5v3M16 3.5v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </svg>
+                <time dateTime={post.date}>{formattedDate}</time>
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
+                  <path d="M12 8v4l2.6 2.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {post.readTime}
+              </span>
             </div>
             {post.tags && (
               <div className="tag-list">

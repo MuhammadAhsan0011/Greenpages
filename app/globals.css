@@ -1057,6 +1057,27 @@ a.category-badge:hover {
   margin-bottom: 16px;
 }
 
+/* Modifier for the article hero's meta row only (icons instead of "·"
+   separators) — the plain .post-meta above stays as-is for BlogCard and
+   every other place that already uses it. */
+.post-meta-icons {
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.post-meta-icons span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post-meta-icons svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
 .service-hero .post-meta {
   margin-top: 12px;
   margin-bottom: 0;
@@ -1248,6 +1269,14 @@ a.category-badge:hover {
 .breadcrumbs a {
   color: var(--color-primary-dark);
   font-weight: 600;
+}
+
+.breadcrumb-home-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 5px;
+  vertical-align: -2px;
+  color: var(--color-primary-dark);
 }
 
 .service-detail-icon {
