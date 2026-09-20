@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { requestUpgrade } from "./actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "../account/articles/constants";
+import { PLAN_PRICING } from "../data/plans";
 import SubmitButton from "../components/SubmitButton";
 
 const WHATSAPP_NUMBER = "923032672509";
@@ -27,8 +28,8 @@ const packages = [
         <path d="M3 12h18" stroke="currentColor" strokeWidth="1.8" />
       </svg>
     ),
-    price: "Rs. 0",
-    period: "forever",
+    price: PLAN_PRICING.free.price,
+    period: PLAN_PRICING.free.period,
     description: "Get listed in the directory and start publishing today.",
     features: [
       "Business profile listed in the directory",
@@ -57,8 +58,8 @@ const packages = [
         />
       </svg>
     ),
-    price: "Rs. 2,000",
-    period: "one-time",
+    price: PLAN_PRICING.verified.price,
+    period: PLAN_PRICING.verified.period,
     description: "Stand out with a trust badge and better visibility.",
     features: [
       "Everything in Free",
@@ -75,8 +76,8 @@ const packages = [
     icon: (
       <Image src="/images/premium-plan-icon.png" alt="" width={28} height={23} aria-hidden="true" />
     ),
-    price: "Rs. 4,500",
-    period: "one-time",
+    price: PLAN_PRICING.featured.price,
+    period: PLAN_PRICING.featured.period,
     description: "Maximum visibility across the entire directory.",
     features: [
       "Everything in Verified",

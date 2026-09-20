@@ -2508,6 +2508,7 @@ article.service-section h2 {
   color: var(--color-text-muted);
 }
 
+#step-plan:checked ~ .wizard-stepper label[for="step-plan"] .wizard-step-circle,
 #step-info:checked ~ .wizard-stepper label[for="step-info"] .wizard-step-circle,
 #step-contact:checked ~ .wizard-stepper label[for="step-contact"] .wizard-step-circle,
 #step-location:checked ~ .wizard-stepper label[for="step-location"] .wizard-step-circle,
@@ -2518,6 +2519,7 @@ article.service-section h2 {
   color: #ffffff;
 }
 
+#step-plan:checked ~ .wizard-stepper label[for="step-plan"] .wizard-step-label,
 #step-info:checked ~ .wizard-stepper label[for="step-info"] .wizard-step-label,
 #step-contact:checked ~ .wizard-stepper label[for="step-contact"] .wizard-step-label,
 #step-location:checked ~ .wizard-stepper label[for="step-location"] .wizard-step-label,
@@ -2545,12 +2547,65 @@ article.service-section h2 {
   display: none;
 }
 
+#step-plan:checked ~ .wizard-layout #panel-plan,
 #step-info:checked ~ .wizard-layout #panel-info,
 #step-contact:checked ~ .wizard-layout #panel-contact,
 #step-location:checked ~ .wizard-layout #panel-location,
 #step-media:checked ~ .wizard-layout #panel-media,
 #step-review:checked ~ .wizard-layout #panel-review {
   display: block;
+}
+
+/* ---------- Business wizard: choose-plan step ---------- */
+.plan-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.plan-choice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plan-choice-card:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.plan-choice-card input {
+  width: auto;
+  margin: 0 0 4px;
+}
+
+.plan-choice-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.plan-choice-price {
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.plan-choice-period {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+.plan-choice-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
 }
 
 .wizard-main h3 {

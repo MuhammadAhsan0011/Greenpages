@@ -14,6 +14,7 @@ import SubmitButton from "../../components/SubmitButton";
 import BusinessHoursFields from "../../components/BusinessHoursFields";
 import WhatsAppUrlField from "../../components/WhatsAppUrlField";
 import CategorySubcategoryFields from "../../components/CategorySubcategoryFields";
+import { PLAN_PRICING } from "../../data/plans";
 
 export const metadata = {
   title: "Add Your Business Listing",
@@ -31,13 +32,21 @@ const FEATURES = [
   { value: "Other", icon: "⋯" },
 ];
 
-const STEPS = [
+const BASE_STEPS = [
   { id: "info", icon: "🏢", label: "Business Info" },
   { id: "contact", icon: "📞", label: "Contact Info" },
   { id: "location", icon: "📍", label: "Location" },
   { id: "media", icon: "🖼️", label: "Details & Media" },
   { id: "review", icon: "✅", label: "Review & Submit" },
 ];
+
+// A brand-new listing starts with a "Choose Your Plan" step: pick Free and
+// go straight into the form, or pick Verified/Premium and the upgrade
+// request is sent together with the listing itself instead of requiring a
+// separate trip to /pricing afterward (upsertBusiness sets requested_plan
+// on creation — see app/account/actions.js). Editing an existing business
+// never shows this step; plan changes there go through /pricing as before.
+const PLAN_STEP = { id: "plan", icon: "💳", label: "Choose Plan" };
 
 function LockedNotice({ feature }) {
   return (
@@ -68,9 +77,6 @@ export default async function BusinessProfilePage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
   const requestedStep = params?.step;
-  const initialStepId = STEPS.some((step) => step.id === requestedStep)
-    ? requestedStep
-    : "info";
 
   const supabase = await createClient();
   const {
@@ -86,6 +92,14 @@ export default async function BusinessProfilePage({ searchParams }) {
     .select("*")
     .eq("owner_id", user.id)
     .maybeSingle();
+
+  // Only a brand-new listing gets the plan-choice step — an existing
+  // business already has a plan, and changing it goes through /pricing.
+  const STEPS = business ? BASE_STEPS : [PLAN_STEP, ...BASE_STEPS];
+  const defaultStepId = business ? "info" : "plan";
+  const initialStepId = STEPS.some((step) => step.id === requestedStep)
+    ? requestedStep
+    : defaultStepId;
 
   const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
   const logoLocked = !business || !isPaidPlan;
@@ -171,6 +185,74 @@ export default async function BusinessProfilePage({ searchParams }) {
 
             <div className="wizard-layout">
               <div className="wizard-main">
+                {/* ---------- Step 0: Choose Plan (new listings only) ---------- */}
+                {!business && (
+                  <div className="wizard-step-panel" id="panel-plan">
+                    <h3>Choose Your Plan</h3>
+                    <p className="wizard-panel-subtitle">
+                      List for free right now, or pick Verified/Premium and send
+                      your upgrade request together with your listing — no
+                      separate trip to Pricing needed. Either way you can change
+                      your mind later from your dashboard.
+                    </p>
+
+                    <div className="plan-choice-grid">
+                      <label className="plan-choice-card">
+                        <input type="radio" name="requestedPlan" value="free" defaultChecked />
+                        <span className="plan-choice-name">{PLAN_PRICING.free.name}</span>
+                        <span className="plan-choice-price">
+                          {PLAN_PRICING.free.price}
+                          <span className="plan-choice-period">{PLAN_PRICING.free.period}</span>
+                        </span>
+                        <span className="plan-choice-desc">
+                          List now, upgrade any time later from your dashboard.
+                        </span>
+                      </label>
+
+                      <label className="plan-choice-card">
+                        <input type="radio" name="requestedPlan" value="verified" />
+                        <span className="plan-choice-name">{PLAN_PRICING.verified.name}</span>
+                        <span className="plan-choice-price">
+                          {PLAN_PRICING.verified.price}
+                          <span className="plan-choice-period">{PLAN_PRICING.verified.period}</span>
+                        </span>
+                        <span className="plan-choice-desc">
+                          Sends your upgrade request now — pay after, once we
+                          confirm.
+                        </span>
+                      </label>
+
+                      <label className="plan-choice-card">
+                        <input type="radio" name="requestedPlan" value="featured" />
+                        <span className="plan-choice-name">{PLAN_PRICING.featured.name}</span>
+                        <span className="plan-choice-price">
+                          {PLAN_PRICING.featured.price}
+                          <span className="plan-choice-period">{PLAN_PRICING.featured.period}</span>
+                        </span>
+                        <span className="plan-choice-desc">
+                          Sends your upgrade request now — pay after, once we
+                          confirm.
+                        </span>
+                      </label>
+                    </div>
+
+                    <p className="editor-hint">
+                      Picking Verified or Premium doesn&apos;t charge you
+                      anything here — it just lets our team know to reach out
+                      about payment. See{" "}
+                      <Link href="/pricing">Pricing</Link> for full plan
+                      details.
+                    </p>
+
+                    <div className="wizard-nav-buttons">
+                      <span />
+                      <label htmlFor="step-info" className="btn btn-primary">
+                        Continue →
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 {/* ---------- Step 1: Business Info ---------- */}
                 <div className="wizard-step-panel" id="panel-info">
                   <h3>Business Information</h3>
@@ -306,7 +388,13 @@ export default async function BusinessProfilePage({ searchParams }) {
                   </div>
 
                   <div className="wizard-nav-buttons">
-                    <span />
+                    {business ? (
+                      <span />
+                    ) : (
+                      <label htmlFor="step-plan" className="btn btn-secondary">
+                        ← Back
+                      </label>
+                    )}
                     {business ? (
                       <SubmitButton
                         formAction={upsertBusiness.bind(null, "contact")}

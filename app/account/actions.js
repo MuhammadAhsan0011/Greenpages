@@ -151,6 +151,11 @@ export async function upsertBusiness(nextStep, formData) {
   const country = formData.get("country")?.toString().trim() || null;
   const postalCode = formData.get("postalCode")?.toString().trim() || null;
   const tags = formData.get("tags")?.toString().trim() || null;
+  // Only present on a brand-new listing's "Choose Your Plan" step (see
+  // account/business/page.js) — editing an existing business never submits
+  // this field, so it's undefined there and never overwrites a real
+  // requested_plan set later via /pricing.
+  const requestedPlanChoice = formData.get("requestedPlan")?.toString().trim();
   const features = formData.getAll("features").filter(Boolean).join(", ") || null;
   const businessHours = readBusinessHours(formData);
 
@@ -309,6 +314,15 @@ export async function upsertBusiness(nextStep, formData) {
     aboutHtml = rawAbout.trim() ? sanitizeArticleHtml(rawAbout) : null;
   }
 
+  // Picking Verified/Premium on a brand-new listing's plan step sends the
+  // upgrade request together with the listing itself — same requested_plan
+  // column /pricing's requestUpgrade() uses, so it shows up in /admin's
+  // Pending Articles-style approval queue exactly the same way. Only
+  // applies on first creation (never overwrites an existing business's
+  // requested_plan, e.g. one already set or cleared via /pricing).
+  const isNewRequestedPlan =
+    !existing && (requestedPlanChoice === "verified" || requestedPlanChoice === "featured");
+
   const { error } = await supabase.from("businesses").upsert(
     {
       owner_id: user.id,
@@ -337,6 +351,7 @@ export async function upsertBusiness(nextStep, formData) {
       linkedin_url: linkedinUrl,
       whatsapp_url: whatsappUrl,
       about_html: aboutHtml,
+      ...(isNewRequestedPlan ? { requested_plan: requestedPlanChoice } : {}),
     },
     { onConflict: "owner_id" }
   );
