@@ -7,6 +7,7 @@ import RichArticleBody from "../../components/RichArticleBody";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import BlogSidebar from "../../components/BlogSidebar";
+import blogHeroImage from "../../../public/images/blog page head img.png";
 import {
   posts,
   getPostBySlug,
@@ -214,7 +215,7 @@ export default async function BlogPostPage({ params }) {
       />
 
       <section className="hero post-hero">
-        <div className={post.coverImageUrl ? "container hero-inner" : "container"}>
+        <div className="container hero-inner">
           <div>
             <Breadcrumbs
               items={[
@@ -263,17 +264,19 @@ export default async function BlogPostPage({ params }) {
             )}
           </div>
 
-          {post.coverImageUrl && (
-            <div className="hero-image post-hero-image">
-              <Image
-                src={post.coverImageUrl}
-                alt={`Cover image for ${post.title}`}
-                fill
-                sizes="(max-width: 900px) 100vw, 500px"
-                priority
-              />
-            </div>
-          )}
+          {/* Fixed brand illustration, not the article's own cover image —
+              that one only appears below, at the top of the article body
+              (.article-cover-image). Same graphic on every article, so it's
+              a static asset rather than per-post data. */}
+          <div className="hero-image post-hero-image">
+            <Image
+              src={blogHeroImage}
+              alt="Green Pages PK Blog"
+              fill
+              sizes="(max-width: 900px) 100vw, 500px"
+              priority
+            />
+          </div>
         </div>
       </section>
 
