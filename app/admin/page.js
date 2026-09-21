@@ -12,7 +12,25 @@ import {
   deleteBusiness,
   approveArticle,
   deleteArticle,
+  rejectArticle,
+  requestArticleChanges,
+  publishArticle,
+  unpublishArticle,
+  toggleFeatureArticle,
+  confirmArticlePayment,
 } from "./actions";
+
+const ARTICLE_STATUS_LABELS = {
+  pending_review: "Pending Review",
+  changes_requested: "Changes Requested",
+  rejected: "Rejected",
+  published: "Published",
+  unpublished: "Unpublished",
+};
+
+function articleStatusLabel(article) {
+  return ARTICLE_STATUS_LABELS[article.status] ?? (article.approved ? "Published" : "Pending Review");
+}
 
 export const metadata = {
   title: "Admin",
@@ -138,10 +156,14 @@ export default async function AdminPage({ searchParams }) {
 
   const { data: articles } = await supabase
     .from("articles")
-    .select("id, slug, title, excerpt, category, created_at, approved, profiles(full_name)")
+    .select(
+      "id, slug, title, excerpt, category, target_city, created_at, approved, status, submission_plan, payment_status, link_count, author_email, featured_on_homepage, rejection_reason, admin_notes, profiles(full_name)"
+    )
     .order("created_at", { ascending: false });
 
-  const pendingArticles = (articles ?? []).filter((a) => a.approved === false);
+  const pendingArticles = (articles ?? []).filter(
+    (a) => (a.status ?? (a.approved ? "published" : "pending_review")) === "pending_review"
+  );
 
   const [{ data: profiles }, { data: userEmails }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, created_at").order("created_at", { ascending: false }),
@@ -285,9 +307,13 @@ export default async function AdminPage({ searchParams }) {
                 <thead>
                   <tr>
                     <th scope="col">Title</th>
-                    <th scope="col">Excerpt</th>
                     <th scope="col">Author</th>
+                    <th scope="col">Email</th>
                     <th scope="col">Category</th>
+                    <th scope="col">City</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Links</th>
+                    <th scope="col">Payment</th>
                     <th scope="col">Submitted</th>
                     <th scope="col">Action</th>
                   </tr>
@@ -296,9 +322,27 @@ export default async function AdminPage({ searchParams }) {
                   {pendingArticles.map((article) => (
                     <tr key={article.id}>
                       <td>{article.title}</td>
-                      <td>{article.excerpt}</td>
                       <td>{article.profiles?.full_name ?? "—"}</td>
+                      <td>{article.author_email ?? "—"}</td>
                       <td>{article.category}</td>
+                      <td>{article.target_city ?? "—"}</td>
+                      <td>{article.submission_plan ?? "free"}</td>
+                      <td>{article.link_count ?? 0}</td>
+                      <td>
+                        {article.submission_plan && article.submission_plan !== "free" ? (
+                          article.payment_status === "confirmed" ? (
+                            "Confirmed"
+                          ) : (
+                            <form action={confirmArticlePayment.bind(null, article.id)}>
+                              <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Confirming…">
+                                Confirm Payment
+                              </SubmitButton>
+                            </form>
+                          )
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td>
                         {new Date(article.created_at).toLocaleDateString("en-US", {
                           year: "numeric",
@@ -312,8 +356,17 @@ export default async function AdminPage({ searchParams }) {
                             Approve
                           </SubmitButton>
                         </form>
-                        <form action={deleteArticle.bind(null, article.id)}>
-                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Rejecting…">
+                        <form action={requestArticleChanges} className="admin-inline-form">
+                          <input type="hidden" name="articleId" value={article.id} />
+                          <input type="text" name="note" placeholder="What needs changing?" />
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Sending…">
+                            Request Changes
+                          </SubmitButton>
+                        </form>
+                        <form action={rejectArticle} className="admin-inline-form">
+                          <input type="hidden" name="articleId" value={article.id} />
+                          <input type="text" name="reason" placeholder="Reason (optional)" />
+                          <SubmitButton className="btn btn-danger admin-btn-sm" pendingLabel="Rejecting…">
                             Reject
                           </SubmitButton>
                         </form>
@@ -422,24 +475,26 @@ export default async function AdminPage({ searchParams }) {
                   <th scope="col">Category</th>
                   <th scope="col">Status</th>
                   <th scope="col">Published</th>
-                  <th scope="col">Delete</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {articlesPageItems.map((article) => (
+                {articlesPageItems.map((article) => {
+                  const isPublished = (article.status ?? (article.approved ? "published" : "pending_review")) === "published";
+                  return (
                   <tr key={article.id}>
                     <td>
-                      {article.approved === false ? (
-                        article.title
-                      ) : (
+                      {isPublished ? (
                         <a href={`/blog/${article.slug}`} target="_blank" rel="noopener noreferrer">
                           {article.title}
                         </a>
+                      ) : (
+                        article.title
                       )}
                     </td>
                     <td>{article.profiles?.full_name ?? "—"}</td>
                     <td>{article.category}</td>
-                    <td>{article.approved === false ? "Pending" : "Live"}</td>
+                    <td>{articleStatusLabel(article)}</td>
                     <td>
                       {new Date(article.created_at).toLocaleDateString("en-US", {
                         year: "numeric",
@@ -447,7 +502,25 @@ export default async function AdminPage({ searchParams }) {
                         day: "numeric",
                       })}
                     </td>
-                    <td>
+                    <td className="admin-table-actions">
+                      {isPublished ? (
+                        <form action={unpublishArticle.bind(null, article.id)}>
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Unpublishing…">
+                            Unpublish
+                          </SubmitButton>
+                        </form>
+                      ) : (
+                        <form action={publishArticle.bind(null, article.id)}>
+                          <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Publishing…">
+                            Publish
+                          </SubmitButton>
+                        </form>
+                      )}
+                      <form action={toggleFeatureArticle.bind(null, article.id, !article.featured_on_homepage)}>
+                        <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Saving…">
+                          {article.featured_on_homepage ? "Unfeature" : "Feature"}
+                        </SubmitButton>
+                      </form>
                       <form action={deleteArticle.bind(null, article.id)}>
                         <SubmitButton className="btn btn-danger admin-btn-sm" pendingLabel="Deleting…">
                           Delete
@@ -455,7 +528,8 @@ export default async function AdminPage({ searchParams }) {
                       </form>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

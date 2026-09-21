@@ -52,14 +52,47 @@ export default function PostingRulesPage() {
 
       <h3>5. Plan-Based Features</h3>
       <p>
-        Some features — tags, scheduled publishing, homepage featuring,
-        custom SEO fields, and the rich text editor — are only available on
-        Verified and Premium packages, and are enforced on our end
-        regardless of what a request claims. Free-tier articles and listings
-        remain fully functional without these extras.
+        Some business listing features — a logo, cover image, photo
+        gallery, and social links — are only available on Verified and
+        Premium packages, and are enforced on our end regardless of what a
+        request claims. Free-tier listings remain fully functional without
+        these extras. The article rich-text editor is available to every
+        plan.
       </p>
 
-      <h3>6. Reporting a Listing or Article</h3>
+      <h3 id="backlink-policy">6. Backlink Policy</h3>
+      <p>
+        Every article may include external links, subject to editorial
+        review — submitting an article never guarantees a link will be
+        published as submitted.
+      </p>
+      <ul>
+        <li>Free Article: maximum 1 relevant external link.</li>
+        <li>Featured Article: maximum 2 relevant external links.</li>
+        <li>Sponsored Article: maximum 3 relevant commercial links.</li>
+        <li>Links must be relevant to the article&apos;s content — no link farms.</li>
+        <li>No excessive promotional links, and no malicious or suspicious URLs.</li>
+        <li>No aggressive exact-match or keyword-stuffed anchor text.</li>
+        <li>
+          We may modify, remove, or qualify any submitted link before
+          publication, and may add <code>rel=&quot;nofollow&quot;</code> or{" "}
+          <code>rel=&quot;sponsored&quot;</code> as our editorial policy
+          requires — sponsored/commercial links are never published dofollow.
+        </li>
+        <li>Submission does not guarantee backlink placement or any particular Google ranking.</li>
+      </ul>
+
+      <h3 id="ai-content-policy">7. AI-Assisted Content Policy</h3>
+      <p>
+        AI tools may be used for research, brainstorming, outlining,
+        editing, or language assistance while writing an article. However,
+        the finished content must provide genuine value to a reader and meet
+        our quality standards — content that reads as unedited, generic AI
+        output, or that fails our plagiarism/originality check, will be
+        rejected or sent back for changes regardless of how it was drafted.
+      </p>
+
+      <h3>8. Reporting a Listing or Article</h3>
       <p>
         If you spot content that breaks these rules, email us at{" "}
         <a href="mailto:greenpages.pk.com@gmail.com">greenpages.pk.com@gmail.com</a> with a

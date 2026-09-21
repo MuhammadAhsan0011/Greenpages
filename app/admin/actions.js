@@ -109,23 +109,133 @@ export async function deleteBusiness(businessId) {
   revalidatePath("/businesses");
 }
 
+// Shared by every article-review action below — same revalidate set every
+// time, so approve/reject/request-changes/publish/unpublish/feature can't
+// drift from each other on which paths they refresh.
+function revalidateArticlePaths(slug) {
+  revalidatePath("/admin");
+  revalidatePath("/blog");
+  revalidatePath("/");
+  revalidatePath("/account/articles");
+  if (slug) revalidatePath(`/blog/${slug}`);
+}
+
 // Makes a pending free-plan article publicly visible.
 export async function approveArticle(articleId) {
   const supabase = await requireAdmin();
 
   const { data: article } = await supabase
     .from("articles")
-    .update({ approved: true })
+    .update({ approved: true, status: "published", reviewed_at: new Date().toISOString() })
     .eq("id", articleId)
     .select("slug")
     .maybeSingle();
 
+  revalidateArticlePaths(article?.slug);
+}
+
+// Declines a submission outright, with a reason the author can see on
+// /account/articles. Stays unapproved/unpublished.
+export async function rejectArticle(formData) {
+  const supabase = await requireAdmin();
+  const articleId = formData.get("articleId")?.toString();
+  const reason = formData.get("reason")?.toString().trim() || null;
+  if (!articleId) return;
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({
+      approved: false,
+      status: "rejected",
+      rejection_reason: reason,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateArticlePaths(article?.slug);
+}
+
+// Sends a submission back to the author with a note on what to fix —
+// distinct from a flat rejection, the author can resubmit.
+export async function requestArticleChanges(formData) {
+  const supabase = await requireAdmin();
+  const articleId = formData.get("articleId")?.toString();
+  const note = formData.get("note")?.toString().trim() || null;
+  if (!articleId) return;
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({
+      approved: false,
+      status: "changes_requested",
+      admin_notes: note,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateArticlePaths(article?.slug);
+}
+
+// Publishes an already-approved-in-spirit article (or re-publishes one that
+// was previously unpublished) — the counterpart to unpublishArticle below.
+export async function publishArticle(articleId) {
+  const supabase = await requireAdmin();
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({ approved: true, status: "published", reviewed_at: new Date().toISOString() })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateArticlePaths(article?.slug);
+}
+
+// Takes a published article back down without deleting it — content and
+// submission history stay intact, it just stops being publicly visible.
+export async function unpublishArticle(articleId) {
+  const supabase = await requireAdmin();
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({ approved: false, status: "unpublished" })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateArticlePaths(article?.slug);
+}
+
+// Toggles homepage featuring — independent of submission_plan (a Free-plan
+// article can still be manually featured by an admin; Sponsored doesn't
+// auto-feature).
+export async function toggleFeatureArticle(articleId, featured) {
+  const supabase = await requireAdmin();
+
+  const { data: article } = await supabase
+    .from("articles")
+    .update({ featured_on_homepage: featured })
+    .eq("id", articleId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateArticlePaths(article?.slug);
+}
+
+// Marks a Featured/Sponsored submission's manual payment (Easypaisa/bank
+// transfer, confirmed via WhatsApp screenshot — same flow as business plan
+// upgrades) as received. Doesn't publish by itself — approve/publish is
+// still a separate, deliberate editorial action.
+export async function confirmArticlePayment(articleId) {
+  const supabase = await requireAdmin();
+
+  await supabase.from("articles").update({ payment_status: "confirmed" }).eq("id", articleId);
+
   revalidatePath("/admin");
-  revalidatePath("/blog");
-  revalidatePath("/");
-  if (article?.slug) {
-    revalidatePath(`/blog/${article.slug}`);
-  }
 }
 
 // Permanently removes an article (and its cover image file, if any).
@@ -144,10 +254,5 @@ export async function deleteArticle(articleId) {
     await deletePublicImage(supabase, article.cover_image_url);
   }
 
-  revalidatePath("/admin");
-  revalidatePath("/blog");
-  revalidatePath("/");
-  if (article?.slug) {
-    revalidatePath(`/blog/${article.slug}`);
-  }
+  revalidateArticlePaths(article?.slug);
 }

@@ -1,8 +1,15 @@
-import Link from "next/link";
+"use client";
 
-// Server Component — purely presentational, driven by data the layout
-// already fetched, so no client-side JavaScript is needed.
+// Client Component — needs usePathname() to highlight the current page in
+// the nav, same reason app/components/LegalSidebar.js is a Client Component.
+// Everything it renders still comes from props the layout fetched
+// server-side; this doesn't add any client-side data fetching.
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 export default function AccountSidebar({ user, profile, business }) {
+  const pathname = usePathname();
   const memberId = user.id.slice(0, 8).toUpperCase();
   const joinDate = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", {
@@ -39,16 +46,42 @@ export default function AccountSidebar({ user, profile, business }) {
       <nav className="sidebar-nav" aria-label="Account">
         <ul>
           <li>
-            <Link href="/account">My Dashboard</Link>
+            <Link href="/account" className={pathname === "/account" ? "active" : ""}>
+              My Dashboard
+            </Link>
           </li>
           <li>
-            <Link href="/account/business">Business Profile</Link>
+            <Link
+              href="/account/business"
+              className={pathname.startsWith("/account/business") ? "active" : ""}
+            >
+              Business Profile
+            </Link>
           </li>
           <li>
-            <Link href="/account/articles">My Articles</Link>
+            <Link
+              href="/account/articles/new"
+              className={pathname === "/account/articles/new" ? "active" : ""}
+            >
+              <span aria-hidden="true">✍️</span> Write an Article
+            </Link>
           </li>
           <li>
-            <Link href="/businesses">Business Directory</Link>
+            <Link
+              href="/account/articles"
+              className={
+                pathname.startsWith("/account/articles") && pathname !== "/account/articles/new"
+                  ? "active"
+                  : ""
+              }
+            >
+              My Articles
+            </Link>
+          </li>
+          <li>
+            <Link href="/businesses" className={pathname === "/businesses" ? "active" : ""}>
+              Business Directory
+            </Link>
           </li>
         </ul>
       </nav>

@@ -10,6 +10,22 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+// Falls back to deriving a status from the older `approved` boolean for any
+// row that predates the article-submission migration (docs/seo/
+// article-submission-migration.sql backfills this on existing rows, but a
+// pending Supabase migration shouldn't crash the page in the meantime).
+const STATUS_LABELS = {
+  pending_review: { icon: "🕐", label: "Pending Review" },
+  changes_requested: { icon: "✏️", label: "Changes Requested" },
+  rejected: { icon: "❌", label: "Rejected" },
+  published: { icon: "✅", label: "Published" },
+  unpublished: { icon: "⏸️", label: "Unpublished" },
+};
+
+function statusFor(article) {
+  return STATUS_LABELS[article.status] ?? (article.approved ? STATUS_LABELS.published : STATUS_LABELS.pending_review);
+}
+
 // Server Component — the layout (app/account/layout.js) already guarantees
 // a signed-in user before this renders.
 export default async function MyArticlesPage({ searchParams }) {
@@ -21,7 +37,9 @@ export default async function MyArticlesPage({ searchParams }) {
 
   const { data: articles } = await supabase
     .from("articles")
-    .select("id, slug, title, category, created_at, approved")
+    .select(
+      "id, slug, title, category, created_at, approved, status, submission_plan, payment_status, rejection_reason, admin_notes"
+    )
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -56,14 +74,15 @@ export default async function MyArticlesPage({ searchParams }) {
 
       {articles && articles.length > 0 ? (
         <ul className="account-article-list">
-          {articles.map((article) => (
+          {articles.map((article) => {
+            const status = statusFor(article);
+            const isLive = (article.status ?? (article.approved ? "published" : "pending_review")) === "published";
+            return (
             <li key={article.slug} className="account-article-item">
-              {article.approved === false ? (
-                <span>
-                  {article.title} <span className="locked-inline-hint">🕐 Pending Approval</span>
-                </span>
-              ) : (
+              {isLive ? (
                 <Link href={`/blog/${article.slug}`}>{article.title}</Link>
+              ) : (
+                <span>{article.title}</span>
               )}
               <span className="account-meta">
                 <span>{article.category}</span>
@@ -74,7 +93,22 @@ export default async function MyArticlesPage({ searchParams }) {
                     day: "numeric",
                   })}
                 </span>
+                <span className="locked-inline-hint">
+                  {status.icon} {status.label}
+                </span>
+                {article.submission_plan && article.submission_plan !== "free" && (
+                  <span className="locked-inline-hint">
+                    {article.submission_plan === "featured" ? "Featured" : "Sponsored"} —{" "}
+                    {article.payment_status === "confirmed" ? "Payment confirmed" : "Payment pending"}
+                  </span>
+                )}
               </span>
+              {article.status === "rejected" && article.rejection_reason && (
+                <p className="form-error">Rejected: {article.rejection_reason}</p>
+              )}
+              {article.status === "changes_requested" && article.admin_notes && (
+                <p className="editor-hint">Requested changes: {article.admin_notes}</p>
+              )}
               <div className="account-article-actions">
                 {isPaidPlan ? (
                   <Link
@@ -98,7 +132,8 @@ export default async function MyArticlesPage({ searchParams }) {
                 </form>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       ) : (
         <p>You haven&apos;t published any articles yet.</p>

@@ -14,7 +14,7 @@
 // re-sanitizes it server-side with the same allowlist as
 // utils/sanitizeHtml.js before it's ever stored or rendered.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
@@ -46,7 +46,16 @@ const LinkWithTitle = Link.extend({
   },
 });
 
-export default function RichTextEditor({ defaultValue = "", name = "content" }) {
+// showWordCount/minWords/wordCountHint are opt-in (all default off) so the two
+// existing call sites — the business "About" editor and the article edit
+// page — render exactly as before unless a caller asks for this.
+export default function RichTextEditor({
+  defaultValue = "",
+  name = "content",
+  showWordCount = false,
+  minWords,
+  wordCountHint,
+}) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -194,6 +203,11 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
     },
     [editor]
   );
+
+  const wordCount = useMemo(() => {
+    const text = html.replace(/<[^>]*>/g, " ").trim();
+    return text ? text.split(/\s+/).length : 0;
+  }, [html]);
 
   if (!editor) return null;
 
@@ -395,6 +409,16 @@ export default function RichTextEditor({ defaultValue = "", name = "content" }) 
       </div>
       {uploadError && <p className="form-error editor-inline-error">{uploadError}</p>}
       <EditorContent editor={editor} />
+      {showWordCount && (
+        <p
+          className={`editor-word-count${
+            minWords != null && wordCount < minWords ? " editor-word-count-low" : ""
+          }`}
+        >
+          {wordCountHint}
+          <span className="editor-word-count-live"> — {wordCount.toLocaleString()} words</span>
+        </p>
+      )}
       <BubbleMenu
         editor={editor}
         shouldShow={({ editor: current }) => current.isActive("link")}

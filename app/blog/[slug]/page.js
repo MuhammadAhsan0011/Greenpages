@@ -19,6 +19,8 @@ import { getServiceBySlug } from "../../data/services";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getNamesUnderParent } from "@/lib/taxonomy";
 import { getPublishedPostsForCategoryNames } from "@/lib/seo/blogContent";
+import { getSubmissionLinkRel } from "@/lib/seo/articleLinks";
+import { SITE_URL } from "@/lib/site";
 
 // Small, generic per-category glyphs for the sidebar's category list —
 // purely decorative, same lightweight-icon convention already used for the
@@ -94,7 +96,11 @@ async function getMergedPost(slug) {
     seoTitle: article.meta_title || article.title,
     category: article.category,
     date: article.published_at,
-    author: article.profiles?.full_name ?? "Community Member",
+    // Prefers the byline the author declared on the submission form (may
+    // differ from their account name, e.g. someone submitting on a
+    // colleague's behalf) — falls back to the account profile for articles
+    // that predate that field.
+    author: article.author_name || article.profiles?.full_name || "Community Member",
     readTime: estimateReadTime(article.content),
     excerpt: article.excerpt,
     metaDescription: article.meta_description || article.excerpt,
@@ -104,6 +110,10 @@ async function getMergedPost(slug) {
     tags: article.tags ?? null,
     relatedServiceSlug: null,
     isUserSubmitted: true,
+    businessName: article.business_name ?? null,
+    targetUrl: article.target_url || article.website_url || null,
+    anchorText: article.anchor_text || null,
+    submissionPlan: article.submission_plan ?? "free",
   };
 }
 
@@ -203,6 +213,12 @@ export default async function BlogPostPage({ params }) {
       "@type": post.isUserSubmitted ? "Person" : "Organization",
       name: post.author,
     },
+    ...(post.coverImageUrl && { image: post.coverImageUrl }),
+    publisher: {
+      "@type": "Organization",
+      name: "Green Pages PK",
+      url: SITE_URL,
+    },
   };
 
   return (
@@ -281,6 +297,18 @@ export default async function BlogPostPage({ params }) {
                   </span>
                 ))}
               </div>
+            )}
+            {post.targetUrl && (
+              <p className="post-declared-link">
+                {post.businessName ? `In partnership with ${post.businessName}: ` : "Related: "}
+                <a
+                  href={post.targetUrl}
+                  target="_blank"
+                  rel={`noopener noreferrer ${getSubmissionLinkRel(post.submissionPlan)}`}
+                >
+                  {post.anchorText || post.targetUrl}
+                </a>
+              </p>
             )}
           </div>
         </div>
