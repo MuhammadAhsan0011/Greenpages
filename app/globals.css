@@ -2739,6 +2739,18 @@ article.service-section h2 {
   max-width: none;
 }
 
+/* The dashboard's outer .container caps at the site-wide 1120px
+   (--container-width, used everywhere else and not something to change
+   globally). Subtracting the 260px member sidebar + 320px guideline
+   sidebar + both gaps left only ~420px for the actual form column — too
+   narrow for its two-field rows (Email, Company, etc.), which read as
+   cramped/overflowing. Widened only when this page's wrapper is present,
+   via :has(), so no other /account/* page or any other page site-wide is
+   affected. */
+.container:has(.article-submission-page) {
+  max-width: 1400px;
+}
+
 .back-to-dashboard-link {
   display: inline-block;
   font-size: 0.9rem;
