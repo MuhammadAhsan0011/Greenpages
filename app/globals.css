@@ -2912,26 +2912,14 @@ article.service-section h2 {
 }
 
 /* ---------- Blog article detail: two-column layout + sticky sidebar ---------- */
-/* Breadcrumb/badge/heading/meta/tags and the banner all live inside one
-   card together, instead of the text floating loose on the section's plain
-   background above a separately-boxed image. */
+/* Breadcrumb/badge/heading/meta/tags live inside this card, floating on the
+   section's plain background otherwise looked disconnected/unstyled. */
 .post-hero-card {
   background: #ffffff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 40px;
-}
-
-/* The brand banner (2103x748, a wide strip, not a 4:3 photo) sits below the
-   breadcrumb/title/meta rather than beside them — forcing it into a side
-   column cropped most of the actual graphic out of view. Rendered at its
-   own natural width/height ratio (see the <Image> usage) so nothing here
-   needs to fake an aspect-ratio box or an object-fit crop. */
-.post-hero-banner {
-  margin-top: 28px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
 }
 
 .blog-detail-section {

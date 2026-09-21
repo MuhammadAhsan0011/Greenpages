@@ -7,7 +7,6 @@ import RichArticleBody from "../../components/RichArticleBody";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import BlogSidebar from "../../components/BlogSidebar";
-import blogHeroImage from "../../../public/images/blog page head img.png";
 import {
   posts,
   getPostBySlug,
@@ -283,23 +282,6 @@ export default async function BlogPostPage({ params }) {
                 ))}
               </div>
             )}
-
-            {/* Fixed brand banner, not the article's own cover image — that
-                one only appears below, at the top of the article body
-                (.article-cover-image). Same graphic on every article, so
-                it's a static asset rather than per-post data. Rendered at
-                its own natural 2103x748 proportions (no fill/crop box) so
-                the full graphic always shows intact regardless of
-                container width. */}
-            <div className="post-hero-banner">
-              <Image
-                src={blogHeroImage}
-                alt="Green Pages PK Blog"
-                sizes="(max-width: 900px) 100vw, 1120px"
-                style={{ width: "100%", height: "auto" }}
-                priority
-              />
-            </div>
           </div>
         </div>
       </section>
