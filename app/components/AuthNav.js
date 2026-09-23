@@ -167,6 +167,22 @@ export default function AuthNav() {
                   Dashboard
                 </Link>
               </div>
+              <div className="account-menu-actions">
+                <Link
+                  href="/account/jobs"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Jobs
+                </Link>
+                <Link
+                  href="/account/applications"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Applications
+                </Link>
+              </div>
             </>
           ) : (
             <>
@@ -187,6 +203,22 @@ export default function AuthNav() {
                   onClick={() => setMenuOpen(false)}
                 >
                   My Account
+                </Link>
+              </div>
+              <div className="account-menu-actions">
+                <Link
+                  href="/account/jobs"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Jobs
+                </Link>
+                <Link
+                  href="/account/applications"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  My Applications
                 </Link>
               </div>
             </>
@@ -211,6 +243,12 @@ export default function AuthNav() {
     )}
     <li className="account-menu-mobile">
       <Link href="/account">My Profile</Link>
+    </li>
+    <li className="account-menu-mobile">
+      <Link href="/account/jobs">My Jobs</Link>
+    </li>
+    <li className="account-menu-mobile">
+      <Link href="/account/applications">My Applications</Link>
     </li>
     <li className="account-menu-mobile">
       <button type="button" className="nav-signout-btn" onClick={handleSignOut}>

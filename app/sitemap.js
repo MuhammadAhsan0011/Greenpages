@@ -20,6 +20,13 @@ import {
 } from "@/lib/seo/businessListings";
 import { getPublishedPostsForCategoryNames } from "@/lib/seo/blogContent";
 import { getArchiveRobots } from "@/lib/seo/indexing";
+import { fetchActiveJobCategories, buildJobCategoryTree, getJobCategoryIdsUnderParent } from "@/lib/jobCategories";
+import {
+  isPublishedJob,
+  filterForCategory as filterJobsForCategory,
+  filterForCity as filterJobsForCity,
+  filterForCityCategory as filterJobsForCityCategory,
+} from "@/lib/seo/jobListings";
 
 const siteUrl = SITE_URL;
 
@@ -34,7 +41,7 @@ export default async function sitemap() {
   const lastModified = new Date();
   const supabase = createPublicClient();
 
-  const [{ data: businessRows }, { data: articleRows }] = await Promise.all([
+  const [{ data: businessRows }, { data: articleRows }, jobCategories, { data: jobRows }] = await Promise.all([
     supabase
       .from("businesses")
       .select("slug, created_at, category, subcategory, city, needs_review"),
@@ -43,10 +50,14 @@ export default async function sitemap() {
       .select("slug, created_at, published_at, category, approved, content")
       .eq("approved", true)
       .lte("published_at", new Date().toISOString()),
+    fetchActiveJobCategories(supabase),
+    supabase.from("jobs").select("*"),
   ]);
 
   const businesses = businessRows ?? [];
   const normalizedArticles = (articleRows ?? []).map(normalizeDbArticle);
+  const jobCategoryTree = buildJobCategoryTree(jobCategories);
+  const publishedJobs = (jobRows ?? []).filter(isPublishedJob);
 
   const staticRoutes = [
     { path: "", priority: 1 },
@@ -54,6 +65,7 @@ export default async function sitemap() {
     { path: "/services", priority: 0.9 },
     { path: "/blog", priority: 0.8 },
     { path: "/businesses", priority: 0.7 },
+    { path: "/jobs", priority: 0.7 },
     { path: "/pricing", priority: 0.7 },
     { path: "/contact", priority: 0.7 },
   ].map(({ path, priority }) => ({
@@ -178,6 +190,61 @@ export default async function sitemap() {
     priority: 0.3,
   }));
 
+  // --- Job postings ---
+  const jobRoutes = publishedJobs.map((job) => ({
+    url: `${siteUrl}/jobs/${job.slug}`,
+    lastModified: new Date(job.created_at),
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
+  // --- Job category archives ---
+  const jobCategoryParentRoutes = jobCategoryTree
+    .map((parent) => ({ parent, count: filterJobsForCategory(publishedJobs, getJobCategoryIdsUnderParent(parent)).length }))
+    .filter(({ count }) => getArchiveRobots(count).index)
+    .map(({ parent }) => ({
+      url: `${siteUrl}/jobs/category/${parent.slug}`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.65,
+    }));
+
+  const jobCategoryChildRoutes = jobCategoryTree
+    .flatMap((parent) => parent.children)
+    .map((child) => ({ child, count: filterJobsForCategory(publishedJobs, [child.id]).length }))
+    .filter(({ count }) => getArchiveRobots(count).index)
+    .map(({ child }) => ({
+      url: `${siteUrl}/jobs/category/${child.slug}`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.55,
+    }));
+
+  // --- Job city and city×category archives ---
+  const jobCityRoutes = PK_CITIES.map((city) => ({ city, count: filterJobsForCity(publishedJobs, city.name).length }))
+    .filter(({ count }) => getArchiveRobots(count).index)
+    .map(({ city }) => ({
+      url: `${siteUrl}/jobs/city/${city.slug}`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+  const jobCityCategoryRoutes = [];
+  for (const city of PK_CITIES) {
+    for (const parent of jobCategoryTree) {
+      const count = filterJobsForCityCategory(publishedJobs, city.name, getJobCategoryIdsUnderParent(parent)).length;
+      if (getArchiveRobots(count).index) {
+        jobCityCategoryRoutes.push({
+          url: `${siteUrl}/jobs/city/${city.slug}/${parent.slug}`,
+          lastModified,
+          changeFrequency: "weekly",
+          priority: 0.5,
+        });
+      }
+    }
+  }
+
   return [
     ...staticRoutes,
     ...serviceRoutes,
@@ -191,5 +258,10 @@ export default async function sitemap() {
     ...businessCategoryRoutes,
     ...businessSubcategoryRoutes,
     ...legalRoutes,
+    ...jobRoutes,
+    ...jobCityRoutes,
+    ...jobCityCategoryRoutes,
+    ...jobCategoryParentRoutes,
+    ...jobCategoryChildRoutes,
   ];
 }

@@ -79,8 +79,45 @@ export default function AccountSidebar({ user, profile, business }) {
             </Link>
           </li>
           <li>
+            <Link
+              href="/jobs/post-job"
+              className={pathname === "/jobs/post-job" ? "active" : ""}
+            >
+              <span aria-hidden="true">💼</span> Post a Job
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/account/jobs"
+              className={pathname.startsWith("/account/jobs") ? "active" : ""}
+            >
+              My Jobs Posted
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/account/applications"
+              className={pathname === "/account/applications" ? "active" : ""}
+            >
+              My Applications
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/account/saved-jobs"
+              className={pathname === "/account/saved-jobs" ? "active" : ""}
+            >
+              Saved Jobs
+            </Link>
+          </li>
+          <li>
             <Link href="/businesses" className={pathname === "/businesses" ? "active" : ""}>
               Business Directory
+            </Link>
+          </li>
+          <li>
+            <Link href="/jobs" className={pathname === "/jobs" ? "active" : ""}>
+              Jobs
             </Link>
           </li>
         </ul>

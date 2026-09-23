@@ -49,12 +49,20 @@ const LinkWithTitle = Link.extend({
 // showWordCount/minWords/wordCountHint are opt-in (all default off) so the two
 // existing call sites — the business "About" editor and the article edit
 // page — render exactly as before unless a caller asks for this.
+//
+// uploadAction defaults to uploadInlineImage (article-plan-gated — correct
+// for the business About editor and article forms, its original two call
+// sites). A caller with no article/business-plan relationship at all (e.g.
+// the job posting form) passes its own unrestricted upload action instead,
+// so inline images there aren't blocked behind an unrelated Verified/
+// Featured business-plan check.
 export default function RichTextEditor({
   defaultValue = "",
   name = "content",
   showWordCount = false,
   minWords,
   wordCountHint,
+  uploadAction = uploadInlineImage,
 }) {
   const [html, setHtml] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
@@ -189,7 +197,7 @@ export default function RichTextEditor({
 
       let result;
       try {
-        result = await uploadInlineImage(formData);
+        result = await uploadAction(formData);
       } catch (err) {
         result = { error: err?.message || "Upload failed. Please try again." };
       }
@@ -201,7 +209,7 @@ export default function RichTextEditor({
         setUploadError(result?.error || "Something went wrong uploading that image.");
       }
     },
-    [editor]
+    [editor, uploadAction]
   );
 
   const wordCount = useMemo(() => {
