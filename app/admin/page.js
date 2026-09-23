@@ -213,6 +213,10 @@ export default async function AdminPage({ searchParams }) {
         <p className="hero-description">
           Approve package upgrade requests and manage listing plans.{" "}
           <Link href="/admin/seo">View SEO indexing status →</Link>
+          {" · "}
+          <Link href="/admin/jobs">Manage Jobs →</Link>
+          {" · "}
+          <Link href="/admin/job-categories">Manage Job Categories →</Link>
         </p>
 
         <div className="account-card">

@@ -257,3 +257,106 @@ export async function deleteArticle(articleId) {
 
   revalidateArticlePaths(article?.slug);
 }
+
+function revalidateJobPaths(slug) {
+  revalidatePath("/admin");
+  revalidatePath("/admin/jobs");
+  revalidatePath("/jobs");
+  revalidatePath("/account/jobs");
+  if (slug) revalidatePath(`/jobs/${slug}`);
+}
+
+// "Verified" = admin has reviewed and vouches for this specific job —
+// never conflated with "Featured" (promotional visibility), per the jobs
+// spec's explicit rule. Independent of status; a published job can be
+// verified or not.
+export async function verifyJob(jobId) {
+  const supabase = await requireAdmin();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .update({ is_verified: true, verified_at: new Date().toISOString(), verified_by: user?.email ?? null })
+    .eq("id", jobId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateJobPaths(job?.slug);
+}
+
+export async function unverifyJob(jobId) {
+  const supabase = await requireAdmin();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .update({ is_verified: false, verified_at: null, verified_by: null })
+    .eq("id", jobId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateJobPaths(job?.slug);
+}
+
+export async function featureJob(jobId) {
+  const supabase = await requireAdmin();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .update({ is_featured: true })
+    .eq("id", jobId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateJobPaths(job?.slug);
+}
+
+export async function unfeatureJob(jobId) {
+  const supabase = await requireAdmin();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .update({ is_featured: false })
+    .eq("id", jobId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateJobPaths(job?.slug);
+}
+
+// Admin override of an employer's own closeOwnJob (app/jobs/actions.js) —
+// for jobs that need to be pulled down without waiting on the employer.
+export async function closeJob(jobId) {
+  const supabase = await requireAdmin();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .update({ status: "closed" })
+    .eq("id", jobId)
+    .select("slug")
+    .maybeSingle();
+
+  revalidateJobPaths(job?.slug);
+}
+
+// Permanently removes a job (and its logo file, if it wasn't linked from a
+// business profile). Applications are removed automatically via the
+// database's own cascade.
+export async function deleteJob(jobId) {
+  const supabase = await requireAdmin();
+
+  const { data: job } = await supabase
+    .from("jobs")
+    .select("slug, business_id, company_logo_url")
+    .eq("id", jobId)
+    .maybeSingle();
+
+  await supabase.from("jobs").delete().eq("id", jobId);
+
+  if (job && !job.business_id && job.company_logo_url) {
+    await deletePublicImage(supabase, job.company_logo_url);
+  }
+
+  revalidateJobPaths(job?.slug);
+}
