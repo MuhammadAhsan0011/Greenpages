@@ -227,6 +227,16 @@ export default async function JobDetailPage({ params, searchParams }) {
                 <ShareButton title={`${job.title} at ${job.company_name}`} />
               </div>
             </div>
+
+            <div className="listing-header-illustration">
+              <Image
+                src="/images/job-detail-illustration.png"
+                alt=""
+                fill
+                sizes="(max-width: 900px) 0px, 40vw"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -3528,6 +3528,16 @@ article.service-section h2 {
   margin-bottom: 16px;
 }
 
+/* .category-badge's own margin-bottom:14px (meant for sitting above a
+   heading on blog/business cards) pushes it up relative to the other
+   pills here (Verified/Featured/Active), which don't carry that margin —
+   align-items:center centers each flex item's margin box, so the extra
+   bottom margin visibly offsets just this one badge. Reset only in this
+   context. */
+.listing-badges .category-badge {
+  margin-bottom: 0;
+}
+
 .listing-location {
   color: var(--color-text-muted);
   font-size: 0.9rem;
@@ -3537,6 +3547,22 @@ article.service-section h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* Fills the header grid's right column on job detail pages — without it
+   that column is empty (jobs have no photo gallery, unlike businesses'
+   .listing-gallery). object-position: right crops the source image's own
+   built-in blank left half out, showing just its illustrated portion. */
+.listing-header-illustration {
+  position: relative;
+  min-height: 260px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.listing-header-illustration img {
+  object-fit: cover;
+  object-position: right center;
 }
 
 .listing-gallery-main {
@@ -5630,6 +5656,10 @@ article.service-section h2 {
 
   .listing-header-grid .listing-gallery {
     order: -1;
+  }
+
+  .listing-header-illustration {
+    display: none;
   }
 
   .listing-layout {
