@@ -1717,6 +1717,12 @@ article.service-section h2 {
   margin-bottom: 0;
 }
 
+.account-upgrade-nudge {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
 .account-article-actions {
   display: flex;
   align-items: center;
@@ -2370,6 +2376,15 @@ article.service-section h2 {
   color: var(--color-primary-dark);
 }
 
+.admin-status-live {
+  color: var(--color-primary-dark);
+}
+
+.admin-status-review {
+  color: #b45309;
+  font-weight: 600;
+}
+
 .admin-table-actions {
   display: flex;
   gap: 8px;
@@ -2671,6 +2686,12 @@ article.service-section h2 {
 .plan-choice-desc {
   font-size: 0.82rem;
   color: var(--color-text-muted);
+}
+
+.plan-choice-nudge {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
 }
 
 .plan-choice-features {
@@ -4180,6 +4201,12 @@ article.service-section h2 {
   flex-shrink: 0;
 }
 
+.plan-badge-free {
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
 .plan-badge-verified {
   background: #e5e7eb;
   color: #374151;
@@ -4501,6 +4528,25 @@ article.service-section h2 {
   transform: scale(1.03);
 }
 
+/* Strongest visual treatment of the three — amber/gold accent instead of
+   the green used for Verified's highlight, so Premium reads as a distinct,
+   higher tier rather than a bigger version of Verified. */
+.pricing-card-premium {
+  border-color: #d97706;
+  background: linear-gradient(180deg, #fffbeb 0%, #ffffff 40%);
+  box-shadow: var(--shadow-md);
+}
+
+.pricing-card-premium .btn-primary {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.pricing-card-premium .btn-primary:hover {
+  background: #b45309;
+  border-color: #b45309;
+}
+
 .pricing-badge {
   position: absolute;
   top: -14px;
@@ -4514,6 +4560,20 @@ article.service-section h2 {
   letter-spacing: 0.04em;
   padding: 5px 16px;
   border-radius: 999px;
+}
+
+.pricing-badge-premium {
+  background: #d97706;
+}
+
+.pricing-tagline {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
 }
 
 .pricing-icon {
@@ -4613,6 +4673,84 @@ article.service-section h2 {
   left: 0;
   color: var(--color-primary);
   font-weight: 800;
+}
+
+.pricing-comparison-heading {
+  text-align: center;
+  margin-top: 56px;
+  margin-bottom: 20px;
+}
+
+.pricing-comparison-wrap {
+  overflow-x: auto;
+}
+
+.pricing-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.pricing-comparison-table th,
+.pricing-comparison-table td {
+  padding: 12px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.pricing-comparison-table thead th {
+  background: var(--color-bg-alt);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  vertical-align: top;
+}
+
+.pricing-comparison-table th[scope="row"] {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: normal;
+}
+
+/* First column stays visible while the rest of the table scrolls
+   horizontally on narrow screens — same pattern as .admin-table-wrap. */
+.pricing-comparison-table th[scope="row"],
+.pricing-comparison-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+}
+
+.pricing-comparison-table thead th:first-child {
+  background: var(--color-bg-alt);
+}
+
+.pricing-comparison-plan-name {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.pricing-comparison-plan-tagline {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: none;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.pricing-comparison-col-verified {
+  background: var(--color-bg-alt);
+}
+
+.pricing-comparison-yes {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.pricing-comparison-no {
+  color: var(--color-text-muted);
 }
 
 .pricing-note {

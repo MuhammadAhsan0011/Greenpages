@@ -14,7 +14,13 @@ import SubmitButton from "../../components/SubmitButton";
 import BusinessHoursFields from "../../components/BusinessHoursFields";
 import WhatsAppUrlField from "../../components/WhatsAppUrlField";
 import CategorySubcategoryFields from "../../components/CategorySubcategoryFields";
-import { PLAN_PRICING } from "../../data/plans";
+import {
+  PLAN_PRICING,
+  PLAN_LABELS,
+  getPlanCapabilities,
+  getPhotoLimit,
+  isPaidPlan as computeIsPaidPlan,
+} from "../../data/plans";
 
 export const metadata = {
   title: "Add Your Business Listing",
@@ -101,8 +107,10 @@ export default async function BusinessProfilePage({ searchParams }) {
     ? requestedStep
     : defaultStepId;
 
-  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
-  const logoLocked = !business || !isPaidPlan;
+  const currentPlan = business?.plan ?? "free";
+  const isPaidPlan = computeIsPaidPlan(currentPlan);
+  const capabilities = getPlanCapabilities(currentPlan);
+  const photoLimit = getPhotoLimit(currentPlan);
   const selectedFeatures = (business?.features ?? "")
     .split(",")
     .map((f) => f.trim())
@@ -236,6 +244,12 @@ export default async function BusinessProfilePage({ searchParams }) {
                       </label>
                     </div>
 
+                    <p className="plan-choice-nudge">
+                      Not sure yet? Basic gets you listed today — want a
+                      Verified badge and priority placement instead?{" "}
+                      <Link href="/pricing">Explore Verified →</Link>
+                    </p>
+
                     <p className="editor-hint">
                       Picking Verified or Premium doesn&apos;t charge you
                       anything here — it just lets our team know to reach out
@@ -316,40 +330,36 @@ export default async function BusinessProfilePage({ searchParams }) {
                   <div className="form-row">
                     <div className="form-field">
                       <label>Business Logo</label>
-                      {logoLocked ? (
-                        <LockedNotice feature="Logo upload" />
-                      ) : (
-                        <div className="image-upload-box">
-                          {business?.logo_url ? (
-                            <div className="logo-preview-row">
-                              <Image
-                                src={business.logo_url}
-                                alt={`${business.name} logo`}
-                                width={56}
-                                height={56}
-                                className="logo-preview"
-                              />
-                              <label className="remove-logo-checkbox">
-                                <input type="checkbox" name="removeLogo" value="yes" />
-                                Remove
-                              </label>
-                            </div>
-                          ) : (
-                            <span className="image-upload-icon" aria-hidden="true">
-                              🖼️
-                            </span>
-                          )}
-                          <ImageUploadField
-                            name="logo"
-                            label="Upload Logo"
-                            hint="PNG, JPG, WebP, or GIF up to 5MB — square, at least 200×200px works best."
-                          />
-                        </div>
-                      )}
+                      <div className="image-upload-box">
+                        {business?.logo_url ? (
+                          <div className="logo-preview-row">
+                            <Image
+                              src={business.logo_url}
+                              alt={`${business.name} logo`}
+                              width={56}
+                              height={56}
+                              className="logo-preview"
+                            />
+                            <label className="remove-logo-checkbox">
+                              <input type="checkbox" name="removeLogo" value="yes" />
+                              Remove
+                            </label>
+                          </div>
+                        ) : (
+                          <span className="image-upload-icon" aria-hidden="true">
+                            🖼️
+                          </span>
+                        )}
+                        <ImageUploadField
+                          name="logo"
+                          label="Upload Logo"
+                          hint="PNG, JPG, WebP, or GIF up to 5MB — square, at least 200×200px works best."
+                        />
+                      </div>
                     </div>
                     <div className="form-field">
                       <label>Cover Image</label>
-                      {logoLocked ? (
+                      {!capabilities.coverImage ? (
                         <LockedNotice feature="Cover image upload" />
                       ) : (
                         <div className="image-upload-box">
@@ -380,11 +390,21 @@ export default async function BusinessProfilePage({ searchParams }) {
 
                   <div className="form-field">
                     <label>Business Photos</label>
-                    {logoLocked ? (
-                      <LockedNotice feature="Photo gallery" />
-                    ) : (
-                      <PhotoDropzone name="photos" existingFieldName="existingPhotos" existingPhotos={existingPhotos} max={5} />
-                    )}
+                    <PhotoDropzone
+                      name="photos"
+                      existingFieldName="existingPhotos"
+                      existingPhotos={existingPhotos}
+                      max={photoLimit}
+                    />
+                    <p className="editor-hint">
+                      Your {PLAN_LABELS[currentPlan]} plan allows up to {photoLimit} photo
+                      {photoLimit === 1 ? "" : "s"}.{" "}
+                      {currentPlan !== "featured" && (
+                        <>
+                          <Link href="/pricing">Upgrade</Link> for more.
+                        </>
+                      )}
+                    </p>
                   </div>
 
                   <div className="wizard-nav-buttons">

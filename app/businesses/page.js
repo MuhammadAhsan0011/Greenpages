@@ -8,6 +8,7 @@ import Breadcrumbs from "../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
 import { getAllParents, getParent, resolveCategoryNodes } from "../data/businessCategories";
+import { PLAN_RANK } from "../data/plans";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
 import { SITE_URL } from "@/lib/site";
 
@@ -25,7 +26,6 @@ export const metadata = {
 export const revalidate = 60;
 
 const PAGE_SIZE = 10;
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Real categories, chosen for broad recognizability — not literally "Doctors"
 // or "Plumbers" like a generic template might show, since those aren't real

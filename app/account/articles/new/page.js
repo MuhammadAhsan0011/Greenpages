@@ -11,6 +11,7 @@ import ArticleCategoryFields from "../../../components/ArticleCategoryFields";
 import ArticleTargetCityField from "../../../components/ArticleTargetCityField";
 import ArticlePublishingPlanFields from "../../../components/ArticlePublishingPlanFields";
 import { getAllParents } from "../../../data/blog";
+import { isPaidPlan as computeIsPaidPlan } from "../../../data/plans";
 
 export const metadata = {
   title: "Write a New Article",
@@ -43,7 +44,7 @@ export default async function NewArticlePage({ searchParams }) {
     supabase.from("businesses").select("plan, name, website").eq("owner_id", user.id).maybeSingle(),
   ]);
 
-  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+  const isPaidPlan = computeIsPaidPlan(business?.plan);
 
   let articleCount = 0;
   if (!isPaidPlan) {

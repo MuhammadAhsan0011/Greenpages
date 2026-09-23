@@ -5,6 +5,7 @@ import BusinessCard from "../../../../components/BusinessCard";
 import Breadcrumbs from "../../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getAllParents, getParent, getChild } from "../../../../data/businessCategories";
+import { PLAN_RANK } from "../../../../data/plans";
 import { filterForChild } from "@/lib/seo/businessListings";
 import { getArchiveRobots } from "@/lib/seo/indexing";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
@@ -64,8 +65,6 @@ export async function generateMetadata({ params }) {
     },
   };
 }
-
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Server Component — a directory landing page scoped to one child category.
 export default async function ChildCategoryDirectoryPage({ params }) {

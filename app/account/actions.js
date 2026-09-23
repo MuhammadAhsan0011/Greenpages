@@ -7,6 +7,7 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getParent, getChild } from "../data/businessCategories";
+import { isPaidPlan as computeIsPaidPlan, getPlanCapabilities, getPhotoLimit, PLAN_LABELS } from "../data/plans";
 
 function slugify(name) {
   return name
@@ -38,7 +39,6 @@ async function generateUniqueBusinessSlug(supabase, name) {
 const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-const MAX_PHOTOS = 5;
 const MIN_PHOTO_WIDTH = 800;
 const MIN_PHOTO_HEIGHT = 600;
 // The gallery frame displays at roughly 1.6:1 (landscape) and crops
@@ -206,7 +206,9 @@ export async function upsertBusiness(nextStep, formData) {
     .eq("owner_id", user.id)
     .maybeSingle();
 
-  const isPaidPlan = existing?.plan === "verified" || existing?.plan === "featured";
+  const currentPlan = existing?.plan ?? "free";
+  const isPaidPlan = computeIsPaidPlan(currentPlan);
+  const capabilities = getPlanCapabilities(currentPlan);
 
   // Generated once, on first creation, and never touched again — even if
   // the name changes later, so a shared /businesses/[slug] link never
@@ -216,6 +218,8 @@ export async function upsertBusiness(nextStep, formData) {
   let logoUrl = existing?.logo_url ?? null;
   let oldLogoUrl = null;
 
+  // Logo upload is allowed on every plan, including Basic — do not gate
+  // this behind a capability check (it's always true anyway).
   const logoFile = formData.get("logo");
   if (logoFile instanceof File && logoFile.size > 0) {
     const logoIssue = validateImageFile(logoFile, "Business Logo");
@@ -238,6 +242,13 @@ export async function upsertBusiness(nextStep, formData) {
 
   const coverFile = formData.get("coverImage");
   if (coverFile instanceof File && coverFile.size > 0) {
+    if (!capabilities.coverImage) {
+      redirect(
+        `/account/business?error=${encodeURIComponent(
+          "Cover image is a Verified/Premium feature — upgrade your package to add one."
+        )}`
+      );
+    }
     const coverIssue = validateImageFile(coverFile, "Cover Image");
     if (coverIssue) {
       redirect(`/account/business?error=${encodeURIComponent(coverIssue)}`);
@@ -257,10 +268,12 @@ export async function upsertBusiness(nextStep, formData) {
     coverImageUrl = null;
   }
 
-  // Gallery photos — separate from logo/cover, capped at MAX_PHOTOS. The
-  // dropzone reports which existing photos the owner kept via a hidden
-  // "existingPhotos" field; anything from the old list that isn't in that
-  // set gets its storage file cleaned up below, same as logo/cover.
+  // Gallery photos — separate from logo/cover, capped per-plan (see
+  // PHOTO_LIMITS in app/data/plans.js). The dropzone reports which existing
+  // photos the owner kept via a hidden "existingPhotos" field; anything
+  // from the old list that isn't in that set gets its storage file cleaned
+  // up below, same as logo/cover.
+  const photoLimit = getPhotoLimit(currentPlan);
   const existingPhotoUrls = (existing?.photos ?? "")
     .split(",")
     .map((url) => url.trim())
@@ -272,9 +285,11 @@ export async function upsertBusiness(nextStep, formData) {
     .filter((url) => existingPhotoUrls.includes(url));
   const newPhotoFiles = formData.getAll("photos").filter((f) => f instanceof File && f.size > 0);
 
-  if (keptPhotoUrls.length + newPhotoFiles.length > MAX_PHOTOS) {
+  if (keptPhotoUrls.length + newPhotoFiles.length > photoLimit) {
     redirect(
-      `/account/business?error=${encodeURIComponent(`You can only have ${MAX_PHOTOS} photos on your listing.`)}`
+      `/account/business?error=${encodeURIComponent(
+        `Your ${PLAN_LABELS[currentPlan]} plan allows up to ${photoLimit} photo${photoLimit === 1 ? "" : "s"} — remove some or upgrade your package to add more.`
+      )}`
     );
   }
 

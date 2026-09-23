@@ -6,6 +6,7 @@ import Breadcrumbs from "../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { getAllParents, getParent } from "../../../data/businessCategories";
 import { PK_CITIES } from "../../../data/directoryCities";
+import { PLAN_RANK } from "../../../data/plans";
 import { filterForParent } from "@/lib/seo/businessListings";
 import { getArchiveRobots } from "@/lib/seo/indexing";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
@@ -59,8 +60,6 @@ export async function generateMetadata({ params }) {
     },
   };
 }
-
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Server Component — a directory landing page scoped to one parent
 // category. businesses.category always holds a parent-level name (never a

@@ -8,6 +8,7 @@ import SmartTextarea from "../../../../components/SmartTextarea";
 import SubmitButton from "../../../../components/SubmitButton";
 import ArticleCategoryFields from "../../../../components/ArticleCategoryFields";
 import { getAllParents, resolveCategoryNodes } from "../../../../data/blog";
+import { isPaidPlan as computeIsPaidPlan } from "../../../../data/plans";
 
 export const metadata = {
   title: "Edit Article",
@@ -46,7 +47,7 @@ export default async function EditArticlePage({ params, searchParams }) {
     .select("plan")
     .eq("owner_id", user.id)
     .maybeSingle();
-  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+  const isPaidPlan = computeIsPaidPlan(business?.plan);
 
   if (!isPaidPlan) {
     return (

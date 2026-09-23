@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
+import { PLAN_LABELS } from "../data/plans";
 
 export const metadata = {
   title: "My Dashboard",
@@ -49,20 +50,19 @@ export default async function AccountPage() {
               <span>{business.name}</span>
               <span>{business.category}</span>
               {business.city && <span>{business.city}</span>}
-              <span>
-                Plan:{" "}
-                {business.plan === "free"
-                  ? "Free"
-                  : business.plan === "verified"
-                    ? "Verified"
-                    : "Premium"}
-              </span>
+              <span>Plan: {PLAN_LABELS[business.plan]}</span>
             </p>
             {business.requested_plan && (
               <p className="form-success pricing-alert">
-                Your request to upgrade to{" "}
-                {business.requested_plan === "verified" ? "Verified" : "Premium"} is
+                Your request to upgrade to {PLAN_LABELS[business.requested_plan]} is
                 pending approval. We&apos;ll contact you to arrange payment.
+              </p>
+            )}
+            {business.plan === "free" && !business.requested_plan && (
+              <p className="account-upgrade-nudge">
+                <Link href="/pricing">Upgrade to Verified</Link> for a trust badge
+                and priority placement, or{" "}
+                <Link href="/pricing">go Premium</Link> for maximum visibility.
               </p>
             )}
             <p>{business.description}</p>

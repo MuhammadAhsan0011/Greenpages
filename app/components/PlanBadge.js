@@ -1,14 +1,20 @@
 import Image from "next/image";
+import { PLAN_LABELS } from "../data/plans";
 
-// Shared icon + label for a business's paid plan tier — reused across the
+// Shared icon + label for a business's plan tier — reused across the
 // directory cards, business detail page, and homepage featured section so
 // the icon and wording stay in sync in one place instead of being
 // duplicated (and drifting) in each component. `iconOnly` drops the text
 // label for tight inline spots (e.g. right next to a listing's name) while
-// keeping the plan announced to screen readers via aria-label.
+// keeping the plan announced to screen readers via aria-label — except for
+// Basic, which has no icon of its own, so an icon-only spot renders nothing
+// for it rather than an empty/odd-looking pill (unchanged from before this
+// badge existed for Basic at all).
 export default function PlanBadge({ plan, className = "", iconOnly = false }) {
-  const label = plan === "featured" ? "Premium" : plan === "verified" ? "Verified" : null;
-  if (!label) {
+  const label = PLAN_LABELS[plan] ?? PLAN_LABELS.free;
+  const isBasic = plan !== "verified" && plan !== "featured";
+
+  if (iconOnly && isBasic) {
     return null;
   }
 
@@ -18,7 +24,7 @@ export default function PlanBadge({ plan, className = "", iconOnly = false }) {
     <span className={classes} {...(iconOnly ? { title: `${label} listing`, "aria-label": `${label} listing` } : {})}>
       {plan === "featured" ? (
         <Image src="/images/premium-plan-icon.png" alt="" width={13} height={11} />
-      ) : (
+      ) : plan === "verified" ? (
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path
             fill="#4ade80"
@@ -33,8 +39,8 @@ export default function PlanBadge({ plan, className = "", iconOnly = false }) {
             strokeLinejoin="round"
           />
         </svg>
-      )}
-      {!iconOnly && label}
+      ) : null}
+      {!iconOnly && (isBasic ? `${label} Listing` : label)}
     </span>
   );
 }

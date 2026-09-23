@@ -5,6 +5,7 @@ import BusinessCard from "../../../components/BusinessCard";
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES, getCityBySlug } from "../../../data/directoryCities";
+import { PLAN_RANK } from "../../../data/plans";
 import { filterForCity } from "@/lib/seo/businessListings";
 import { getArchiveRobots } from "@/lib/seo/indexing";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
@@ -55,8 +56,6 @@ export async function generateMetadata({ params }) {
     },
   };
 }
-
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Server Component — a directory landing page scoped to one Pakistani city,
 // with its own unique intro copy (see data/directoryCities.js) so it reads

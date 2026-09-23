@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import AdminPageSizeSelect from "../components/AdminPageSizeSelect";
 import SubmitButton from "../components/SubmitButton";
+import { PLAN_LABELS } from "../data/plans";
 import {
   approveUpgrade,
   dismissRequest,
@@ -37,7 +38,11 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-const PLAN_LABELS = { free: "Free", verified: "Verified", featured: "Premium" };
+function upgradeStatusLabel(business) {
+  if (business.requested_plan) return `Upgrade to ${PLAN_LABELS[business.requested_plan]} requested`;
+  if (business.plan !== "free") return PLAN_LABELS[business.plan];
+  return "—";
+}
 
 const ADMIN_PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100];
 const DEFAULT_ADMIN_PAGE_SIZE = 10;
@@ -143,7 +148,7 @@ export default async function AdminPage({ searchParams }) {
 
   const { data: businesses } = await supabase
     .from("businesses")
-    .select("id, name, phone, city, plan, requested_plan, profiles(full_name)")
+    .select("id, name, phone, city, plan, requested_plan, created_at, needs_review, profiles(full_name)")
     .order("name", { ascending: true });
 
   const pending = (businesses ?? []).filter((b) => b.requested_plan);
@@ -191,6 +196,15 @@ export default async function AdminPage({ searchParams }) {
   );
   const articlesPageStart = (articlesCurrentPage - 1) * articlesPageSize;
   const articlesPageItems = allArticles.slice(articlesPageStart, articlesPageStart + articlesPageSize);
+
+  const allBusinessesList = businesses ?? [];
+  const businessesPageSize = parseAdminPageSize(params?.businessesPageSize);
+  const businessesCurrentPage = Math.min(
+    parseAdminPage(params?.businessesPage),
+    Math.max(1, Math.ceil(allBusinessesList.length / businessesPageSize))
+  );
+  const businessesPageStart = (businessesCurrentPage - 1) * businessesPageSize;
+  const businessesPageItems = allBusinessesList.slice(businessesPageStart, businessesPageStart + businessesPageSize);
 
   return (
     <section aria-labelledby="admin-heading">
@@ -417,7 +431,7 @@ export default async function AdminPage({ searchParams }) {
         </div>
 
         <div className="account-card">
-          <h2>All Businesses ({businesses?.length ?? 0})</h2>
+          <h2>All Businesses ({allBusinessesList.length})</h2>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
@@ -426,24 +440,42 @@ export default async function AdminPage({ searchParams }) {
                   <th scope="col">Owner</th>
                   <th scope="col">City</th>
                   <th scope="col">Plan</th>
+                  <th scope="col">Created</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Upgrade Status</th>
                   <th scope="col">Set Plan</th>
                   <th scope="col">Delete</th>
                 </tr>
               </thead>
               <tbody>
-                {(businesses ?? []).map((business) => (
+                {businessesPageItems.map((business) => (
                   <tr key={business.id}>
                     <td>{business.name}</td>
                     <td>{business.profiles?.full_name ?? "—"}</td>
                     <td>{business.city ?? "—"}</td>
                     <td>{PLAN_LABELS[business.plan]}</td>
                     <td>
+                      {new Date(business.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td>
+                      <span className={business.needs_review ? "admin-status-review" : "admin-status-live"}>
+                        {business.needs_review ? "Needs Review" : "Live"}
+                      </span>
+                    </td>
+                    <td>{upgradeStatusLabel(business)}</td>
+                    <td>
                       <form action={setPlan} className="admin-inline-form">
                         <input type="hidden" name="businessId" value={business.id} />
                         <select name="plan" defaultValue={business.plan}>
-                          <option value="free">Free</option>
-                          <option value="verified">Verified</option>
-                          <option value="featured">Premium</option>
+                          {Object.entries(PLAN_LABELS).map(([id, label]) => (
+                            <option key={id} value={id}>
+                              {label}
+                            </option>
+                          ))}
                         </select>
                         <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Saving…">
                           Save
@@ -462,6 +494,13 @@ export default async function AdminPage({ searchParams }) {
               </tbody>
             </table>
           </div>
+          <AdminPaginationBar
+            paramPrefix="businesses"
+            currentPage={businessesCurrentPage}
+            pageSize={businessesPageSize}
+            totalItems={allBusinessesList.length}
+            activeParams={activeParams}
+          />
         </div>
 
         <div className="account-card">

@@ -14,6 +14,7 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { resolveCategoryNodes } from "../../data/businessCategories";
 import { PK_CITIES } from "../../data/directoryCities";
+import { PLAN_RANK, PLAN_LABELS, isPaidPlan as computeIsPaidPlan } from "../../data/plans";
 
 export const revalidate = 60;
 
@@ -26,6 +27,16 @@ const DAYS = [
   { key: "saturday", label: "Saturday" },
   { key: "sunday", label: "Sunday" },
 ];
+
+const SCHEMA_DAY_URI = {
+  monday: "https://schema.org/Monday",
+  tuesday: "https://schema.org/Tuesday",
+  wednesday: "https://schema.org/Wednesday",
+  thursday: "https://schema.org/Thursday",
+  friday: "https://schema.org/Friday",
+  saturday: "https://schema.org/Saturday",
+  sunday: "https://schema.org/Sunday",
+};
 
 // "14:30" -> "2:30 PM". Falls back to the raw string for anything that
 // doesn't parse as a plain HH:MM (native <input type="time"> always
@@ -100,8 +111,6 @@ export async function generateMetadata({ params }) {
   };
 }
 
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
-
 // Server Component — public business profile. The Overview / Photos /
 // Reviews tabs are a pure-CSS radio-button widget (see .profile-tab-* in
 // globals.css, shared with the business-edit wizard's own tabs but using
@@ -131,7 +140,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
   // increment (see supabase/schema.sql). Never blocks rendering if it fails.
   await supabase.rpc("increment_business_view", { business_id: business.id });
 
-  const isPaidPlan = business.plan === "verified" || business.plan === "featured";
+  const isPaidPlan = computeIsPaidPlan(business.plan);
 
   const [{ data: articles }, { data: relatedRaw }, { data: reviewData }] = await Promise.all([
     supabase
@@ -264,6 +273,22 @@ export default async function BusinessProfilePage({ params, searchParams }) {
     .sort((a, b) => (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2))
     .slice(0, 4);
 
+  // Both of these mirror data already rendered visibly on the page (the
+  // Business Hours list and the social icon row) — never fabricated, and
+  // simply absent from the schema when the business hasn't set them.
+  const openingHoursSpecification = business.business_hours
+    ? DAYS.filter((day) => {
+        const info = business.business_hours[day.key];
+        return info && !info.closed && info.open && info.close;
+      }).map((day) => ({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: SCHEMA_DAY_URI[day.key],
+        opens: business.business_hours[day.key].open,
+        closes: business.business_hours[day.key].close,
+      }))
+    : [];
+  const sameAs = socialLinks.map((link) => link.url);
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -284,6 +309,8 @@ export default async function BusinessProfilePage({ params, searchParams }) {
         reviewCount: reviews.length,
       },
     }),
+    ...(openingHoursSpecification.length > 0 && { openingHoursSpecification }),
+    ...(sameAs.length > 0 && { sameAs }),
   };
 
   return (
@@ -655,7 +682,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   </div>
                   <div>
                     <dt>Plan</dt>
-                    <dd>{business.plan === "featured" ? "Premium" : business.plan === "verified" ? "Verified" : "Free"}</dd>
+                    <dd>{PLAN_LABELS[business.plan]}</dd>
                   </div>
                 </dl>
               </div>

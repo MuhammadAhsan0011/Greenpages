@@ -3,15 +3,16 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { requestUpgrade } from "./actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "../account/articles/constants";
-import { PLAN_PRICING } from "../data/plans";
+import { PLAN_PRICING, PLAN_LABELS, PLAN_TAGLINE, PHOTO_LIMITS, PLAN_RANK } from "../data/plans";
 import SubmitButton from "../components/SubmitButton";
+import PricingComparisonTable from "../components/PricingComparisonTable";
 
 const WHATSAPP_NUMBER = "923032672509";
 
 export const metadata = {
   title: "Packages & Pricing",
   description:
-    "Green Pages listing packages: a free business listing, or upgrade to Verified (Rs. 2,000) or Premium (Rs. 4,500) for priority placement in the Pakistan business directory.",
+    "Green Pages listing packages: Basic (free), Verified (Rs. 2,000 one-time), or Premium (Rs. 4,500 one-time) for priority placement in the Pakistan business directory.",
   alternates: {
     canonical: "/pricing",
   },
@@ -20,7 +21,8 @@ export const metadata = {
 const packages = [
   {
     id: "free",
-    name: "Free",
+    name: PLAN_LABELS.free,
+    tagline: PLAN_TAGLINE.free,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" strokeWidth="1.8" />
@@ -34,6 +36,8 @@ const packages = [
     features: [
       "Business profile listed in the directory",
       "Contact details, website & phone shown",
+      "Business logo on your listing",
+      `${PHOTO_LIMITS.free} photo in your gallery`,
       `Publish up to ${FREE_PLAN_ARTICLE_LIMIT} articles (reviewed before going live)`,
       "Comment on any article",
       "Standard placement in category & search results",
@@ -41,7 +45,8 @@ const packages = [
   },
   {
     id: "verified",
-    name: "Verified",
+    name: PLAN_LABELS.verified,
+    tagline: PLAN_TAGLINE.verified,
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path
@@ -60,19 +65,22 @@ const packages = [
     ),
     price: PLAN_PRICING.verified.price,
     period: PLAN_PRICING.verified.period,
-    description: "Stand out with a trust badge and better visibility.",
+    description: "Stand out with a trust badge and a more complete profile.",
     features: [
-      "Everything in Free",
-      "Business logo on your listing",
+      `Everything in ${PLAN_LABELS.free}`,
       "“Verified” badge on your listing",
-      "Priority placement above Free listings",
-      "Higher ranking in city & category search results",
+      "Cover image for your listing",
+      `Up to ${PHOTO_LIMITS.verified} photos in your gallery`,
+      "Social media links (Facebook, Instagram, LinkedIn, WhatsApp)",
+      "Rich “About” profile editor",
+      `Priority placement above ${PLAN_LABELS.free} listings`,
     ],
     highlight: true,
   },
   {
     id: "featured",
-    name: "Premium",
+    name: PLAN_LABELS.featured,
+    tagline: PLAN_TAGLINE.featured,
     icon: (
       <Image src="/images/premium-plan-icon.png" alt="" width={28} height={23} aria-hidden="true" />
     ),
@@ -80,15 +88,16 @@ const packages = [
     period: PLAN_PRICING.featured.period,
     description: "Maximum visibility across the entire directory.",
     features: [
-      "Everything in Verified",
+      `Everything in ${PLAN_LABELS.verified}`,
       "“Premium” badge — top placement directory-wide",
-      "Priority placement above Verified listings",
+      `Up to ${PHOTO_LIMITS.featured} photos in your gallery`,
+      `Priority placement above ${PLAN_LABELS.verified} listings`,
+      "Featured on the homepage",
+      "Featured in category search results",
       "Dedicated support setting up your profile",
     ],
   },
 ];
-
-const PLAN_RANK = { free: 0, verified: 1, featured: 2 };
 
 // Server Component — reads the signed-in user's business (if any) so each
 // card's call-to-action reflects their real status: not signed in, no
@@ -144,20 +153,29 @@ export default async function PricingPage({ searchParams }) {
             {packages.map((pkg) => {
               const isCurrentPlan = business?.plan === pkg.id;
               const isPending = business?.requested_plan === pkg.id;
+              // PLAN_RANK ranks 0 = best (featured) through 2 = worst (free),
+              // so a card is a downgrade when its rank number is higher
+              // (worse) than the business's current plan's rank number.
               const isDowngrade =
-                business && PLAN_RANK[pkg.id] < PLAN_RANK[business.plan];
+                business && PLAN_RANK[pkg.id] > PLAN_RANK[business.plan];
 
               return (
                 <article
-                  className={`pricing-card${pkg.highlight ? " pricing-card-highlight" : ""}`}
+                  className={`pricing-card${pkg.highlight ? " pricing-card-highlight" : ""}${
+                    pkg.id === "featured" ? " pricing-card-premium" : ""
+                  }`}
                   key={pkg.id}
                 >
                   {pkg.highlight && (
                     <span className="pricing-badge">Most Popular</span>
                   )}
+                  {pkg.id === "featured" && (
+                    <span className="pricing-badge pricing-badge-premium">★ Premium</span>
+                  )}
                   <span className={`pricing-icon pricing-icon-${pkg.id}`} aria-hidden="true">
                     {pkg.icon}
                   </span>
+                  <span className="pricing-tagline">{pkg.tagline}</span>
                   <h3>{pkg.name}</h3>
                   <p className="pricing-amount">
                     {pkg.price}
@@ -173,11 +191,11 @@ export default async function PricingPage({ searchParams }) {
                   {pkg.id === "free" ? (
                     user ? (
                       <span className="btn btn-secondary pricing-cta-disabled">
-                        {business ? "Your Current Plan" : "Included with Sign Up"}
+                        {business ? "Your Current Plan" : `Included with ${PLAN_LABELS.free}`}
                       </span>
                     ) : (
                       <Link href="/signup" className="btn btn-secondary">
-                        Sign Up Free
+                        Continue with {PLAN_LABELS.free}
                       </Link>
                     )
                   ) : !user ? (
@@ -211,6 +229,10 @@ export default async function PricingPage({ searchParams }) {
               );
             })}
           </div>
+
+          <h2 className="pricing-comparison-heading">Compare Plans</h2>
+          <PricingComparisonTable />
+
           <p className="pricing-note">
             Verified and Premium packages are activated after payment via
             bank transfer or Easypaisa. Click a package above to send a

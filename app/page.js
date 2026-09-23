@@ -9,6 +9,7 @@ import { services } from "./data/services";
 import { normalizeDbArticle } from "./data/blog";
 import { getAllParents, getParent } from "./data/businessCategories";
 import { PK_CITIES } from "./data/directoryCities";
+import { PLAN_RANK } from "./data/plans";
 import { createPublicClient } from "@/utils/supabase/public";
 import pkHeroPhoto from "../public/images/pakistan-hero-photo.png";
 
@@ -91,8 +92,6 @@ const whyChooseUs = [
       "We work as an extension of your team, with a dedicated strategist who understands your goals and industry.",
   },
 ];
-
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // This is a Server Component by default — it renders on the server with
 // no client-side JavaScript required, which keeps the homepage fast and

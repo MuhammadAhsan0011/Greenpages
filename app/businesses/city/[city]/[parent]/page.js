@@ -6,6 +6,7 @@ import Breadcrumbs from "../../../../components/Breadcrumbs";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES, getCityBySlug } from "../../../../data/directoryCities";
 import { getAllParents, getParent } from "../../../../data/businessCategories";
+import { PLAN_RANK } from "../../../../data/plans";
 import { filterForCityParent, isPublishedBusiness, matchesCity, matchesParent } from "@/lib/seo/businessListings";
 import { getArchiveRobots, INDEXING_THRESHOLD } from "@/lib/seo/indexing";
 import { buildCollectionPageSchema } from "@/lib/seo/schema";
@@ -82,8 +83,6 @@ export async function generateMetadata({ params }) {
     },
   };
 }
-
-const PLAN_RANK = { featured: 0, verified: 1, free: 2 };
 
 // Server Component — a directory landing page scoped to one city AND one
 // parent category at once. Generated only when it qualifies for indexing

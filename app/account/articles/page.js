@@ -4,6 +4,7 @@ import Button from "../../components/Button";
 import { deleteOwnArticle } from "./actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
 import SubmitButton from "../../components/SubmitButton";
+import { isPaidPlan as computeIsPaidPlan } from "../../data/plans";
 
 export const metadata = {
   title: "My Articles",
@@ -48,7 +49,7 @@ export default async function MyArticlesPage({ searchParams }) {
     .select("plan")
     .eq("owner_id", user.id)
     .maybeSingle();
-  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+  const isPaidPlan = computeIsPaidPlan(business?.plan);
 
   return (
     <>

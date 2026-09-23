@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { deletePublicImage } from "@/utils/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { PLAN_IDS } from "../data/plans";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -50,7 +51,7 @@ export async function setPlan(formData) {
   const businessId = formData.get("businessId")?.toString();
   const plan = formData.get("plan")?.toString();
 
-  if (!businessId || !["free", "verified", "featured"].includes(plan)) {
+  if (!businessId || !PLAN_IDS.includes(plan)) {
     return;
   }
 
