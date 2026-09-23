@@ -173,6 +173,21 @@ export default async function JobsPage({ searchParams }) {
   }
   const popularCategories = categoryTree.filter((c) => POPULAR_CATEGORY_SLUGS.includes(c.slug));
 
+  // Real cities that actually have jobs — not the 5-city curated list.
+  // Whatever city an employer types on the post-job form (see
+  // app/jobs/actions.js, free text, any Pakistani city) shows up here as
+  // a filter option, so it grows with real postings instead of always
+  // showing the same handful of cities. Deduped case-insensitively,
+  // keeping the first-seen casing as the display label.
+  const cityByKey = new Map();
+  for (const job of (jobRows ?? []).filter(isPublishedJob)) {
+    const trimmed = job.city?.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (!cityByKey.has(key)) cityByKey.set(key, trimmed);
+  }
+  const availableCities = Array.from(cityByKey.values()).sort((a, b) => a.localeCompare(b));
+
   const collectionSchema = buildCollectionPageSchema(
     { name: "Find Jobs in Pakistan", description: metadata.description, path: "/jobs" },
     SITE_URL
@@ -256,7 +271,18 @@ export default async function JobsPage({ searchParams }) {
             <aside className="job-filters" aria-label="Filters">
               <form action="/jobs" method="get" className="job-filters-form">
                 {query && <input type="hidden" name="q" value={query} />}
-                {cityQuery && <input type="hidden" name="city" value={cityQuery} />}
+
+                <div className="form-field">
+                  <label htmlFor="cityFilter">City</label>
+                  <select id="cityFilter" name="city" defaultValue={cityQuery}>
+                    <option value="">All Cities</option>
+                    {availableCities.map((city) => (
+                      <option value={city} key={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 <div className="form-field">
                   <label htmlFor="category">Category</label>
@@ -394,22 +420,6 @@ export default async function JobsPage({ searchParams }) {
               )}
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="section-alt" aria-labelledby="browse-city-heading">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-eyebrow">Browse by City</span>
-            <h2 id="browse-city-heading">Jobs by City</h2>
-          </div>
-          <nav className="directory-browse-links" aria-label="Browse jobs by city">
-            {PK_CITIES.map((cityOption) => (
-              <Link href={`/jobs/city/${cityOption.slug}`} key={cityOption.slug}>
-                {cityOption.name}
-              </Link>
-            ))}
-          </nav>
         </div>
       </section>
 

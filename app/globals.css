@@ -3551,18 +3551,22 @@ article.service-section h2 {
 
 /* Fills the header grid's right column on job detail pages — without it
    that column is empty (jobs have no photo gallery, unlike businesses'
-   .listing-gallery). object-position: right crops the source image's own
-   built-in blank left half out, showing just its illustrated portion. */
+   .listing-gallery). align-self: stretch (overriding the grid's own
+   align-items: start) makes this box span the exact same top-to-bottom
+   height as the info column next to it, flush at both edges — then
+   object-fit: cover scales/crops the square source to fill that box with
+   no gaps, instead of floating at its own natural size inside blank
+   space above and below it. */
 .listing-header-illustration {
   position: relative;
-  min-height: 260px;
+  align-self: stretch;
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .listing-header-illustration img {
   object-fit: cover;
-  object-position: right center;
+  object-position: center;
 }
 
 .listing-gallery-main {
