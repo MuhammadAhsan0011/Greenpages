@@ -166,16 +166,6 @@ export default async function NewArticlePage({ searchParams }) {
                 wordCountHint="Minimum 800 words | Recommended 1,000–1,800 words | Maximum 2,500 words"
               />
             </div>
-
-            <div className="form-field">
-              <label htmlFor="imageCredit">Image Source / Credit</label>
-              <input
-                id="imageCredit"
-                name="imageCredit"
-                type="text"
-                placeholder="e.g. Unsplash, Pexels or your website"
-              />
-            </div>
           </div>
 
           <div className="account-card">
@@ -242,50 +232,8 @@ export default async function NewArticlePage({ searchParams }) {
           </div>
 
           <div className="account-card">
-            <h2>3. Website / Link Information</h2>
-
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="websiteUrl">Website URL</label>
-                <input
-                  id="websiteUrl"
-                  name="websiteUrl"
-                  type="url"
-                  defaultValue={business?.website ?? ""}
-                  placeholder="https://example.com"
-                />
-              </div>
-              <div className="form-field">
-                <label htmlFor="businessName">Business Name</label>
-                <input
-                  id="businessName"
-                  name="businessName"
-                  type="text"
-                  defaultValue={business?.name ?? ""}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="anchorText">Preferred Anchor Text</label>
-                <input id="anchorText" name="anchorText" type="text" />
-              </div>
-              <div className="form-field">
-                <label htmlFor="targetUrl">Target URL</label>
-                <input id="targetUrl" name="targetUrl" type="url" placeholder="https://example.com/page" />
-              </div>
-            </div>
-            <p className="editor-hint">
-              External links are subject to editorial review and may be
-              modified, removed, or appropriately qualified — see our{" "}
-              <Link href="/legal/posting-rules#backlink-policy">Backlink Policy</Link>.
-            </p>
-          </div>
-
-          <div className="account-card">
-            <h2>4. Choose Publishing Option</h2>
-            <ArticlePublishingPlanFields defaultPlan="free" />
+            <h2>3. Choose Publishing Option</h2>
+            <ArticlePublishingPlanFields defaultPlan="featured" />
             <p className="editor-hint">
               Featured and Sponsored fees are confirmed the same way as
               business package upgrades — see{" "}

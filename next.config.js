@@ -49,10 +49,20 @@ const categoryRedirects = [
   { source: "/blog/category/online", destination: "/blog/category/finance/loans-and-credit" },
 ].map((entry) => ({ ...entry, permanent: true }));
 
+// Retired static blog posts (removed from app/data/blog.js on 2026-09-26).
+// Each points at the closest surviving page on the same topic so any links
+// or rankings they earned carry over instead of hitting a 404.
+const retiredPostRedirects = [
+  { source: "/blog/seo-trends-2026", destination: "/blog/internal-linking-guide" },
+  { source: "/blog/technical-seo-audit-guide", destination: "/blog/internal-linking-guide" },
+  { source: "/blog/content-marketing-strategy-that-converts", destination: "/services/content-marketing" },
+  { source: "/blog/website-speed-and-conversions", destination: "/blog/server-rendering-vs-client-rendering" },
+].map((entry) => ({ ...entry, permanent: true }));
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async redirects() {
-    return categoryRedirects;
+    return [...categoryRedirects, ...retiredPostRedirects];
   },
   reactStrictMode: true,
   experimental: {

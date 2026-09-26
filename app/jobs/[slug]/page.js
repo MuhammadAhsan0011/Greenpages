@@ -69,6 +69,12 @@ export default async function JobDetailPage({ params, searchParams }) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Best-effort — a public visitor has no write access under RLS, so this
+  // goes through a security-definer function scoped to just this one
+  // increment (see docs/seo/jobs-view-count-migration.sql). Never blocks
+  // rendering if it fails.
+  await supabase.rpc("increment_job_view", { job_id: job.id });
+
   const publicClient = createPublicClient();
   const [flatCategories, { data: business }, { data: savedRow }, { data: existingApplication }, { data: relatedRows }] =
     await Promise.all([
@@ -174,6 +180,7 @@ export default async function JobDetailPage({ params, searchParams }) {
                 <span>{employmentTypeLabel(job.employment_type)}</span>
                 <span>{workModeLabel(job.work_mode)}</span>
                 <span>{experienceLevelLabel(job.experience_level)}</span>
+                <span>{job.view_count ?? 0} Views</span>
               </div>
 
               {salary && <p className="job-card-salary">{salary}</p>}

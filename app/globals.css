@@ -2692,6 +2692,12 @@ article.service-section h2 {
   color: var(--color-primary-dark);
 }
 
+.plan-choice-original-price {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-right: 6px;
+}
+
 .plan-choice-period {
   font-weight: 400;
   color: var(--color-text-muted);

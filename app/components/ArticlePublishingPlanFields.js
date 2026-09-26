@@ -29,10 +29,11 @@ export default function ArticlePublishingPlanFields({ defaultPlan = "free" }) {
     <div className="plan-choice-grid">
       {Object.entries(ARTICLE_PLAN_PRICING).map(([id, plan]) => (
         <label className="plan-choice-card" key={id}>
-          {id === "free" && <span className="pricing-badge">Recommended</span>}
+          {id === "featured" && <span className="pricing-badge">Recommended</span>}
           <input type="radio" name="submissionPlan" value={id} defaultChecked={id === defaultPlan} />
           <span className="plan-choice-name">{plan.name}</span>
           <span className="plan-choice-price">
+            {plan.originalPrice && <s className="plan-choice-original-price">{plan.originalPrice}</s>}
             {plan.price}
             <span className="plan-choice-period">{plan.period}</span>
           </span>

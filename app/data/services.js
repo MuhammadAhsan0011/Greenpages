@@ -42,7 +42,7 @@ export const services = [
   },
   {
     slug: "web-development",
-    title: "Web Development Agency Islamabad",
+    title: "Web Development Agency Pakistan",
     shortTitle: "Web Development",
     icon: "💻",
     shortDescription:

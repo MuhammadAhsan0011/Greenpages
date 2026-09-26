@@ -88,6 +88,7 @@ export function getPhotoLimit(plan) {
 // caps and rel="sponsored"/"nofollow" behavior each tier implies.
 export const ARTICLE_PLAN_PRICING = {
   free: { name: "Free Article", price: "Rs. 0", period: "per article" },
-  featured: { name: "Featured Article", price: "Rs. 1,500", period: "per article" },
+  // originalPrice is shown struck through next to price as an offer.
+  featured: { name: "Featured Article", price: "Rs. 500", originalPrice: "Rs. 1,500", period: "per article" },
   sponsored: { name: "Sponsored Article", price: "Rs. 3,000", period: "per article" },
 };
