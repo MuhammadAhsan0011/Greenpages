@@ -13,7 +13,8 @@ export default function RefundPolicyPage() {
 
       <p>
         This policy covers payments for our paid listing packages, Verified
-        (Rs. 2,000, one-time) and Premium (Rs. 4,500, one-time). The Free plan
+        (Rs. 200, one-time, under the current limited-time 90% off offer;
+        regular price Rs. 2,000) and Premium (Rs. 4,500, one-time). The Free plan
         never requires payment.
       </p>
 

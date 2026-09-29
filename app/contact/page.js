@@ -1,4 +1,5 @@
 import ContactForm from "../components/ContactForm";
+import { PLAN_PRICING } from "../data/plans";
 
 export const metadata = {
   title: { absolute: "Contact Green Pages | Karachi Marketing Agency" },
@@ -10,7 +11,7 @@ export const metadata = {
 };
 
 const PACKAGE_LABELS = {
-  verified: "Verified (Rs. 2,000/month)",
+  verified: `Verified (${PLAN_PRICING.verified.price}, 90% off limited time offer)`,
   featured: "Premium (Rs. 4,500/month)",
 };
 

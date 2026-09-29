@@ -221,9 +221,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                         <input type="radio" name="requestedPlan" value="verified" />
                         <span className="plan-choice-name">{PLAN_PRICING.verified.name}</span>
                         <span className="plan-choice-price">
+                          <s className="plan-choice-original-price">{PLAN_PRICING.verified.originalPrice}</s>
                           {PLAN_PRICING.verified.price}
                           <span className="plan-choice-period">{PLAN_PRICING.verified.period}</span>
                         </span>
+                        <span className="plan-offer-tag">{PLAN_PRICING.verified.offer}</span>
                         <span className="plan-choice-desc">
                           Sends your upgrade request now — pay after, once we
                           confirm.

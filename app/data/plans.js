@@ -6,7 +6,15 @@
 // change never needs updating in more than one place.
 export const PLAN_PRICING = {
   free: { name: "Basic", price: "Rs. 0", period: "forever" },
-  verified: { name: "Verified", price: "Rs. 2,000", period: "one-time" },
+  // originalPrice is shown struck through next to price, with offer as a
+  // tag, while the limited-time discount runs.
+  verified: {
+    name: "Verified",
+    price: "Rs. 200",
+    originalPrice: "Rs. 2,000",
+    offer: "90% OFF · Limited Time Offer",
+    period: "one-time",
+  },
   featured: { name: "Premium", price: "Rs. 4,500", period: "one-time" },
 };
 

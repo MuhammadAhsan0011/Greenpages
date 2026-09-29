@@ -4701,6 +4701,29 @@ article.service-section h2 {
   margin-left: 4px;
 }
 
+.pricing-original-price {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-right: 8px;
+}
+
+/* Limited-time discount tag, shared by /pricing cards and the listing
+   wizard's plan chooser. */
+.plan-offer-tag {
+  display: inline-block;
+  align-self: flex-start;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
 .pricing-description {
   margin-bottom: 20px;
 }

@@ -1,7 +1,7 @@
-import { PLAN_LABELS, PLAN_TAGLINE, PHOTO_LIMITS } from "../data/plans";
+import { PLAN_LABELS, PLAN_PRICING, PLAN_TAGLINE, PHOTO_LIMITS } from "../data/plans";
 
 const ROWS = [
-  { label: "Price", free: "Rs. 0", verified: "Rs. 2,000 one-time", featured: "Rs. 4,500 one-time" },
+  { label: "Price", free: "Rs. 0", verified: `${PLAN_PRICING.verified.price} one-time`, featured: "Rs. 4,500 one-time" },
   { label: "Directory listing", free: true, verified: true, featured: true },
   { label: "Business logo", free: true, verified: true, featured: true },
   {

@@ -12,7 +12,7 @@ const WHATSAPP_NUMBER = "923032672509";
 export const metadata = {
   title: "Packages & Pricing",
   description:
-    "Green Pages listing packages: Basic (free), Verified (Rs. 2,000 one-time), or Premium (Rs. 4,500 one-time) for priority placement in the Pakistan business directory.",
+    "Green Pages listing packages: Basic (free), Verified (Rs. 200 one-time, 90% off limited time offer), or Premium (Rs. 4,500 one-time) for priority placement in the Pakistan business directory.",
   alternates: {
     canonical: "/pricing",
   },
@@ -64,6 +64,8 @@ const packages = [
       </svg>
     ),
     price: PLAN_PRICING.verified.price,
+    originalPrice: PLAN_PRICING.verified.originalPrice,
+    offer: PLAN_PRICING.verified.offer,
     period: PLAN_PRICING.verified.period,
     description: "Stand out with a trust badge and a more complete profile.",
     features: [
@@ -177,7 +179,11 @@ export default async function PricingPage({ searchParams }) {
                   </span>
                   <span className="pricing-tagline">{pkg.tagline}</span>
                   <h3>{pkg.name}</h3>
+                  {pkg.offer && <span className="plan-offer-tag">{pkg.offer}</span>}
                   <p className="pricing-amount">
+                    {pkg.originalPrice && (
+                      <s className="pricing-original-price">{pkg.originalPrice}</s>
+                    )}
                     {pkg.price}
                     <span>{pkg.period}</span>
                   </p>
