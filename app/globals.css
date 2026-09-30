@@ -2830,6 +2830,18 @@ article.service-section h2 {
   align-self: flex-start;
 }
 
+.article-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.article-form-actions .article-submit-btn,
+.article-form-actions .article-draft-btn {
+  align-self: auto;
+}
+
 .declaration-list {
   display: flex;
   flex-direction: column;
@@ -4093,6 +4105,34 @@ article.service-section h2 {
   left: 24px;
   right: 24px;
   bottom: 18px;
+}
+
+.sponsored-ad-card {
+  display: block;
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sponsored-ad-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sponsored-ad-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .directory-results-header {

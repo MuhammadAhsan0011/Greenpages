@@ -312,6 +312,20 @@ export default async function BusinessesPage({ searchParams }) {
                   Add Your Business
                 </Link>
               </div>
+
+              <a
+                href="https://www.greenpagespk.com/pricing"
+                className="wizard-sidebar-card sponsored-ad-card"
+              >
+                <span className="sponsored-ad-label">Sponsored</span>
+                <Image
+                  src="/images/sidebar-sponsored-offer.png"
+                  alt="Limited time offer: list your business on Green Pages PK for Rs. 200, 90% off"
+                  width={560}
+                  height={1175}
+                  quality={95}
+                />
+              </a>
             </aside>
 
             <div className="directory-results">
