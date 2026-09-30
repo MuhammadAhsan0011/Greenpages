@@ -84,13 +84,17 @@ function slugify(title) {
 
 // Plain "article-title" when that's free; only falls back to "article-
 // title-2", "-3", etc. on an actual collision, so most articles get a
-// clean URL instead of an always-on random suffix.
-async function generateUniqueArticleSlug(supabase, title) {
+// clean URL instead of an always-on random suffix. `excludeId` is passed
+// when re-slugging a row that already exists (e.g. a draft being
+// submitted) so it doesn't collide against its own current slug.
+async function generateUniqueArticleSlug(supabase, title, excludeId = null) {
   const base = slugify(title);
   let candidate = base;
   let attempt = 2;
   while (true) {
-    const { data } = await supabase.from("articles").select("id").eq("slug", candidate).maybeSingle();
+    let query = supabase.from("articles").select("id").eq("slug", candidate);
+    if (excludeId) query = query.neq("id", excludeId);
+    const { data } = await query.maybeSingle();
     if (!data) return candidate;
     candidate = `${base}-${attempt}`;
     attempt += 1;
@@ -152,14 +156,33 @@ export async function createArticle(formData) {
   // regardless of business plan; it never changes who needs review.
   const isPaidPlan = await getIsPaidPlan(supabase, user.id);
 
+  // Continuing a saved draft into a real submission updates that same row
+  // instead of inserting a second one — verified against this user before
+  // any of it is trusted, same ownership pattern as updateArticle below.
+  const draftId = formData.get("draftId")?.toString().trim() || null;
+  let existingDraft = null;
+  if (draftId) {
+    const { data: draftRow } = await supabase
+      .from("articles")
+      .select("id, author_id, status, cover_image_url, author_photo_url")
+      .eq("id", draftId)
+      .maybeSingle();
+    if (draftRow && draftRow.author_id === user.id && draftRow.status === "draft") {
+      existingDraft = draftRow;
+    }
+  }
+
   // Free plan is capped at FREE_PLAN_ARTICLE_LIMIT articles — enforced here
   // against the real count, not just hidden in the UI. Unrelated to
   // submission_plan below (this is about the business's article quota).
+  // Drafts don't count yet — only real submissions do, so saving drafts
+  // along the way can't itself burn through the limit.
   if (!isPaidPlan) {
     const { count } = await supabase
       .from("articles")
       .select("id", { count: "exact", head: true })
-      .eq("author_id", user.id);
+      .eq("author_id", user.id)
+      .neq("status", "draft");
 
     if ((count ?? 0) >= FREE_PLAN_ARTICLE_LIMIT) {
       fail(
@@ -205,13 +228,19 @@ export async function createArticle(formData) {
   }
   const targetCity = targetCityInput || null;
 
+  // A draft continuing into a real submission may already have a cover
+  // image from when it was saved — only re-uploading replaces it; leaving
+  // the picker empty isn't treated as "no image" the way a brand-new
+  // submission is.
   const coverImageFile = formData.get("coverImage");
-  if (!(coverImageFile instanceof File) || coverImageFile.size === 0) {
+  let coverImageUrl = existingDraft?.cover_image_url ?? null;
+  if (coverImageFile instanceof File && coverImageFile.size > 0) {
+    const coverUpload = await uploadPublicImage(supabase, coverImageFile, "article-featured-images", user.id);
+    if (coverUpload.error) fail(coverUpload.error.message);
+    coverImageUrl = coverUpload.url;
+  } else if (!coverImageUrl) {
     fail("A featured image is required.");
   }
-  const coverUpload = await uploadPublicImage(supabase, coverImageFile, "article-featured-images", user.id);
-  if (coverUpload.error) fail(coverUpload.error.message);
-  const coverImageUrl = coverUpload.url;
 
   // ---- 2. Author Information ----
   const authorName = normalizeSpaces(formData.get("authorName")?.toString().trim() ?? "");
@@ -225,7 +254,7 @@ export async function createArticle(formData) {
     fail("A valid author email is required.");
   }
 
-  let authorPhotoUrl = null;
+  let authorPhotoUrl = existingDraft?.author_photo_url ?? null;
   const authorPhotoFile = formData.get("authorPhoto");
   if (authorPhotoFile instanceof File && authorPhotoFile.size > 0) {
     const photoUpload = await uploadPublicImage(supabase, authorPhotoFile, "author-photos", user.id);
@@ -262,7 +291,9 @@ export async function createArticle(formData) {
     }
   }
 
-  const slug = await generateUniqueArticleSlug(supabase, title);
+  const slug = existingDraft
+    ? await generateUniqueArticleSlug(supabase, title, existingDraft.id)
+    : await generateUniqueArticleSlug(supabase, title);
   const excerpt = deriveExcerpt(content);
 
   // Same auto-publish rule as before this feature existed: Verified/Premium
@@ -273,8 +304,7 @@ export async function createArticle(formData) {
   const status = isPaidPlan ? "published" : "pending_review";
   const paymentStatus = submissionPlan === "free" ? "not_required" : "pending";
 
-  const { error } = await supabase.from("articles").insert({
-    author_id: user.id,
+  const articleFields = {
     slug,
     title,
     excerpt,
@@ -300,7 +330,13 @@ export async function createArticle(formData) {
     payment_status: paymentStatus,
     published_at: new Date().toISOString(),
     approved: isPaidPlan,
-  });
+  };
+
+  // A submission that started life as a draft updates that same row (so it
+  // doesn't leave a duplicate draft row behind); everything else inserts new.
+  const { error } = existingDraft
+    ? await supabase.from("articles").update(articleFields).eq("id", existingDraft.id)
+    : await supabase.from("articles").insert({ ...articleFields, author_id: user.id });
 
   if (error) fail(error.message);
 
@@ -317,6 +353,144 @@ export async function createArticle(formData) {
     redirect("/account/articles?submitted=1");
   }
   redirect(`/blog/${slug}`);
+}
+
+// Saves work-in-progress without any of createArticle's publication gates —
+// no minimum word count, no required author info, no declarations, no
+// article-link limit. Only title + category are required (category because
+// articles.category is a NOT NULL column; everything else can genuinely be
+// filled in later). Available on every plan, including Free, and doesn't
+// count against FREE_PLAN_ARTICLE_LIMIT (see the `.neq("status", "draft")`
+// count in createArticle) — a draft isn't a submission yet.
+//
+// Called from the same <form> as createArticle via a second submit button's
+// formAction (see app/account/articles/new/page.js), with formNoValidate so
+// the browser doesn't block it on fields this action doesn't require.
+export async function saveArticleDraft(formData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  function fail(message) {
+    redirect(`/account/articles/new?error=${encodeURIComponent(message)}`);
+  }
+
+  // Re-saving an in-progress draft updates that same row — ownership and
+  // status are re-checked server-side, never trusted from the hidden field
+  // alone, same pattern as updateArticle/deleteOwnArticle below.
+  const draftId = formData.get("draftId")?.toString().trim() || null;
+  let existingDraft = null;
+  if (draftId) {
+    const { data: draftRow } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("id", draftId)
+      .maybeSingle();
+    if (!draftRow || draftRow.author_id !== user.id || draftRow.status !== "draft") {
+      fail("That draft could not be found.");
+    }
+    existingDraft = draftRow;
+  }
+
+  const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
+  if (!title) fail("Give your draft a title before saving.");
+
+  const categorySlug = formData.get("category")?.toString().trim();
+  const subcategorySlug = formData.get("subcategory")?.toString().trim();
+  const categoryResult = resolveArticleCategory(categorySlug, subcategorySlug);
+  if (categoryResult.error) fail(categoryResult.error);
+  const category = categoryResult.category;
+
+  const targetCityInput = formData.get("targetCity")?.toString().trim() || "";
+  const targetCity = targetCityInput && PK_CITIES.some((c) => c.name === targetCityInput) ? targetCityInput : null;
+  const imageCredit = formData.get("imageCredit")?.toString().trim() || null;
+  const rawContent = formData.get("content")?.toString() ?? "";
+  const content = sanitizeArticleHtml(rawContent);
+
+  // A new cover image replaces the old one; leaving the picker empty keeps
+  // whatever the draft already had (unlike createArticle, a draft can be
+  // saved with no image at all).
+  let coverImageUrl = existingDraft?.cover_image_url ?? null;
+  const coverImageFile = formData.get("coverImage");
+  if (coverImageFile instanceof File && coverImageFile.size > 0) {
+    const coverUpload = await uploadPublicImage(supabase, coverImageFile, "article-featured-images", user.id);
+    if (coverUpload.error) fail(coverUpload.error.message);
+    coverImageUrl = coverUpload.url;
+  }
+
+  const authorName = normalizeSpaces(formData.get("authorName")?.toString().trim() ?? "") || null;
+  const authorEmail = formData.get("authorEmail")?.toString().trim() || null;
+  const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
+  const companyName = formData.get("companyName")?.toString().trim() || null;
+  const authorBio = formData.get("authorBio")?.toString().trim() || null;
+
+  let authorPhotoUrl = existingDraft?.author_photo_url ?? null;
+  const authorPhotoFile = formData.get("authorPhoto");
+  if (authorPhotoFile instanceof File && authorPhotoFile.size > 0) {
+    const photoUpload = await uploadPublicImage(supabase, authorPhotoFile, "author-photos", user.id);
+    if (photoUpload.error) fail(photoUpload.error.message);
+    authorPhotoUrl = photoUpload.url;
+  }
+
+  const websiteUrl = formData.get("websiteUrl")?.toString().trim() || null;
+  const businessName = formData.get("businessName")?.toString().trim() || null;
+  const targetUrl = formData.get("targetUrl")?.toString().trim() || null;
+  const anchorText = formData.get("anchorText")?.toString().trim() || null;
+
+  const submissionPlanInput = formData.get("submissionPlan")?.toString().trim() ?? "free";
+  const submissionPlan = SUBMISSION_PLANS.includes(submissionPlanInput) ? submissionPlanInput : "free";
+
+  const excerpt = deriveExcerpt(content);
+  const linkCount = countContentLinks(content);
+
+  const draftFields = {
+    title,
+    excerpt,
+    content,
+    content_format: "html",
+    category,
+    cover_image_url: coverImageUrl,
+    image_credit: imageCredit,
+    target_city: targetCity,
+    author_name: authorName,
+    author_email: authorEmail,
+    author_phone: authorPhone,
+    company_name: companyName,
+    author_bio: authorBio,
+    author_photo_url: authorPhotoUrl,
+    website_url: websiteUrl,
+    business_name: businessName,
+    target_url: targetUrl,
+    anchor_text: anchorText,
+    submission_plan: submissionPlan,
+    link_count: linkCount,
+    status: "draft",
+    payment_status: "not_required",
+    approved: false,
+  };
+
+  let savedId = existingDraft?.id;
+  if (existingDraft) {
+    const { error } = await supabase.from("articles").update(draftFields).eq("id", existingDraft.id);
+    if (error) fail(error.message);
+  } else {
+    const slug = await generateUniqueArticleSlug(supabase, title);
+    const { data: inserted, error } = await supabase
+      .from("articles")
+      .insert({ ...draftFields, author_id: user.id, slug, published_at: new Date().toISOString() })
+      .select("id")
+      .single();
+    if (error) fail(error.message);
+    savedId = inserted.id;
+  }
+
+  revalidatePath("/account/articles");
+  redirect(`/account/articles/new?draftId=${savedId}&savedDraft=1`);
 }
 
 // Editing a published article is a Verified/Featured perk — enforced here

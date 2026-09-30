@@ -16,6 +16,7 @@ export const metadata = {
 // article-submission-migration.sql backfills this on existing rows, but a
 // pending Supabase migration shouldn't crash the page in the meantime).
 const STATUS_LABELS = {
+  draft: { icon: "📝", label: "Draft" },
   pending_review: { icon: "🕐", label: "Pending Review" },
   changes_requested: { icon: "✏️", label: "Changes Requested" },
   rejected: { icon: "❌", label: "Rejected" },
@@ -50,6 +51,9 @@ export default async function MyArticlesPage({ searchParams }) {
     .eq("owner_id", user.id)
     .maybeSingle();
   const isPaidPlan = computeIsPaidPlan(business?.plan);
+  // Drafts aren't submissions yet — same exclusion as the free-plan count
+  // enforced server-side in createArticle/saveArticleDraft (actions.js).
+  const submittedCount = (articles ?? []).filter((a) => a.status !== "draft").length;
 
   return (
     <>
@@ -67,7 +71,8 @@ export default async function MyArticlesPage({ searchParams }) {
 
       {!isPaidPlan && (
         <p className="editor-hint">
-          Free plan: {articles?.length ?? 0} of {FREE_PLAN_ARTICLE_LIMIT} articles used.{" "}
+          Free plan: {submittedCount} of {FREE_PLAN_ARTICLE_LIMIT} articles used
+          (drafts don&apos;t count).{" "}
           <Link href="/pricing">Upgrade</Link> for unlimited, admin-approval-free
           publishing.
         </p>
@@ -111,7 +116,14 @@ export default async function MyArticlesPage({ searchParams }) {
                 <p className="editor-hint">Requested changes: {article.admin_notes}</p>
               )}
               <div className="account-article-actions">
-                {isPaidPlan ? (
+                {article.status === "draft" ? (
+                  <Link
+                    href={`/account/articles/new?draftId=${article.id}`}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Continue Draft
+                  </Link>
+                ) : isPaidPlan ? (
                   <Link
                     href={`/account/articles/${article.slug}/edit`}
                     className="btn btn-secondary btn-sm"

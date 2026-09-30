@@ -164,6 +164,10 @@ export default async function AdminPage({ searchParams }) {
     .select(
       "id, slug, title, excerpt, category, target_city, created_at, approved, status, submission_plan, payment_status, link_count, author_email, featured_on_homepage, rejection_reason, admin_notes, profiles(full_name)"
     )
+    // Drafts are private work-in-progress, not a submission — they never
+    // reach editorial review, so they're excluded here rather than just
+    // hidden from the "Pending Review" filter below.
+    .neq("status", "draft")
     .order("created_at", { ascending: false });
 
   const pendingArticles = (articles ?? []).filter(

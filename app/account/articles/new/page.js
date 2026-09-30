@@ -1,8 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { createArticle } from "../actions";
+import { createArticle, saveArticleDraft } from "../actions";
 import { FREE_PLAN_ARTICLE_LIMIT } from "../constants";
+import ArticleFormGuard from "../../../components/ArticleFormGuard";
 import SubmitButton from "../../../components/SubmitButton";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import ImageUploadField from "../../../components/ImageUploadField";
@@ -10,7 +12,7 @@ import SmartTextarea from "../../../components/SmartTextarea";
 import ArticleCategoryFields from "../../../components/ArticleCategoryFields";
 import ArticleTargetCityField from "../../../components/ArticleTargetCityField";
 import ArticlePublishingPlanFields from "../../../components/ArticlePublishingPlanFields";
-import { getAllParents } from "../../../data/blog";
+import { getAllParents, resolveCategoryNodes } from "../../../data/blog";
 import { isPaidPlan as computeIsPaidPlan } from "../../../data/plans";
 
 export const metadata = {
@@ -29,6 +31,8 @@ export default async function NewArticlePage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
   const submitted = params?.submitted === "1";
+  const savedDraft = params?.savedDraft === "1";
+  const draftId = params?.draftId?.toString().trim() || null;
 
   const supabase = await createClient();
   const {
@@ -46,15 +50,41 @@ export default async function NewArticlePage({ searchParams }) {
 
   const isPaidPlan = computeIsPaidPlan(business?.plan);
 
+  // A draft in progress doesn't count against the free-plan limit — only
+  // real submissions do (see the matching `.neq("status", "draft")` in
+  // createArticle/saveArticleDraft, app/account/articles/actions.js).
   let articleCount = 0;
   if (!isPaidPlan) {
     const { count } = await supabase
       .from("articles")
       .select("id", { count: "exact", head: true })
-      .eq("author_id", user.id);
+      .eq("author_id", user.id)
+      .neq("status", "draft");
     articleCount = count ?? 0;
   }
-  const atFreeLimit = !isPaidPlan && articleCount >= FREE_PLAN_ARTICLE_LIMIT;
+  // Continuing a saved draft — ownership-checked here, never trusted from
+  // the URL alone. A missing/foreign/no-longer-a-draft id just falls back
+  // to a blank form instead of erroring.
+  let draft = null;
+  if (draftId) {
+    const { data: draftRow } = await supabase
+      .from("articles")
+      .select("*")
+      .eq("id", draftId)
+      .maybeSingle();
+    if (draftRow && draftRow.author_id === user.id && draftRow.status === "draft") {
+      draft = draftRow;
+    }
+  }
+
+  const { parent: draftParent, child: draftChild } = draft
+    ? resolveCategoryNodes(draft.category)
+    : { parent: null, child: null };
+
+  // A saved draft never counted against the limit, so reopening one to
+  // keep working on it (or submit it) shouldn't be blocked by it either —
+  // only starting a brand-new article/draft is.
+  const atFreeLimit = !isPaidPlan && !draft && articleCount >= FREE_PLAN_ARTICLE_LIMIT;
 
   if (atFreeLimit) {
     return (
@@ -105,7 +135,7 @@ export default async function NewArticlePage({ searchParams }) {
       <Link href="/account" className="back-to-dashboard-link">
         ← Back to Dashboard
       </Link>
-      <h1 id="new-article-heading">Create Your Article</h1>
+      <h1 id="new-article-heading">{draft ? "Continue Your Draft" : "Create Your Article"}</h1>
       <p className="hero-description">
         Share your expertise, promote your business and reach a
         Pakistan-focused audience.
@@ -114,17 +144,27 @@ export default async function NewArticlePage({ searchParams }) {
       {!isPaidPlan && (
         <p className="editor-hint">
           Free plan: {articleCount} of {FREE_PLAN_ARTICLE_LIMIT} articles used.
+          Drafts don&apos;t count until you submit them.
         </p>
       )}
 
       {error && <p className="form-error">{error}</p>}
+      {savedDraft && !error && (
+        <p className="form-success">
+          Draft saved. Come back any time from{" "}
+          <Link href="/account/articles">My Articles</Link> to finish it.
+        </p>
+      )}
 
       <div className="article-form-layout">
-        <form
+        <ArticleFormGuard
           action={createArticle}
           className="article-form-main"
           encType="multipart/form-data"
+          hasCoverImage={Boolean(draft?.cover_image_url)}
         >
+          <input type="hidden" name="draftId" value={draft?.id ?? ""} />
+
           <div className="account-card">
             <h2>1. Article Details</h2>
 
@@ -135,16 +175,35 @@ export default async function NewArticlePage({ searchParams }) {
                 name="title"
                 type="text"
                 placeholder="Enter your article title..."
+                defaultValue={draft?.title ?? ""}
                 required
               />
             </div>
 
-            <ArticleCategoryFields parents={getAllParents()} />
+            <ArticleCategoryFields
+              parents={getAllParents()}
+              defaultParentSlug={draftParent?.slug}
+              defaultChildSlug={draftChild?.slug}
+            />
 
-            <ArticleTargetCityField />
+            <ArticleTargetCityField defaultValue={draft?.target_city ?? ""} />
 
             <div className="form-field">
-              <span className="form-field-label-standalone">Featured Image *</span>
+              <span className="form-field-label-standalone">
+                Featured Image {draft?.cover_image_url ? "" : "*"}
+              </span>
+              {draft?.cover_image_url && (
+                <div className="logo-preview-row">
+                  <Image
+                    src={draft.cover_image_url}
+                    alt="Current draft cover"
+                    width={120}
+                    height={72}
+                    className="logo-preview"
+                  />
+                  <span className="editor-hint">Uploading a new image below replaces this one.</span>
+                </div>
+              )}
               <div className="image-upload-box">
                 <span className="image-upload-icon" aria-hidden="true">
                   🖼️
@@ -161,6 +220,7 @@ export default async function NewArticlePage({ searchParams }) {
               <label htmlFor="content">Article Content *</label>
               <RichTextEditor
                 name="content"
+                defaultValue={draft?.content ?? ""}
                 showWordCount
                 minWords={800}
                 wordCountHint="Minimum 800 words | Recommended 1,000–1,800 words | Maximum 2,500 words"
@@ -178,7 +238,7 @@ export default async function NewArticlePage({ searchParams }) {
                   id="authorName"
                   name="authorName"
                   type="text"
-                  defaultValue={profile?.full_name ?? ""}
+                  defaultValue={draft?.author_name ?? profile?.full_name ?? ""}
                   required
                 />
               </div>
@@ -188,7 +248,7 @@ export default async function NewArticlePage({ searchParams }) {
                   id="authorEmail"
                   name="authorEmail"
                   type="email"
-                  defaultValue={user.email ?? ""}
+                  defaultValue={draft?.author_email ?? user.email ?? ""}
                   required
                 />
               </div>
@@ -197,7 +257,13 @@ export default async function NewArticlePage({ searchParams }) {
             <div className="form-row">
               <div className="form-field">
                 <label htmlFor="authorPhone">Phone / WhatsApp</label>
-                <input id="authorPhone" name="authorPhone" type="tel" placeholder="+92 3XX XXXXXXX" />
+                <input
+                  id="authorPhone"
+                  name="authorPhone"
+                  type="tel"
+                  placeholder="+92 3XX XXXXXXX"
+                  defaultValue={draft?.author_phone ?? ""}
+                />
               </div>
               <div className="form-field">
                 <label htmlFor="companyName">Company / Organization</label>
@@ -205,7 +271,7 @@ export default async function NewArticlePage({ searchParams }) {
                   id="companyName"
                   name="companyName"
                   type="text"
-                  defaultValue={business?.name ?? ""}
+                  defaultValue={draft?.company_name ?? business?.name ?? ""}
                 />
               </div>
             </div>
@@ -217,11 +283,24 @@ export default async function NewArticlePage({ searchParams }) {
                 name="authorBio"
                 rows={3}
                 placeholder="A short bio shown alongside your article."
+                defaultValue={draft?.author_bio ?? ""}
               />
             </div>
 
             <div className="form-field">
               <span className="form-field-label-standalone">Profile Photo</span>
+              {draft?.author_photo_url && (
+                <div className="logo-preview-row">
+                  <Image
+                    src={draft.author_photo_url}
+                    alt="Current draft author photo"
+                    width={72}
+                    height={72}
+                    className="logo-preview"
+                  />
+                  <span className="editor-hint">Uploading a new photo below replaces this one.</span>
+                </div>
+              )}
               <div className="image-upload-box">
                 <span className="image-upload-icon" aria-hidden="true">
                   🖼️
@@ -233,7 +312,7 @@ export default async function NewArticlePage({ searchParams }) {
 
           <div className="account-card">
             <h2>3. Choose Publishing Option</h2>
-            <ArticlePublishingPlanFields defaultPlan="featured" />
+            <ArticlePublishingPlanFields defaultPlan={draft?.submission_plan ?? "featured"} />
             <p className="editor-hint">
               Featured and Sponsored fees are confirmed the same way as
               business package upgrades — see{" "}
@@ -267,10 +346,30 @@ export default async function NewArticlePage({ searchParams }) {
             </div>
           </div>
 
-          <SubmitButton className="btn btn-primary article-submit-btn" pendingLabel="Submitting…">
-            Submit Article for Review
-          </SubmitButton>
-        </form>
+          <div className="article-form-actions">
+            <SubmitButton
+              formAction={saveArticleDraft}
+              formNoValidate
+              data-article-action="draft"
+              className="btn btn-secondary article-draft-btn"
+              pendingLabel="Saving Draft…"
+            >
+              Save as Draft
+            </SubmitButton>
+            <SubmitButton
+              data-article-action="submit"
+              className="btn btn-primary article-submit-btn"
+              pendingLabel="Submitting…"
+            >
+              Submit Article for Review
+            </SubmitButton>
+          </div>
+          <p className="editor-hint">
+            Saving as a draft only requires a title and category — everything
+            else can be filled in later. It won&apos;t be reviewed or
+            published until you submit it.
+          </p>
+        </ArticleFormGuard>
 
         <aside className="article-form-sidebar">
           <div className="wizard-sidebar-card">
