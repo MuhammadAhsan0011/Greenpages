@@ -15,6 +15,8 @@ export default function AdsterraBanner({ adKey, width, height, className }) {
           __html: `atOptions = { 'key' : '${adKey}', 'format' : 'iframe', 'height' : ${height}, 'width' : ${width}, 'params' : {} };`,
         }}
       />
+      {/* eslint-disable-next-line @next/next/no-sync-scripts -- must run
+          synchronously right after the atOptions script above; see note. */}
       <script src={`https://bicea.org/22/${adKey}`} />
     </div>
   );

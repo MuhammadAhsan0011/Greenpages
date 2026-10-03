@@ -140,6 +140,7 @@ export default function RootLayout({ children }) {
             the Adsterra dashboard, which render into a specific container
             element wherever that's placed in the page). */}
         <script
+          async
           data-cfasync="false"
           src="https://bicea.org/14/995236a502054aa1860745841e5c2365"
         />
