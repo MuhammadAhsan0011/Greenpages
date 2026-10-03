@@ -6,6 +6,7 @@ import DirectoryListItem from "../components/DirectoryListItem";
 import SortSelect from "../components/SortSelect";
 import Breadcrumbs from "../components/Breadcrumbs";
 import AdsterraBanner from "../components/AdsterraBanner";
+import AdsterraReferralBanner from "../components/AdsterraReferralBanner";
 import { createPublicClient } from "@/utils/supabase/public";
 import { PK_CITIES } from "../data/directoryCities";
 import { getAllParents, getParent, resolveCategoryNodes } from "../data/businessCategories";
@@ -330,6 +331,10 @@ export default async function BusinessesPage({ searchParams }) {
 
               <div className="ad-sidebar-banner">
                 <AdsterraBanner adKey="8275bcdeda8671a8396a5526be1d237a" width={160} height={600} />
+              </div>
+
+              <div className="ad-sidebar-banner">
+                <AdsterraReferralBanner />
               </div>
             </aside>
 
