@@ -26,4 +26,33 @@ alter table public.businesses
   add column author_photo_url text,
   add column author_phone text;
 
+-- Backfill: anyone who already wrote an article under the old per-article
+-- author form already typed a bio/photo/phone once — reuse the most recent
+-- one (per author) instead of making them re-enter it before their first
+-- article under the new required-author-profile gate (see the redirect in
+-- app/account/articles/new/page.js). `distinct on` picks one row per
+-- author_id, newest first; `b.author_bio is null` makes this safe to re-run
+-- without clobbering anything already set via the new author-profile page.
+update public.businesses b
+set
+  author_bio = a.author_bio,
+  author_photo_url = a.author_photo_url,
+  author_phone = a.author_phone
+from (
+  select distinct on (author_id)
+    author_id, author_bio, author_photo_url, author_phone
+  from public.articles
+  where author_bio is not null and author_bio <> ''
+  order by author_id, created_at desc
+) a
+where b.owner_id = a.author_id
+  and b.author_bio is null;
+
+-- Verify: every business that had a past article with a bio should now show
+-- one here too (new signups with no articles yet correctly show null —
+-- they fill it in themselves on their first visit to the author-profile page).
+select id, name, owner_id, author_bio, author_photo_url, author_phone
+from public.businesses
+order by created_at desc;
+
 commit;
