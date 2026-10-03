@@ -21,6 +21,12 @@ export default async function AuthorProfilePage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
   const saved = params?.saved === "1";
+  // Only ever points back into the article flow — never trust an arbitrary
+  // redirect target from a query string. Its presence also means this page
+  // was reached via the required-first-time gate in new/page.js, not a
+  // voluntary edit — so it doubles as the "this is mandatory" signal.
+  const next = params?.next === "/account/articles/new" ? params.next : null;
+  const required = Boolean(next);
 
   const supabase = await createClient();
   const {
@@ -59,10 +65,17 @@ export default async function AuthorProfilePage({ searchParams }) {
         publish, instead of being re-entered each time.
       </p>
 
+      {required && !error && (
+        <p className="form-error">
+          Set up your author profile before writing your first article — at
+          least a bio is required.
+        </p>
+      )}
       {error && <p className="form-error">{error}</p>}
       {saved && !error && <p className="form-success">Author profile saved.</p>}
 
       <form action={updateAuthorProfile} className="contact-form" encType="multipart/form-data">
+        {next && <input type="hidden" name="next" value={next} />}
         <div className="form-row">
           <div className="form-field">
             <label htmlFor="displayName">Full Name</label>
@@ -87,11 +100,12 @@ export default async function AuthorProfilePage({ searchParams }) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="authorBio">Author Bio</label>
+          <label htmlFor="authorBio">Author Bio *</label>
           <SmartTextarea
             id="authorBio"
             name="authorBio"
             rows={4}
+            required
             placeholder="A short bio shown alongside your articles."
             defaultValue={business.author_bio ?? ""}
           />

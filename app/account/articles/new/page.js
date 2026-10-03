@@ -64,6 +64,15 @@ export default async function NewArticlePage({ searchParams }) {
     );
   }
 
+  // The one-time author profile is a required first step, not an optional
+  // extra — every author sets a bio before they can write their first
+  // article, not just whenever they feel like it. Re-checked in
+  // createArticle/saveArticleDraft too, since this page gate alone doesn't
+  // stop a direct form submission.
+  if (!business.author_bio) {
+    redirect("/account/articles/author-profile?next=/account/articles/new");
+  }
+
   const isPaidPlan = computeIsPaidPlan(business.plan);
   const publisherPlan = business.publisher_plan ?? "basic";
   const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
@@ -239,9 +248,6 @@ export default async function NewArticlePage({ searchParams }) {
                 <strong>{profile?.full_name ?? "—"}</strong>
                 <span className="editor-hint">{user.email}</span>
                 {business.name && <span className="editor-hint">{business.name}</span>}
-                {!business.author_bio && (
-                  <span className="editor-hint">No author bio set yet.</span>
-                )}
               </div>
             </div>
           </div>

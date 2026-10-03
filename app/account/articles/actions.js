@@ -165,6 +165,11 @@ export async function createArticle(formData) {
   if (!business) {
     fail("Create your business profile first, then come back to write an article.");
   }
+  // Mirrors the page-level gate in app/account/articles/new/page.js — this
+  // is the enforcement point a direct form submission can't skip.
+  if (!business.author_bio) {
+    redirect("/account/articles/author-profile?next=/account/articles/new");
+  }
 
   // Auto-publish is still a Verified/Premium BUSINESS-plan perk, unchanged
   // from before — the Publisher Plan below is a separate, additive concept
@@ -372,6 +377,9 @@ export async function saveArticleDraft(formData) {
   if (!business) {
     fail("Create your business profile first, then come back to write an article.");
   }
+  if (!business.author_bio) {
+    redirect("/account/articles/author-profile?next=/account/articles/new");
+  }
 
   // Re-saving an in-progress draft updates that same row — ownership and
   // status are re-checked server-side, never trusted from the hidden field
@@ -477,8 +485,16 @@ export async function updateAuthorProfile(formData) {
     redirect("/login");
   }
 
+  // Only ever "/account/articles/new" — see the matching allowlist check in
+  // app/account/articles/author-profile/page.js. Carried through failures
+  // too, so a validation error doesn't drop the "you still need to finish
+  // this" context.
+  const next = formData.get("next")?.toString().trim() || null;
+
   function fail(message) {
-    redirect(`/account/articles/author-profile?error=${encodeURIComponent(message)}`);
+    const qs = new URLSearchParams({ error: message });
+    if (next) qs.set("next", next);
+    redirect(`/account/articles/author-profile?${qs.toString()}`);
   }
 
   const { data: business } = await supabase
@@ -493,6 +509,13 @@ export async function updateAuthorProfile(formData) {
 
   const authorBio = formData.get("authorBio")?.toString().trim() || null;
   const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
+
+  // The author profile is a required first step before writing an article
+  // (see the gate in app/account/articles/new/page.js) — a bio is the one
+  // field that actually has to be there for that to mean anything.
+  if (!authorBio) {
+    fail("Add a short author bio before continuing.");
+  }
 
   let authorPhotoUrl = business.author_photo_url ?? null;
   let oldPhotoUrl = null;
@@ -521,7 +544,9 @@ export async function updateAuthorProfile(formData) {
   revalidatePath("/account/articles");
   revalidatePath("/account/articles/author-profile");
   revalidatePath("/account/articles/new");
-  redirect("/account/articles/author-profile?saved=1");
+  // Finishing the required first-time setup drops them straight back into
+  // the article form instead of making them click through again.
+  redirect(next ?? "/account/articles/author-profile?saved=1");
 }
 
 // Editing a published article is a Verified/Featured perk — enforced here
