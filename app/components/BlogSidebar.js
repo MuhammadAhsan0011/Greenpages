@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import Button from "./Button";
 import AdsterraBanner from "./AdsterraBanner";
-import AdsterraReferralBanner from "./AdsterraReferralBanner";
 
 // Server Component — sticky (via .blog-sidebar in globals.css) but purely
 // presentational, driven entirely by props the article page already
@@ -107,10 +106,6 @@ export default function BlogSidebar({ categories, recentPosts }) {
 
       <div className="ad-sidebar-banner">
         <AdsterraBanner adKey="8275bcdeda8671a8396a5526be1d237a" width={160} height={600} />
-      </div>
-
-      <div className="ad-sidebar-banner">
-        <AdsterraReferralBanner />
       </div>
     </aside>
   );

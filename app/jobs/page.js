@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import JobCard from "../components/JobCard";
 import JobSortSelect from "../components/JobSortSelect";
 import Breadcrumbs from "../components/Breadcrumbs";
+import AdsterraReferralBanner from "../components/AdsterraReferralBanner";
 import { createPublicClient } from "@/utils/supabase/public";
 import {
   fetchActiveJobCategories,
@@ -268,6 +269,7 @@ export default async function JobsPage({ searchParams }) {
       <section className="section-alt" aria-labelledby="job-results-heading">
         <div className="container">
           <div className="job-browse-layout">
+            <div className="job-sidebar-col">
             <aside className="job-filters" aria-label="Filters">
               <form action="/jobs" method="get" className="job-filters-form">
                 {query && <input type="hidden" name="q" value={query} />}
@@ -352,6 +354,11 @@ export default async function JobsPage({ searchParams }) {
                 )}
               </form>
             </aside>
+
+            <div className="ad-sidebar-banner">
+              <AdsterraReferralBanner />
+            </div>
+            </div>
 
             <div className="job-results">
               <div className="job-results-header">

@@ -5482,6 +5482,12 @@ article.service-section h2 {
   align-items: start;
 }
 
+.job-sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .job-filters {
   background: #ffffff;
   border: 1px solid var(--color-border);

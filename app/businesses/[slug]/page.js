@@ -12,7 +12,6 @@ import PlanBadge from "../../components/PlanBadge";
 import GallerySlider from "../../components/GallerySlider";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import AdsterraBanner from "../../components/AdsterraBanner";
-import AdsterraReferralBanner from "../../components/AdsterraReferralBanner";
 import { createPublicClient } from "@/utils/supabase/public";
 import { resolveCategoryNodes } from "../../data/businessCategories";
 import { PK_CITIES } from "../../data/directoryCities";
@@ -691,10 +690,6 @@ export default async function BusinessProfilePage({ params, searchParams }) {
 
               <div className="ad-sidebar-banner">
                 <AdsterraBanner adKey="8275bcdeda8671a8396a5526be1d237a" width={160} height={600} />
-              </div>
-
-              <div className="ad-sidebar-banner">
-                <AdsterraReferralBanner />
               </div>
             </aside>
           </div>
