@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
+import AdsterraBanner from "./components/AdsterraBanner";
 import { SITE_URL } from "@/lib/site";
 
 const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
@@ -134,6 +135,14 @@ export default function RootLayout({ children }) {
           data-cfasync="false"
           async
         />
+        {/* Adsterra Social Bar — sitewide overlay unit, no content placement
+            needed (unlike the Native Banner/iframe banner units below it in
+            the Adsterra dashboard, which render into a specific container
+            element wherever that's placed in the page). */}
+        <script
+          data-cfasync="false"
+          src="https://bicea.org/14/995236a502054aa1860745841e5c2365"
+        />
       </head>
       <body>
         <script
@@ -156,6 +165,20 @@ export default function RootLayout({ children }) {
           `}
         </Script>
         <Navbar />
+        <div className="ad-top-banner">
+          <AdsterraBanner
+            adKey="0a101d92828b53ade8b6cf3deab8495c"
+            width={728}
+            height={90}
+            className="ad-banner-desktop"
+          />
+          <AdsterraBanner
+            adKey="084bca52f51a263bcc66a574fc4cb7ac"
+            width={320}
+            height={50}
+            className="ad-banner-mobile"
+          />
+        </div>
         <main>{children}</main>
         <Footer />
         <ReturnVisitorReviewPopup />

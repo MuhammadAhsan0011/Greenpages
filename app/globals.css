@@ -4135,6 +4135,56 @@ article.service-section h2 {
   letter-spacing: 0.04em;
 }
 
+/* ---------- Adsterra ad units ---------- */
+
+/* Leaderboard (desktop) / mobile banner, swapped by width below the navbar.
+   Both AdsterraBanner instances always render (they have to — each one's
+   script pair only fires once, at render time) so the toggle is CSS-only. */
+.ad-top-banner {
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  background: #f3f6f3;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ad-banner-desktop {
+  display: none;
+}
+
+.ad-banner-mobile {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .ad-banner-desktop {
+    display: block;
+  }
+
+  .ad-banner-mobile {
+    display: none;
+  }
+}
+
+.ad-sidebar-banner {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+.ad-footer-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 32px;
+}
+
+.ad-footer-native {
+  width: 100%;
+  max-width: 600px;
+}
+
 .directory-results-header {
   display: flex;
   flex-wrap: wrap;
