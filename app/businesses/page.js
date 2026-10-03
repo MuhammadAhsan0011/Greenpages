@@ -322,8 +322,8 @@ export default async function BusinessesPage({ searchParams }) {
                 <Image
                   src="/images/sidebar-sponsored-offer.png"
                   alt="Limited time offer: list your business on Green Pages PK for Rs. 200, 90% off"
-                  width={560}
-                  height={1175}
+                  width={866}
+                  height={1817}
                   quality={95}
                 />
               </a>
