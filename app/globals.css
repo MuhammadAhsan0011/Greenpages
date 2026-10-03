@@ -2537,6 +2537,38 @@ article.service-section h2 {
   margin-bottom: 24px;
 }
 
+.author-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.author-profile-summary-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.author-profile-summary-photo-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-dark);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.author-profile-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 /* ---------- Add Listing wizard (pure CSS step switching, no JS) ---------- */
 .hero-image-small {
   max-width: 320px;

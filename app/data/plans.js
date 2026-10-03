@@ -88,15 +88,55 @@ export function getPhotoLimit(plan) {
   return PHOTO_LIMITS[plan] ?? PHOTO_LIMITS.free;
 }
 
-// Per-article publishing plan pricing — deliberately separate from the
-// business listing PLAN_PRICING above. A Verified/Premium business member
-// still picks a Free/Featured/Sponsored option per article; this never
-// changes based on their business plan, and their business plan never
-// changes based on this. See lib/seo/articleLinks.js for the link-count
-// caps and rel="sponsored"/"nofollow" behavior each tier implies.
-export const ARTICLE_PLAN_PRICING = {
-  free: { name: "Free Article", price: "Rs. 0", period: "per article" },
-  // originalPrice is shown struck through next to price as an offer.
-  featured: { name: "Featured Article", price: "Rs. 500", originalPrice: "Rs. 1,500", period: "per article" },
-  sponsored: { name: "Sponsored Article", price: "Rs. 3,000", period: "per article" },
+// Annual "Publisher Plan" — what an author/business pays once a year to
+// raise how OFTEN they can submit articles (see PUBLISHER_SUBMISSION_LIMITS
+// below). Replaces the old per-article Free/Featured/Sponsored payment:
+// articles.submission_plan (which lib/seo/articleLinks.js still reads for
+// rel="sponsored" and the link-count cap) is now derived from this at
+// submit time instead of chosen and paid per article — see
+// publisherPlanToSubmissionPlan() below and createArticle in
+// app/account/articles/actions.js.
+export const PUBLISHER_PLAN_PRICING = {
+  basic: { name: "Basic", price: "Rs. 0", period: "forever" },
+  // originalPrice is shown struck through next to price, with offer as a
+  // tag, while the limited-time discount runs.
+  featured: {
+    name: "Featured",
+    price: "Rs. 1,500",
+    originalPrice: "Rs. 3,000",
+    offer: "50% OFF · Limited Time Offer",
+    period: "per year",
+  },
+  sponsored: { name: "Sponsored", price: "Rs. 6,000", period: "per year" },
 };
+
+export const PUBLISHER_PLAN_IDS = Object.keys(PUBLISHER_PLAN_PRICING);
+
+export const PUBLISHER_PLAN_LABELS = Object.fromEntries(
+  Object.entries(PUBLISHER_PLAN_PRICING).map(([id, p]) => [id, p.name])
+);
+
+// Lower number = higher tier — same convention as PLAN_RANK above.
+export const PUBLISHER_PLAN_RANK = { sponsored: 0, featured: 1, basic: 2 };
+
+// How often each Publisher Plan tier may submit a real article (drafts are
+// always unlimited and never count — see saveArticleDraft). windowDays is a
+// rolling lookback from "now", not a calendar day/week, so there's no
+// midnight-boundary edge case to reason about. Enforced in createArticle.
+export const PUBLISHER_SUBMISSION_LIMITS = {
+  basic: { maxArticles: 1, windowDays: 7, windowLabel: "7 days" },
+  featured: { maxArticles: 1, windowDays: 1, windowLabel: "24 hours" },
+  sponsored: { maxArticles: 3, windowDays: 1, windowLabel: "24 hours" },
+};
+
+export function getPublisherSubmissionLimit(publisherPlan) {
+  return PUBLISHER_SUBMISSION_LIMITS[publisherPlan] ?? PUBLISHER_SUBMISSION_LIMITS.basic;
+}
+
+// articles.submission_plan keeps its original three values — only the
+// "basic" tier is named differently here (it was always "free" on the
+// article itself), so every existing rel="sponsored"/link-limit call site
+// keyed off submission_plan needs zero changes.
+export function publisherPlanToSubmissionPlan(publisherPlan) {
+  return publisherPlan === "basic" ? "free" : publisherPlan;
+}

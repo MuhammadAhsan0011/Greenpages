@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { deletePublicImage } from "@/utils/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { PLAN_IDS } from "../data/plans";
+import { PLAN_IDS, PUBLISHER_PLAN_IDS } from "../data/plans";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -62,6 +62,57 @@ export async function setPlan(formData) {
 
   revalidatePath("/admin");
   revalidatePath("/businesses");
+}
+
+// Same approve/dismiss/manual-override trio as the business plan above, but
+// for the annual Publisher Plan (businesses.publisher_plan /
+// requested_publisher_plan) — a separate column, approved independently.
+export async function approvePublisherUpgrade(businessId, publisherPlan) {
+  const supabase = await requireAdmin();
+
+  await supabase
+    .from("businesses")
+    .update({
+      publisher_plan: publisherPlan,
+      requested_publisher_plan: null,
+      publisher_plan_started_at: new Date().toISOString(),
+    })
+    .eq("id", businessId);
+
+  revalidatePath("/admin");
+  revalidatePath("/account/articles");
+  revalidatePath("/account/articles/new");
+}
+
+export async function dismissPublisherRequest(businessId) {
+  const supabase = await requireAdmin();
+
+  await supabase.from("businesses").update({ requested_publisher_plan: null }).eq("id", businessId);
+
+  revalidatePath("/admin");
+}
+
+export async function setPublisherPlan(formData) {
+  const supabase = await requireAdmin();
+
+  const businessId = formData.get("businessId")?.toString();
+  const publisherPlan = formData.get("publisherPlan")?.toString();
+
+  if (!businessId || !PUBLISHER_PLAN_IDS.includes(publisherPlan)) {
+    return;
+  }
+
+  await supabase
+    .from("businesses")
+    .update({
+      publisher_plan: publisherPlan,
+      requested_publisher_plan: null,
+      publisher_plan_started_at: new Date().toISOString(),
+    })
+    .eq("id", businessId);
+
+  revalidatePath("/admin");
+  revalidatePath("/account/articles");
 }
 
 // Makes a pending review publicly visible.

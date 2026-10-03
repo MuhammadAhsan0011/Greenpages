@@ -1,9 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { requestUpgrade } from "./actions";
-import { FREE_PLAN_ARTICLE_LIMIT } from "../account/articles/constants";
-import { PLAN_PRICING, PLAN_LABELS, PLAN_TAGLINE, PHOTO_LIMITS, PLAN_RANK } from "../data/plans";
+import { requestUpgrade, requestPublisherUpgrade } from "./actions";
+import {
+  PLAN_PRICING,
+  PLAN_LABELS,
+  PLAN_TAGLINE,
+  PHOTO_LIMITS,
+  PLAN_RANK,
+  PUBLISHER_PLAN_PRICING,
+  PUBLISHER_PLAN_LABELS,
+  PUBLISHER_PLAN_RANK,
+  PUBLISHER_SUBMISSION_LIMITS,
+} from "../data/plans";
 import SubmitButton from "../components/SubmitButton";
 import PricingComparisonTable from "../components/PricingComparisonTable";
 
@@ -38,7 +47,7 @@ const packages = [
       "Contact details, website & phone shown",
       "Business logo on your listing",
       `${PHOTO_LIMITS.free} photo in your gallery`,
-      `Publish up to ${FREE_PLAN_ARTICLE_LIMIT} articles (reviewed before going live)`,
+      "Publish articles (reviewed before going live) — see Publisher Plans below",
       "Comment on any article",
       "Standard placement in category & search results",
     ],
@@ -101,6 +110,54 @@ const packages = [
   },
 ];
 
+// Annual Publisher Plan cards — separate from the business listing
+// packages above. Controls how often an author may submit an article (see
+// PUBLISHER_SUBMISSION_LIMITS in app/data/plans.js), not listing placement.
+const publisherPackages = [
+  {
+    id: "basic",
+    name: PUBLISHER_PLAN_LABELS.basic,
+    price: PUBLISHER_PLAN_PRICING.basic.price,
+    period: PUBLISHER_PLAN_PRICING.basic.period,
+    description: "Start publishing articles right away.",
+    features: [
+      `${PUBLISHER_SUBMISSION_LIMITS.basic.maxArticles} article every ${PUBLISHER_SUBMISSION_LIMITS.basic.windowLabel}`,
+      "One-time author profile (bio, photo, phone)",
+      "Standard editorial review",
+    ],
+  },
+  {
+    id: "featured",
+    name: PUBLISHER_PLAN_LABELS.featured,
+    price: PUBLISHER_PLAN_PRICING.featured.price,
+    originalPrice: PUBLISHER_PLAN_PRICING.featured.originalPrice,
+    offer: PUBLISHER_PLAN_PRICING.featured.offer,
+    period: PUBLISHER_PLAN_PRICING.featured.period,
+    description: "Publish daily and reach more readers.",
+    features: [
+      `Everything in ${PUBLISHER_PLAN_LABELS.basic}`,
+      `Up to ${PUBLISHER_SUBMISSION_LIMITS.featured.maxArticles} article every ${PUBLISHER_SUBMISSION_LIMITS.featured.windowLabel}`,
+      "Up to 2 relevant links per article",
+      "rel=\"sponsored\" attribution on your links",
+      "Faster review",
+    ],
+    highlight: true,
+  },
+  {
+    id: "sponsored",
+    name: PUBLISHER_PLAN_LABELS.sponsored,
+    price: PUBLISHER_PLAN_PRICING.sponsored.price,
+    period: PUBLISHER_PLAN_PRICING.sponsored.period,
+    description: "Maximum publishing frequency for active brands.",
+    features: [
+      `Everything in ${PUBLISHER_PLAN_LABELS.featured}`,
+      `Up to ${PUBLISHER_SUBMISSION_LIMITS.sponsored.maxArticles} articles every ${PUBLISHER_SUBMISSION_LIMITS.sponsored.windowLabel}`,
+      "Up to 3 relevant commercial links per article",
+      "Priority review",
+    ],
+  },
+];
+
 // Server Component — reads the signed-in user's business (if any) so each
 // card's call-to-action reflects their real status: not signed in, no
 // business yet, current plan, a pending request, or eligible to upgrade.
@@ -116,7 +173,7 @@ export default async function PricingPage({ searchParams }) {
   if (user) {
     const { data } = await supabase
       .from("businesses")
-      .select("plan, requested_plan")
+      .select("plan, requested_plan, publisher_plan, requested_publisher_plan")
       .eq("owner_id", user.id)
       .maybeSingle();
     business = data;
@@ -244,7 +301,99 @@ export default async function PricingPage({ searchParams }) {
             bank transfer or Easypaisa. Click a package above to send a
             request, then pay using either method below.
           </p>
+        </div>
+      </section>
 
+      <section aria-labelledby="publisher-plans-heading">
+        <div className="container">
+          <h2 id="publisher-plans-heading">Publisher Plans</h2>
+          <p className="hero-description">
+            A separate annual plan for how often you can submit articles —
+            your business listing package above doesn&apos;t change this.
+          </p>
+
+          {params?.publisherRequested && (
+            <p className="form-success pricing-alert">
+              Your Publisher Plan upgrade request has been sent! We&apos;ll
+              contact you to arrange payment and activate it.
+            </p>
+          )}
+
+          <div className="grid grid-3 pricing-grid">
+            {publisherPackages.map((pkg) => {
+              const isCurrentPlan = (business?.publisher_plan ?? "basic") === pkg.id;
+              const isPending = business?.requested_publisher_plan === pkg.id;
+              const isDowngrade =
+                business && PUBLISHER_PLAN_RANK[pkg.id] > PUBLISHER_PLAN_RANK[business.publisher_plan ?? "basic"];
+
+              return (
+                <article
+                  className={`pricing-card${pkg.highlight ? " pricing-card-highlight" : ""}`}
+                  key={pkg.id}
+                >
+                  {pkg.highlight && <span className="pricing-badge">Most Popular</span>}
+                  <h3>{pkg.name}</h3>
+                  {pkg.offer && <span className="plan-offer-tag">{pkg.offer}</span>}
+                  <p className="pricing-amount">
+                    {pkg.originalPrice && (
+                      <s className="pricing-original-price">{pkg.originalPrice}</s>
+                    )}
+                    {pkg.price}
+                    <span>{pkg.period}</span>
+                  </p>
+                  <p className="pricing-description">{pkg.description}</p>
+                  <ul className="pricing-features">
+                    {pkg.features.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+
+                  {pkg.id === "basic" ? (
+                    user ? (
+                      <span className="btn btn-secondary pricing-cta-disabled">
+                        {business ? "Your Current Plan" : `Included with ${PUBLISHER_PLAN_LABELS.basic}`}
+                      </span>
+                    ) : (
+                      <Link href="/signup" className="btn btn-secondary">
+                        Continue with {PUBLISHER_PLAN_LABELS.basic}
+                      </Link>
+                    )
+                  ) : !user ? (
+                    <Link href={`/login?next=/pricing`} className="btn btn-primary">
+                      Log In to Upgrade
+                    </Link>
+                  ) : !business ? (
+                    <Link href="/account/business" className="btn btn-primary">
+                      Create Business First
+                    </Link>
+                  ) : isCurrentPlan ? (
+                    <span className="btn btn-secondary pricing-cta-disabled">
+                      Your Current Plan
+                    </span>
+                  ) : isPending ? (
+                    <span className="btn btn-secondary pricing-cta-disabled">
+                      Requested — Pending Approval
+                    </span>
+                  ) : isDowngrade ? (
+                    <span className="btn btn-secondary pricing-cta-disabled">
+                      Included in Your Plan
+                    </span>
+                  ) : (
+                    <form action={requestPublisherUpgrade.bind(null, pkg.id)}>
+                      <SubmitButton className="btn btn-primary" pendingLabel="Sending…">
+                        Choose {pkg.name}
+                      </SubmitButton>
+                    </form>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
           <div className="help-banner">
             <div className="help-banner-content">
               <span className="help-banner-tag">Not Sure?</span>

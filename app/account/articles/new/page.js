@@ -3,17 +3,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { createArticle, saveArticleDraft } from "../actions";
-import { FREE_PLAN_ARTICLE_LIMIT } from "../constants";
 import ArticleFormGuard from "../../../components/ArticleFormGuard";
 import SubmitButton from "../../../components/SubmitButton";
 import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import ImageUploadField from "../../../components/ImageUploadField";
-import SmartTextarea from "../../../components/SmartTextarea";
 import ArticleCategoryFields from "../../../components/ArticleCategoryFields";
 import ArticleTargetCityField from "../../../components/ArticleTargetCityField";
-import ArticlePublishingPlanFields from "../../../components/ArticlePublishingPlanFields";
 import { getAllParents, resolveCategoryNodes } from "../../../data/blog";
-import { isPaidPlan as computeIsPaidPlan } from "../../../data/plans";
+import {
+  isPaidPlan as computeIsPaidPlan,
+  PUBLISHER_PLAN_LABELS,
+  getPublisherSubmissionLimit,
+} from "../../../data/plans";
 
 export const metadata = {
   title: "Write a New Article",
@@ -24,8 +25,9 @@ export const metadata = {
 // (createArticle), so no client-side JavaScript is needed to submit it.
 // Verified/Featured BUSINESS members' articles still publish instantly;
 // everyone else's goes to pending_review — unchanged from before this
-// feature existed. submission_plan (Free/Featured/Sponsored, chosen below)
-// is a separate, additive per-article choice that never changes that rule
+// feature existed. Author identity and the submission_plan this article
+// gets are both derived from the signed-in user's business profile (one-
+// time author profile + Publisher Plan) rather than re-entered per article
 // — see app/account/articles/actions.js.
 export default async function NewArticlePage({ searchParams }) {
   const params = await searchParams;
@@ -45,23 +47,41 @@ export default async function NewArticlePage({ searchParams }) {
 
   const [{ data: profile }, { data: business }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
-    supabase.from("businesses").select("plan, name, website").eq("owner_id", user.id).maybeSingle(),
+    supabase
+      .from("businesses")
+      .select("plan, publisher_plan, name, author_bio, author_photo_url, author_phone")
+      .eq("owner_id", user.id)
+      .maybeSingle(),
   ]);
 
-  const isPaidPlan = computeIsPaidPlan(business?.plan);
-
-  // A draft in progress doesn't count against the free-plan limit — only
-  // real submissions do (see the matching `.neq("status", "draft")` in
-  // createArticle/saveArticleDraft, app/account/articles/actions.js).
-  let articleCount = 0;
-  if (!isPaidPlan) {
-    const { count } = await supabase
-      .from("articles")
-      .select("id", { count: "exact", head: true })
-      .eq("author_id", user.id)
-      .neq("status", "draft");
-    articleCount = count ?? 0;
+  // Author identity and the Publisher Plan both live on the business
+  // profile — without one, there's nothing to write the article as.
+  if (!business) {
+    redirect(
+      `/account/business?error=${encodeURIComponent(
+        "Create your business profile first, then come back to write an article."
+      )}`
+    );
   }
+
+  const isPaidPlan = computeIsPaidPlan(business.plan);
+  const publisherPlan = business.publisher_plan ?? "basic";
+  const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
+
+  // How many real submissions this account has made within the current
+  // rolling window — same query createArticle uses to enforce the cap, run
+  // again here purely to display it (not to block the page).
+  const windowStart = new Date(
+    Date.now() - submissionLimit.windowDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+  const { count: usedInWindow } = await supabase
+    .from("articles")
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", user.id)
+    .neq("status", "draft")
+    .gte("created_at", windowStart);
+  const atSubmissionLimit = (usedInWindow ?? 0) >= submissionLimit.maxArticles;
+
   // Continuing a saved draft — ownership-checked here, never trusted from
   // the URL alone. A missing/foreign/no-longer-a-draft id just falls back
   // to a blank form instead of erroring.
@@ -80,32 +100,6 @@ export default async function NewArticlePage({ searchParams }) {
   const { parent: draftParent, child: draftChild } = draft
     ? resolveCategoryNodes(draft.category)
     : { parent: null, child: null };
-
-  // A saved draft never counted against the limit, so reopening one to
-  // keep working on it (or submit it) shouldn't be blocked by it either —
-  // only starting a brand-new article/draft is.
-  const atFreeLimit = !isPaidPlan && !draft && articleCount >= FREE_PLAN_ARTICLE_LIMIT;
-
-  if (atFreeLimit) {
-    return (
-      <div className="dashboard-form-wrap">
-        <h1>Free Plan Article Limit Reached</h1>
-        <div className="locked-field" title="Upgrade your package to unlock this feature">
-          <span className="locked-field-icon" aria-hidden="true">
-            🔒
-          </span>
-          <span>
-            Free plan is limited to {FREE_PLAN_ARTICLE_LIMIT} articles.{" "}
-            <Link href="/pricing">Upgrade to Verified or Premium</Link> for
-            unlimited articles.
-          </span>
-        </div>
-        <p className="hero-description">
-          <Link href="/account/articles">Back to My Articles</Link>
-        </p>
-      </div>
-    );
-  }
 
   if (submitted) {
     return (
@@ -140,13 +134,6 @@ export default async function NewArticlePage({ searchParams }) {
         Share your expertise, promote your business and reach a
         Pakistan-focused audience.
       </p>
-
-      {!isPaidPlan && (
-        <p className="editor-hint">
-          Free plan: {articleCount} of {FREE_PLAN_ARTICLE_LIMIT} articles used.
-          Drafts don&apos;t count until you submit them.
-        </p>
-      )}
 
       {error && <p className="form-error">{error}</p>}
       {savedDraft && !error && (
@@ -229,96 +216,53 @@ export default async function NewArticlePage({ searchParams }) {
           </div>
 
           <div className="account-card">
-            <h2>2. Author Information</h2>
-
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="authorName">Full Name *</label>
-                <input
-                  id="authorName"
-                  name="authorName"
-                  type="text"
-                  defaultValue={draft?.author_name ?? profile?.full_name ?? ""}
-                  required
+            <h2>2. Author Profile</h2>
+            <p className="editor-hint">
+              Set up once, used on every article you publish.{" "}
+              <Link href="/account/articles/author-profile">Edit your author profile →</Link>
+            </p>
+            <div className="author-profile-summary">
+              {business.author_photo_url ? (
+                <Image
+                  src={business.author_photo_url}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="author-profile-summary-photo"
                 />
-              </div>
-              <div className="form-field">
-                <label htmlFor="authorEmail">Email *</label>
-                <input
-                  id="authorEmail"
-                  name="authorEmail"
-                  type="email"
-                  defaultValue={draft?.author_email ?? user.email ?? ""}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="authorPhone">Phone / WhatsApp</label>
-                <input
-                  id="authorPhone"
-                  name="authorPhone"
-                  type="tel"
-                  placeholder="+92 3XX XXXXXXX"
-                  defaultValue={draft?.author_phone ?? ""}
-                />
-              </div>
-              <div className="form-field">
-                <label htmlFor="companyName">Company / Organization</label>
-                <input
-                  id="companyName"
-                  name="companyName"
-                  type="text"
-                  defaultValue={draft?.company_name ?? business?.name ?? ""}
-                />
-              </div>
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="authorBio">Author Bio</label>
-              <SmartTextarea
-                id="authorBio"
-                name="authorBio"
-                rows={3}
-                placeholder="A short bio shown alongside your article."
-                defaultValue={draft?.author_bio ?? ""}
-              />
-            </div>
-
-            <div className="form-field">
-              <span className="form-field-label-standalone">Profile Photo</span>
-              {draft?.author_photo_url && (
-                <div className="logo-preview-row">
-                  <Image
-                    src={draft.author_photo_url}
-                    alt="Current draft author photo"
-                    width={72}
-                    height={72}
-                    className="logo-preview"
-                  />
-                  <span className="editor-hint">Uploading a new photo below replaces this one.</span>
-                </div>
-              )}
-              <div className="image-upload-box">
-                <span className="image-upload-icon" aria-hidden="true">
-                  🖼️
+              ) : (
+                <span className="author-profile-summary-photo author-profile-summary-photo-empty" aria-hidden="true">
+                  {(profile?.full_name ?? "?").charAt(0).toUpperCase()}
                 </span>
-                <ImageUploadField name="authorPhoto" label="Click to upload photo" hint="JPG, PNG (Max 5MB)" />
+              )}
+              <div>
+                <strong>{profile?.full_name ?? "—"}</strong>
+                <span className="editor-hint">{user.email}</span>
+                {business.name && <span className="editor-hint">{business.name}</span>}
+                {!business.author_bio && (
+                  <span className="editor-hint">No author bio set yet.</span>
+                )}
               </div>
             </div>
           </div>
 
           <div className="account-card">
-            <h2>3. Choose Publishing Option</h2>
-            <ArticlePublishingPlanFields defaultPlan={draft?.submission_plan ?? "featured"} />
-            <p className="editor-hint">
-              Featured and Sponsored fees are confirmed the same way as
-              business package upgrades — see{" "}
-              <Link href="/pricing#payment-methods-heading">payment methods</Link>.
-              No payment is required for the Free option.
+            <h2>3. Publisher Plan</h2>
+            <p>
+              You&apos;re on the <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher
+              Plan — up to {submissionLimit.maxArticles} article
+              {submissionLimit.maxArticles === 1 ? "" : "s"} every {submissionLimit.windowLabel}.
             </p>
+            <p className={atSubmissionLimit ? "form-error" : "editor-hint"}>
+              {usedInWindow ?? 0} of {submissionLimit.maxArticles} used in the last{" "}
+              {submissionLimit.windowLabel}
+              {atSubmissionLimit ? " — you've reached your limit for now." : "."}
+            </p>
+            {publisherPlan !== "sponsored" && (
+              <Link href="/pricing#publisher-plans-heading" className="service-link">
+                Upgrade your Publisher Plan →
+              </Link>
+            )}
           </div>
 
           <div className="account-card">

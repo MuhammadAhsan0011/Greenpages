@@ -2,9 +2,12 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import Button from "../../components/Button";
 import { deleteOwnArticle } from "./actions";
-import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
 import SubmitButton from "../../components/SubmitButton";
-import { isPaidPlan as computeIsPaidPlan } from "../../data/plans";
+import {
+  isPaidPlan as computeIsPaidPlan,
+  PUBLISHER_PLAN_LABELS,
+  getPublisherSubmissionLimit,
+} from "../../data/plans";
 
 export const metadata = {
   title: "My Articles",
@@ -40,20 +43,28 @@ export default async function MyArticlesPage({ searchParams }) {
   const { data: articles } = await supabase
     .from("articles")
     .select(
-      "id, slug, title, category, created_at, approved, status, submission_plan, payment_status, rejection_reason, admin_notes"
+      "id, slug, title, category, created_at, approved, status, submission_plan, rejection_reason, admin_notes"
     )
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("plan")
+    .select("plan, publisher_plan")
     .eq("owner_id", user.id)
     .maybeSingle();
   const isPaidPlan = computeIsPaidPlan(business?.plan);
-  // Drafts aren't submissions yet — same exclusion as the free-plan count
-  // enforced server-side in createArticle/saveArticleDraft (actions.js).
-  const submittedCount = (articles ?? []).filter((a) => a.status !== "draft").length;
+  const publisherPlan = business?.publisher_plan ?? "basic";
+  const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
+
+  // Same rolling-window count createArticle enforces server-side — drafts
+  // never count (see the `.neq("status", "draft")` there too).
+  const windowStart = new Date(
+    Date.now() - submissionLimit.windowDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+  const usedInWindow = (articles ?? []).filter(
+    (a) => a.status !== "draft" && new Date(a.created_at) >= new Date(windowStart)
+  ).length;
 
   return (
     <>
@@ -69,12 +80,21 @@ export default async function MyArticlesPage({ searchParams }) {
         </p>
       )}
 
+      <p className="editor-hint">
+        <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher Plan —{" "}
+        {usedInWindow} of {submissionLimit.maxArticles} article
+        {submissionLimit.maxArticles === 1 ? "" : "s"} used in the last{" "}
+        {submissionLimit.windowLabel} (drafts don&apos;t count).{" "}
+        {publisherPlan !== "sponsored" && (
+          <Link href="/pricing#publisher-plans-heading">Upgrade</Link>
+        )}{" "}
+        · <Link href="/account/articles/author-profile">Edit Author Profile</Link>
+      </p>
       {!isPaidPlan && (
         <p className="editor-hint">
-          Free plan: {submittedCount} of {FREE_PLAN_ARTICLE_LIMIT} articles used
-          (drafts don&apos;t count).{" "}
-          <Link href="/pricing">Upgrade</Link> for unlimited, admin-approval-free
-          publishing.
+          Articles need admin approval before going live.{" "}
+          <Link href="/pricing">Upgrade your business package</Link> for
+          instant publishing.
         </p>
       )}
 
@@ -104,8 +124,7 @@ export default async function MyArticlesPage({ searchParams }) {
                 </span>
                 {article.submission_plan && article.submission_plan !== "free" && (
                   <span className="locked-inline-hint">
-                    {article.submission_plan === "featured" ? "Featured" : "Sponsored"} —{" "}
-                    {article.payment_status === "confirmed" ? "Payment confirmed" : "Payment pending"}
+                    {article.submission_plan === "featured" ? "Featured" : "Sponsored"}
                   </span>
                 )}
               </span>

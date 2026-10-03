@@ -5,28 +5,17 @@ import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { FREE_PLAN_ARTICLE_LIMIT } from "./constants";
 import { getParent, getChild } from "../../data/blog";
 import { PK_CITIES } from "../../data/directoryCities";
 import { getArticleLinkLimit, countContentLinks } from "@/lib/seo/articleLinks";
+import { getPublisherSubmissionLimit, publisherPlanToSubmissionPlan } from "../../data/plans";
 
 const ARTICLE_MIN_WORDS = 800;
 const ARTICLE_MAX_WORDS = 2500;
-const SUBMISSION_PLANS = ["free", "featured", "sponsored"];
 
 function countWords(html) {
   const text = (html ?? "").replace(/<[^>]*>/g, " ").trim();
   return text ? text.split(/\s+/).length : 0;
-}
-
-function isValidUrl(value) {
-  if (!value) return true;
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 // The new submission form doesn't collect a separate excerpt (not in the
@@ -71,7 +60,7 @@ function resolveArticleCategory(categorySlug, subcategorySlug) {
 // but unlike a real space they never let a title wrap, so a long one
 // overflows its card instead of breaking onto multiple lines.
 function normalizeSpaces(text) {
-  return text.replace(/ /g, " ").replace(/ {2,}/g, " ").trim();
+  return text.replace(/ /g, " ").replace(/ {2,}/g, " ").trim();
 }
 
 function slugify(title) {
@@ -99,6 +88,28 @@ async function generateUniqueArticleSlug(supabase, title, excludeId = null) {
     candidate = `${base}-${attempt}`;
     attempt += 1;
   }
+}
+
+// The author identity (name/email/phone/company/bio/photo) and the
+// Publisher Plan (which drives submission_plan + the submission cadence
+// cap) all come from the signed-in user's business profile and account now
+// — never re-typed per article. A business row is required: every author
+// in this system is a business-account owner (see app/data/plans.js's
+// Publisher Plan note), so `author_bio`/`publisher_plan`/etc. all live on
+// that one row.
+async function getAuthorContext(supabase, user) {
+  const [{ data: profile }, { data: business }] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("businesses")
+      .select(
+        "id, plan, publisher_plan, name, website, author_bio, author_photo_url, author_phone"
+      )
+      .eq("owner_id", user.id)
+      .maybeSingle(),
+  ]);
+
+  return { profile, business };
 }
 
 async function getIsPaidPlan(supabase, userId) {
@@ -150,11 +161,16 @@ export async function createArticle(formData) {
     redirect(`/account/articles/new?error=${encodeURIComponent(message)}`);
   }
 
+  const { profile, business } = await getAuthorContext(supabase, user);
+  if (!business) {
+    fail("Create your business profile first, then come back to write an article.");
+  }
+
   // Auto-publish is still a Verified/Premium BUSINESS-plan perk, unchanged
-  // from before — submission_plan (Free/Featured/Sponsored article pricing,
-  // below) is a separate, additive choice available to every author
-  // regardless of business plan; it never changes who needs review.
-  const isPaidPlan = await getIsPaidPlan(supabase, user.id);
+  // from before — the Publisher Plan below is a separate, additive concept
+  // (how OFTEN you may submit) that never changes who needs review.
+  const isPaidPlan = business.plan === "verified" || business.plan === "featured";
+  const publisherPlan = business.publisher_plan ?? "basic";
 
   // Continuing a saved draft into a real submission updates that same row
   // instead of inserting a second one — verified against this user before
@@ -164,7 +180,7 @@ export async function createArticle(formData) {
   if (draftId) {
     const { data: draftRow } = await supabase
       .from("articles")
-      .select("id, author_id, status, cover_image_url, author_photo_url")
+      .select("id, author_id, status, cover_image_url")
       .eq("id", draftId)
       .maybeSingle();
     if (draftRow && draftRow.author_id === user.id && draftRow.status === "draft") {
@@ -172,26 +188,27 @@ export async function createArticle(formData) {
     }
   }
 
-  // Free plan is capped at FREE_PLAN_ARTICLE_LIMIT articles — enforced here
-  // against the real count, not just hidden in the UI. Unrelated to
-  // submission_plan below (this is about the business's article quota).
-  // Drafts don't count yet — only real submissions do, so saving drafts
-  // along the way can't itself burn through the limit.
-  if (!isPaidPlan) {
-    const { count } = await supabase
-      .from("articles")
-      .select("id", { count: "exact", head: true })
-      .eq("author_id", user.id)
-      .neq("status", "draft");
+  // Submission cadence cap — how often this Publisher Plan tier may submit
+  // a real article (see PUBLISHER_SUBMISSION_LIMITS in app/data/plans.js).
+  // A rolling window from "now", not a calendar day/week. Drafts never
+  // count (`.neq("status", "draft")`) — only real submissions do, and a
+  // draft being promoted into one here still only consumes one slot.
+  const limit = getPublisherSubmissionLimit(publisherPlan);
+  const windowStart = new Date(Date.now() - limit.windowDays * 24 * 60 * 60 * 1000).toISOString();
+  const { count: recentCount } = await supabase
+    .from("articles")
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", user.id)
+    .neq("status", "draft")
+    .gte("created_at", windowStart);
 
-    if ((count ?? 0) >= FREE_PLAN_ARTICLE_LIMIT) {
-      fail(
-        `Free plan is limited to ${FREE_PLAN_ARTICLE_LIMIT} articles. Upgrade to Verified or Premium for unlimited articles.`
-      );
-    }
+  if ((recentCount ?? 0) >= limit.maxArticles) {
+    fail(
+      `Your Publisher Plan allows ${limit.maxArticles} article${limit.maxArticles === 1 ? "" : "s"} every ${limit.windowLabel} — you've reached that limit. Upgrade your Publisher Plan on the Pricing page to submit more often, or try again later.`
+    );
   }
 
-  // ---- 1. Article Details ----
+  // ---- Article Details ----
   const title = normalizeSpaces(formData.get("title")?.toString().trim() ?? "");
   const categorySlug = formData.get("category")?.toString().trim();
   const subcategorySlug = formData.get("subcategory")?.toString().trim();
@@ -199,11 +216,6 @@ export async function createArticle(formData) {
   const imageCredit = formData.get("imageCredit")?.toString().trim() || null;
   const rawContent = formData.get("content")?.toString() ?? "";
 
-  // The full rich editor (and its server-side sanitization) is used for
-  // every submission now, not just paid business plans — the mockup's form
-  // doesn't distinguish a "Free" and "Verified" editing experience the way
-  // the old form did, and sanitizeArticleHtml runs unconditionally either
-  // way, so this isn't a new XSS surface.
   const contentFormat = "html";
   const content = sanitizeArticleHtml(rawContent);
   const wordCount = countWords(content);
@@ -242,44 +254,23 @@ export async function createArticle(formData) {
     fail("A featured image is required.");
   }
 
-  // ---- 2. Author Information ----
-  const authorName = normalizeSpaces(formData.get("authorName")?.toString().trim() ?? "");
-  const authorEmail = formData.get("authorEmail")?.toString().trim() ?? "";
-  const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
-  const companyName = formData.get("companyName")?.toString().trim() || null;
-  const authorBio = formData.get("authorBio")?.toString().trim() || null;
+  // ---- Author identity — from the one-time author profile, not the form ----
+  const authorName = profile?.full_name ?? "";
+  const authorEmail = user.email ?? "";
+  const authorPhone = business.author_phone ?? null;
+  const companyName = business.name ?? null;
+  const authorBio = business.author_bio ?? null;
+  const authorPhotoUrl = business.author_photo_url ?? null;
+  const websiteUrl = business.website ?? null;
 
-  if (!authorName) fail("Author full name is required.");
-  if (!authorEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authorEmail)) {
-    fail("A valid author email is required.");
-  }
-
-  let authorPhotoUrl = existingDraft?.author_photo_url ?? null;
-  const authorPhotoFile = formData.get("authorPhoto");
-  if (authorPhotoFile instanceof File && authorPhotoFile.size > 0) {
-    const photoUpload = await uploadPublicImage(supabase, authorPhotoFile, "author-photos", user.id);
-    if (photoUpload.error) fail(photoUpload.error.message);
-    authorPhotoUrl = photoUpload.url;
-  }
-
-  // ---- 3. Website / Link Information ----
-  const websiteUrl = formData.get("websiteUrl")?.toString().trim() || null;
-  const businessName = formData.get("businessName")?.toString().trim() || null;
-  const targetUrl = formData.get("targetUrl")?.toString().trim() || null;
-  const anchorText = formData.get("anchorText")?.toString().trim() || null;
-
-  if (!isValidUrl(websiteUrl)) fail("Website URL doesn't look valid — include https://.");
-  if (!isValidUrl(targetUrl)) fail("Target URL doesn't look valid — include https://.");
-
-  // ---- 4. Choose Publishing Option ----
-  const submissionPlan = formData.get("submissionPlan")?.toString().trim() ?? "free";
-  if (!SUBMISSION_PLANS.includes(submissionPlan)) fail("Please choose a valid publishing option.");
+  // ---- Publishing option — derived from the Publisher Plan, not chosen/paid per article ----
+  const submissionPlan = publisherPlanToSubmissionPlan(publisherPlan);
 
   const linkLimit = getArticleLinkLimit(submissionPlan);
   const linkCount = countContentLinks(content);
   if (linkCount > linkLimit) {
     fail(
-      `Your article has ${linkCount} external link${linkCount === 1 ? "" : "s"} — the ${submissionPlan} plan allows up to ${linkLimit}. Remove some links or choose a plan that allows more.`
+      `Your article has ${linkCount} external link${linkCount === 1 ? "" : "s"} — your Publisher Plan allows up to ${linkLimit}. Remove some links or upgrade your Publisher Plan for a higher limit.`
     );
   }
 
@@ -298,11 +289,10 @@ export async function createArticle(formData) {
 
   // Same auto-publish rule as before this feature existed: Verified/Premium
   // business members' articles still go live immediately; everyone else's
-  // goes to pending_review regardless of which submission_plan they picked
-  // (Featured/Sponsored only buys faster review + more links + the
-  // rel="sponsored" badge, per lib/seo/articleLinks.js — never skips review).
+  // goes to pending_review regardless of Publisher Plan tier (a higher tier
+  // only buys submission frequency + more links + the rel="sponsored"
+  // badge, per lib/seo/articleLinks.js — never skips review).
   const status = isPaidPlan ? "published" : "pending_review";
-  const paymentStatus = submissionPlan === "free" ? "not_required" : "pending";
 
   const articleFields = {
     slug,
@@ -321,13 +311,13 @@ export async function createArticle(formData) {
     author_bio: authorBio,
     author_photo_url: authorPhotoUrl,
     website_url: websiteUrl,
-    business_name: businessName,
-    target_url: targetUrl,
-    anchor_text: anchorText,
     submission_plan: submissionPlan,
     link_count: linkCount,
     status,
-    payment_status: paymentStatus,
+    // Billing moved to the annual Publisher Plan (businesses.publisher_plan,
+    // confirmed the same way as a business plan upgrade) — an individual
+    // article never carries its own payment anymore.
+    payment_status: "not_required",
     published_at: new Date().toISOString(),
     approved: isPaidPlan,
   };
@@ -356,12 +346,10 @@ export async function createArticle(formData) {
 }
 
 // Saves work-in-progress without any of createArticle's publication gates —
-// no minimum word count, no required author info, no declarations, no
-// article-link limit. Only title + category are required (category because
-// articles.category is a NOT NULL column; everything else can genuinely be
-// filled in later). Available on every plan, including Free, and doesn't
-// count against FREE_PLAN_ARTICLE_LIMIT (see the `.neq("status", "draft")`
-// count in createArticle) — a draft isn't a submission yet.
+// no minimum word count, no declarations, no article-link limit, and no
+// submission-cadence check (a draft isn't a submission yet). Only title +
+// category are required (category because articles.category is a NOT NULL
+// column; everything else can genuinely be filled in later).
 //
 // Called from the same <form> as createArticle via a second submit button's
 // formAction (see app/account/articles/new/page.js), with formNoValidate so
@@ -378,6 +366,11 @@ export async function saveArticleDraft(formData) {
 
   function fail(message) {
     redirect(`/account/articles/new?error=${encodeURIComponent(message)}`);
+  }
+
+  const { profile, business } = await getAuthorContext(supabase, user);
+  if (!business) {
+    fail("Create your business profile first, then come back to write an article.");
   }
 
   // Re-saving an in-progress draft updates that same row — ownership and
@@ -423,28 +416,7 @@ export async function saveArticleDraft(formData) {
     coverImageUrl = coverUpload.url;
   }
 
-  const authorName = normalizeSpaces(formData.get("authorName")?.toString().trim() ?? "") || null;
-  const authorEmail = formData.get("authorEmail")?.toString().trim() || null;
-  const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
-  const companyName = formData.get("companyName")?.toString().trim() || null;
-  const authorBio = formData.get("authorBio")?.toString().trim() || null;
-
-  let authorPhotoUrl = existingDraft?.author_photo_url ?? null;
-  const authorPhotoFile = formData.get("authorPhoto");
-  if (authorPhotoFile instanceof File && authorPhotoFile.size > 0) {
-    const photoUpload = await uploadPublicImage(supabase, authorPhotoFile, "author-photos", user.id);
-    if (photoUpload.error) fail(photoUpload.error.message);
-    authorPhotoUrl = photoUpload.url;
-  }
-
-  const websiteUrl = formData.get("websiteUrl")?.toString().trim() || null;
-  const businessName = formData.get("businessName")?.toString().trim() || null;
-  const targetUrl = formData.get("targetUrl")?.toString().trim() || null;
-  const anchorText = formData.get("anchorText")?.toString().trim() || null;
-
-  const submissionPlanInput = formData.get("submissionPlan")?.toString().trim() ?? "free";
-  const submissionPlan = SUBMISSION_PLANS.includes(submissionPlanInput) ? submissionPlanInput : "free";
-
+  const publisherPlan = business.publisher_plan ?? "basic";
   const excerpt = deriveExcerpt(content);
   const linkCount = countContentLinks(content);
 
@@ -457,17 +429,14 @@ export async function saveArticleDraft(formData) {
     cover_image_url: coverImageUrl,
     image_credit: imageCredit,
     target_city: targetCity,
-    author_name: authorName,
-    author_email: authorEmail,
-    author_phone: authorPhone,
-    company_name: companyName,
-    author_bio: authorBio,
-    author_photo_url: authorPhotoUrl,
-    website_url: websiteUrl,
-    business_name: businessName,
-    target_url: targetUrl,
-    anchor_text: anchorText,
-    submission_plan: submissionPlan,
+    author_name: profile?.full_name ?? "",
+    author_email: user.email ?? "",
+    author_phone: business.author_phone ?? null,
+    company_name: business.name ?? null,
+    author_bio: business.author_bio ?? null,
+    author_photo_url: business.author_photo_url ?? null,
+    website_url: business.website ?? null,
+    submission_plan: publisherPlanToSubmissionPlan(publisherPlan),
     link_count: linkCount,
     status: "draft",
     payment_status: "not_required",
@@ -491,6 +460,68 @@ export async function saveArticleDraft(formData) {
 
   revalidatePath("/account/articles");
   redirect(`/account/articles/new?draftId=${savedId}&savedDraft=1`);
+}
+
+// One-time author profile: bio, photo, and the phone/WhatsApp authors are
+// contacted on — stored on the signed-in user's business row and reused on
+// every article from here on (see getAuthorContext above), instead of
+// being re-typed per submission. Available on every Publisher Plan tier,
+// including Basic.
+export async function updateAuthorProfile(formData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  function fail(message) {
+    redirect(`/account/articles/author-profile?error=${encodeURIComponent(message)}`);
+  }
+
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("id, author_photo_url")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  if (!business) {
+    fail("Create your business profile first, then come back to set up your author profile.");
+  }
+
+  const authorBio = formData.get("authorBio")?.toString().trim() || null;
+  const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
+
+  let authorPhotoUrl = business.author_photo_url ?? null;
+  let oldPhotoUrl = null;
+  const photoFile = formData.get("authorPhoto");
+  if (photoFile instanceof File && photoFile.size > 0) {
+    const upload = await uploadPublicImage(supabase, photoFile, "author-photos", user.id);
+    if (upload.error) fail(upload.error.message);
+    oldPhotoUrl = business.author_photo_url ?? null;
+    authorPhotoUrl = upload.url;
+  } else if (formData.get("removePhoto") === "yes" && business.author_photo_url) {
+    oldPhotoUrl = business.author_photo_url;
+    authorPhotoUrl = null;
+  }
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({ author_bio: authorBio, author_phone: authorPhone, author_photo_url: authorPhotoUrl })
+    .eq("id", business.id);
+
+  if (error) fail(error.message);
+
+  if (oldPhotoUrl) {
+    await deletePublicImage(supabase, oldPhotoUrl);
+  }
+
+  revalidatePath("/account/articles");
+  revalidatePath("/account/articles/author-profile");
+  revalidatePath("/account/articles/new");
+  redirect("/account/articles/author-profile?saved=1");
 }
 
 // Editing a published article is a Verified/Featured perk — enforced here
@@ -658,8 +689,7 @@ export async function removeArticleCoverImage(slug) {
 
 // Lets an article's own author permanently delete it (and its cover image
 // file, if any) — available on every plan, since removing your own content
-// isn't a paid feature. Free-plan members use this to stay under the
-// FREE_PLAN_ARTICLE_LIMIT.
+// isn't a paid feature.
 export async function deleteOwnArticle(articleId) {
   const supabase = await createClient();
   const {

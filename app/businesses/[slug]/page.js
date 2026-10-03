@@ -668,6 +668,32 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                 </div>
               )}
 
+              {(business.author_bio || business.author_photo_url) && (
+                <div className="wizard-sidebar-card">
+                  <h3>About the Author</h3>
+                  <div className="author-profile-summary">
+                    {business.author_photo_url ? (
+                      <Image
+                        src={business.author_photo_url}
+                        alt=""
+                        width={56}
+                        height={56}
+                        className="author-profile-summary-photo"
+                      />
+                    ) : (
+                      <span
+                        className="author-profile-summary-photo author-profile-summary-photo-empty"
+                        aria-hidden="true"
+                      >
+                        {(business.profiles?.full_name ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <strong>{business.profiles?.full_name ?? business.name}</strong>
+                  </div>
+                  {business.author_bio && <p>{business.author_bio}</p>}
+                </div>
+              )}
+
               <div className="wizard-sidebar-card">
                 <h3>Business Details</h3>
                 <dl className="sidebar-meta">
