@@ -75,6 +75,14 @@ const nextConfig = {
     },
   },
   images: {
+    // Vercel's free plan caps Image Optimization transformations, and every
+    // unique width/quality combo is a separate transformation. Fewer
+    // breakpoints and a longer cache keep the count well under that cap
+    // without turning optimization off for the whole site.
+    deviceSizes: [640, 828, 1080, 1200, 1920],
+    imageSizes: [96, 256, 384],
+    minimumCacheTTL: 604800,
+    qualities: [75],
     // This project's decorative illustrations are local SVG files, so SVG
     // support has to be explicitly enabled for next/image's optimizer.
     // The CSP below prevents any scripts embedded in an SVG from executing.
