@@ -1,7 +1,8 @@
 ## Project
 
 Green Pages PK — Pakistan business directory + in-house digital marketing agency.
-Next.js on Vercel. Production host: `https://www.greenpagespk.com` (with `www`).
+Next.js, hosted on Onic Host cPanel (Node.js app) since 2026-10-10 — previously
+Vercel. Production host: `https://www.greenpagespk.com` (with `www`).
 This project is worked on from more than one device/session — rules in this
 file apply to every Claude Code session in this repo, not just the one
 currently open.
@@ -34,6 +35,23 @@ currently open.
 - Do not modify pricing, authentication, or payment code unless the task requires it.
 
 ## Deployment — never deploy without explicit, same-conversation permission
+
+- **HOSTING MOVED (2026-10-10): production now runs on Onic Host cPanel, not
+  Vercel.** Vercel's Hobby plan paused the project (402 DEPLOYMENT_DISABLED)
+  after exceeding Image Optimization limits, so DNS (managed at Hostinger,
+  A `@` → `144.76.111.139`, `www` CNAME → apex) now points at the cPanel
+  server. App lives in `~/greenpages` (Node 22, startup file `server.js`,
+  env vars set in cPanel's Node.js app page); apex→www is in `middleware.js`,
+  http→https in `~/public_html/.htaccess`. SSL is cPanel AutoSSL.
+  - Deploy = `powershell -File scripts/package-cpanel.ps1` (local build →
+    `greenpages-cpanel.zip`) then `bash scripts/deploy-cpanel.sh` (SSH key
+    `~/.ssh/greenpages_cpanel`, exists only on the machine that set it up).
+    Same permission rule as before: only when the user explicitly asks.
+  - If `package.json` dependencies change, "Run NPM Install" in cPanel's
+    Node.js page is also needed.
+  - Pushing to `main` no longer changes production. The Vercel notes below
+    are historical; if the Vercel GitHub integration is still connected, a
+    push just creates an unused Vercel deployment.
 
 - **CORRECTION (2026-09-20, verified directly): this project's Vercel
   project IS connected via GitHub integration and DOES auto-deploy to
@@ -73,7 +91,8 @@ currently open.
   duplicate work — but that check is not a substitute for the user's
   explicit go-ahead in *this* conversation.
 - Commit + push: `git add -A && git commit -m "..." && git push`.
-- Deploy (only when explicitly asked): `npx vercel --prod` from the repo root.
+- Deploy (only when explicitly asked): the cPanel scripts above. (`npx vercel
+  --prod` was the deploy command while hosted on Vercel.)
 
 ## Active specs
 
