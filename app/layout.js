@@ -135,6 +135,18 @@ export default function RootLayout({ children }) {
           data-cfasync="false"
           async
         />
+        <script
+          src="https://5gvci.com/act/files/tag.min.js?z=12013320"
+          data-cfasync="false"
+          async
+        />
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(s){s.dataset.zone='11946555',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))",
+          }}
+        />
         {/* Adsterra Social Bar — sitewide overlay unit, no content placement
             needed (unlike the Native Banner/iframe banner units below it in
             the Adsterra dashboard, which render into a specific container
