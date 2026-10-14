@@ -21,6 +21,7 @@ import { getNamesUnderParent } from "@/lib/taxonomy";
 import { getPublishedPostsForCategoryNames } from "@/lib/seo/blogContent";
 import { getSubmissionLinkRel } from "@/lib/seo/articleLinks";
 import { SITE_URL } from "@/lib/site";
+import { normalizeSpaces } from "@/lib/text";
 
 // Small, generic per-category glyphs for the sidebar's category list —
 // purely decorative, same lightweight-icon convention already used for the
@@ -92,8 +93,8 @@ async function getMergedPost(slug) {
 
   return {
     slug: article.slug,
-    title: article.title,
-    seoTitle: article.meta_title || article.title,
+    title: normalizeSpaces(article.title),
+    seoTitle: article.meta_title || normalizeSpaces(article.title),
     category: article.category,
     date: article.published_at,
     // Prefers the byline the author declared on the submission form (may

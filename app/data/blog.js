@@ -2,6 +2,7 @@
 // /blog/[slug] (detail pages, generateStaticParams, generateMetadata)
 // read from this single array so content stays consistent in one place.
 import { createTaxonomyHelpers } from "@/lib/taxonomy";
+import { normalizeSpaces } from "@/lib/text";
 
 export const posts = [
   {
@@ -467,7 +468,7 @@ export function estimateReadTime(content) {
 export function normalizeDbArticle(article) {
   return {
     slug: article.slug,
-    title: article.title,
+    title: normalizeSpaces(article.title),
     category: article.category,
     date: article.published_at ?? article.created_at,
     excerpt: article.excerpt,

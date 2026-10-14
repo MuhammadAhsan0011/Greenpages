@@ -15,6 +15,7 @@ import AdsterraBanner from "../../components/AdsterraBanner";
 import { createPublicClient } from "@/utils/supabase/public";
 import { resolveCategoryNodes } from "../../data/businessCategories";
 import { PK_CITIES } from "../../data/directoryCities";
+import { normalizeSpaces } from "@/lib/text";
 import { PLAN_RANK, PLAN_LABELS, isPaidPlan as computeIsPaidPlan } from "../../data/plans";
 
 export const revalidate = 60;
@@ -594,7 +595,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
                   <ul className="account-article-list">
                     {articles.map((article) => (
                       <li key={article.slug} className="account-article-item">
-                        <Link href={`/blog/${article.slug}`}>{article.title}</Link>
+                        <Link href={`/blog/${article.slug}`}>{normalizeSpaces(article.title)}</Link>
                         <p>{article.excerpt}</p>
                       </li>
                     ))}

@@ -1670,7 +1670,7 @@ article.service-section h2 {
 
 @media (max-width: 720px) {
   .auth-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .auth-illustration-panel {
@@ -2242,6 +2242,10 @@ article.service-section h2 {
 .rich-html-content h3,
 .rich-html-content h4 {
   margin-top: 1.4em;
+}
+
+.rich-html-content {
+  overflow-wrap: anywhere;
 }
 
 .rich-html-content p {
@@ -2912,7 +2916,7 @@ article.service-section h2 {
 
 @media (max-width: 900px) {
   .article-form-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .article-form-sidebar {
@@ -3380,7 +3384,7 @@ article.service-section h2 {
 
 @media (max-width: 900px) {
   .blog-detail-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .blog-sidebar {
@@ -5145,7 +5149,7 @@ article.service-section h2 {
 
 @media (max-width: 640px) {
   .payment-methods-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -5787,12 +5791,12 @@ article.service-section h2 {
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .job-browse-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
 
   .hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .hero-image {
@@ -5804,15 +5808,15 @@ article.service-section h2 {
   }
 
   .wizard-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .directory-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .listing-header-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .listing-header-grid .listing-gallery {
@@ -5824,11 +5828,11 @@ article.service-section h2 {
   }
 
   .listing-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .form-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .grid-3 {
@@ -5841,15 +5845,15 @@ article.service-section h2 {
   }
 
   .how-it-works-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .contact-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dashboard-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .dashboard-sidebar {
@@ -5886,7 +5890,9 @@ article.service-section h2 {
     flex-wrap: wrap;
     row-gap: 4px;
     height: auto;
-    padding: 6px 0;
+    /* padding-block, not the padding shorthand — the shorthand wiped the
+       .container's side gutter so the bar text touched the screen edges. */
+    padding-block: 6px;
   }
 
   .nav-toggle-label {
@@ -6026,11 +6032,11 @@ article.service-section h2 {
   }
 
   .grid-3 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .grid-2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .hero-search-card {
@@ -6069,7 +6075,7 @@ article.service-section h2 {
   }
 
   .footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .directory-search-card {
@@ -6101,5 +6107,29 @@ article.service-section h2 {
 
   .contact-form {
     padding: 24px;
+  }
+
+  /* Tagline + "Add Your Business" don't fit one row at phone width once the
+     container gutter is back — tighten so they stay on a single line. */
+  .top-utility-bar {
+    font-size: 0.75rem;
+  }
+
+  .top-utility-bar-inner {
+    gap: 8px;
+  }
+
+  .top-utility-tagline svg {
+    display: none;
+  }
+
+  /* Three pill tabs at 20px side padding are wider than a 320px card. */
+  .hero-tab-bar {
+    gap: 2px;
+  }
+
+  .hero-tab-bar label {
+    padding: 9px 12px;
+    font-size: 0.85rem;
   }
 }
