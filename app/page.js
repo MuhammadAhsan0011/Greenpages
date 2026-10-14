@@ -358,8 +358,8 @@ export default async function HomePage() {
                 <path d="M9 21v-7h6v7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
               </svg>
             </span>
-            <span className="stat-value">5</span>
-            <span className="stat-label">Cities Covered</span>
+            <span className="stat-value">Nationwide</span>
+            <span className="stat-label">Pakistan Coverage</span>
           </div>
           <div className="stat-item">
             <span className="stat-icon" aria-hidden="true">
