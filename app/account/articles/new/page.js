@@ -9,6 +9,7 @@ import RichTextEditor from "../../../components/RichTextEditorClientOnly";
 import ImageUploadField from "../../../components/ImageUploadField";
 import ArticleCategoryFields from "../../../components/ArticleCategoryFields";
 import ArticleTargetCityField from "../../../components/ArticleTargetCityField";
+import { getAuthorProfile } from "@/lib/authorProfile";
 import { getAllParents, resolveCategoryNodes } from "../../../data/blog";
 import {
   isPaidPlan as computeIsPaidPlan,
@@ -54,27 +55,19 @@ export default async function NewArticlePage({ searchParams }) {
       .maybeSingle(),
   ]);
 
-  // Author identity and the Publisher Plan both live on the business
-  // profile — without one, there's nothing to write the article as.
-  if (!business) {
-    redirect(
-      `/account/business?error=${encodeURIComponent(
-        "Create your business profile first, then come back to write an article."
-      )}`
-    );
-  }
+  const author = await getAuthorProfile(supabase, user.id, business);
 
   // The one-time author profile is a required first step, not an optional
   // extra — every author sets a bio before they can write their first
   // article, not just whenever they feel like it. Re-checked in
   // createArticle/saveArticleDraft too, since this page gate alone doesn't
   // stop a direct form submission.
-  if (!business.author_bio) {
+  if (!author.bio) {
     redirect("/account/articles/author-profile?next=/account/articles/new");
   }
 
-  const isPaidPlan = computeIsPaidPlan(business.plan);
-  const publisherPlan = business.publisher_plan ?? "basic";
+  const isPaidPlan = computeIsPaidPlan(business?.plan);
+  const publisherPlan = business?.publisher_plan ?? "basic";
   const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
 
   // How many real submissions this account has made within the current
@@ -231,9 +224,9 @@ export default async function NewArticlePage({ searchParams }) {
               <Link href="/account/articles/author-profile">Edit your author profile →</Link>
             </p>
             <div className="author-profile-summary">
-              {business.author_photo_url ? (
+              {author.photo_url ? (
                 <Image
-                  src={business.author_photo_url}
+                  src={author.photo_url}
                   alt=""
                   width={56}
                   height={56}
@@ -247,7 +240,7 @@ export default async function NewArticlePage({ searchParams }) {
               <div>
                 <strong>{profile?.full_name ?? "—"}</strong>
                 <span className="editor-hint">{user.email}</span>
-                {business.name && <span className="editor-hint">{business.name}</span>}
+                {business?.name && <span className="editor-hint">{business.name}</span>}
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { getParent, getChild } from "../../data/blog";
 import { PK_CITIES } from "../../data/directoryCities";
 import { getArticleLinkLimit, countContentLinks } from "@/lib/seo/articleLinks";
 import { getPublisherSubmissionLimit, publisherPlanToSubmissionPlan } from "../../data/plans";
+import { getAuthorProfile } from "@/lib/authorProfile";
 
 const ARTICLE_MIN_WORDS = 800;
 const ARTICLE_MAX_WORDS = 2500;
@@ -90,13 +91,12 @@ async function generateUniqueArticleSlug(supabase, title, excludeId = null) {
   }
 }
 
-// The author identity (name/email/phone/company/bio/photo) and the
-// Publisher Plan (which drives submission_plan + the submission cadence
-// cap) all come from the signed-in user's business profile and account now
-// — never re-typed per article. A business row is required: every author
-// in this system is a business-account owner (see app/data/plans.js's
-// Publisher Plan note), so `author_bio`/`publisher_plan`/etc. all live on
-// that one row.
+// The author identity comes from the signed-in user's account and their
+// one-time author profile (author_profiles — bio/photo/phone), never
+// re-typed per article. A business listing is NOT required to write: if the
+// user has one, it supplies the Publisher Plan, the company name/website and
+// the Verified/Featured auto-publish perk; without one they write as a Basic
+// publisher and their articles go to review.
 async function getAuthorContext(supabase, user) {
   const [{ data: profile }, { data: business }] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
@@ -109,7 +109,9 @@ async function getAuthorContext(supabase, user) {
       .maybeSingle(),
   ]);
 
-  return { profile, business };
+  const author = await getAuthorProfile(supabase, user.id, business);
+
+  return { profile, business, author };
 }
 
 async function getIsPaidPlan(supabase, userId) {
@@ -161,21 +163,20 @@ export async function createArticle(formData) {
     redirect(`/account/articles/new?error=${encodeURIComponent(message)}`);
   }
 
-  const { profile, business } = await getAuthorContext(supabase, user);
-  if (!business) {
-    fail("Create your business profile first, then come back to write an article.");
-  }
+  const { profile, business, author } = await getAuthorContext(supabase, user);
   // Mirrors the page-level gate in app/account/articles/new/page.js — this
-  // is the enforcement point a direct form submission can't skip.
-  if (!business.author_bio) {
+  // is the enforcement point a direct form submission can't skip. The
+  // author bio is the only prerequisite; a business listing is optional.
+  if (!author.bio) {
     redirect("/account/articles/author-profile?next=/account/articles/new");
   }
 
   // Auto-publish is still a Verified/Premium BUSINESS-plan perk, unchanged
   // from before — the Publisher Plan below is a separate, additive concept
-  // (how OFTEN you may submit) that never changes who needs review.
-  const isPaidPlan = business.plan === "verified" || business.plan === "featured";
-  const publisherPlan = business.publisher_plan ?? "basic";
+  // (how OFTEN you may submit) that never changes who needs review. No
+  // business listing means no paid plan: review applies, Basic cadence.
+  const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
+  const publisherPlan = business?.publisher_plan ?? "basic";
 
   // Continuing a saved draft into a real submission updates that same row
   // instead of inserting a second one — verified against this user before
@@ -262,11 +263,11 @@ export async function createArticle(formData) {
   // ---- Author identity — from the one-time author profile, not the form ----
   const authorName = profile?.full_name ?? "";
   const authorEmail = user.email ?? "";
-  const authorPhone = business.author_phone ?? null;
-  const companyName = business.name ?? null;
-  const authorBio = business.author_bio ?? null;
-  const authorPhotoUrl = business.author_photo_url ?? null;
-  const websiteUrl = business.website ?? null;
+  const authorPhone = author.phone ?? null;
+  const companyName = business?.name ?? null;
+  const authorBio = author.bio ?? null;
+  const authorPhotoUrl = author.photo_url ?? null;
+  const websiteUrl = business?.website ?? null;
 
   // ---- Publishing option — derived from the Publisher Plan, not chosen/paid per article ----
   const submissionPlan = publisherPlanToSubmissionPlan(publisherPlan);
@@ -373,11 +374,8 @@ export async function saveArticleDraft(formData) {
     redirect(`/account/articles/new?error=${encodeURIComponent(message)}`);
   }
 
-  const { profile, business } = await getAuthorContext(supabase, user);
-  if (!business) {
-    fail("Create your business profile first, then come back to write an article.");
-  }
-  if (!business.author_bio) {
+  const { profile, business, author } = await getAuthorContext(supabase, user);
+  if (!author.bio) {
     redirect("/account/articles/author-profile?next=/account/articles/new");
   }
 
@@ -424,7 +422,7 @@ export async function saveArticleDraft(formData) {
     coverImageUrl = coverUpload.url;
   }
 
-  const publisherPlan = business.publisher_plan ?? "basic";
+  const publisherPlan = business?.publisher_plan ?? "basic";
   const excerpt = deriveExcerpt(content);
   const linkCount = countContentLinks(content);
 
@@ -439,11 +437,11 @@ export async function saveArticleDraft(formData) {
     target_city: targetCity,
     author_name: profile?.full_name ?? "",
     author_email: user.email ?? "",
-    author_phone: business.author_phone ?? null,
-    company_name: business.name ?? null,
-    author_bio: business.author_bio ?? null,
-    author_photo_url: business.author_photo_url ?? null,
-    website_url: business.website ?? null,
+    author_phone: author.phone ?? null,
+    company_name: business?.name ?? null,
+    author_bio: author.bio ?? null,
+    author_photo_url: author.photo_url ?? null,
+    website_url: business?.website ?? null,
     submission_plan: publisherPlanToSubmissionPlan(publisherPlan),
     link_count: linkCount,
     status: "draft",
@@ -497,15 +495,14 @@ export async function updateAuthorProfile(formData) {
     redirect(`/account/articles/author-profile?${qs.toString()}`);
   }
 
+  // A business listing is optional — the profile is saved per user. If they
+  // do have one, it's kept in sync because the business page shows the bio.
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, author_photo_url")
+    .select("id, author_bio, author_photo_url, author_phone")
     .eq("owner_id", user.id)
     .maybeSingle();
-
-  if (!business) {
-    fail("Create your business profile first, then come back to set up your author profile.");
-  }
+  const existingAuthor = await getAuthorProfile(supabase, user.id, business);
 
   const authorBio = formData.get("authorBio")?.toString().trim() || null;
   const authorPhone = formData.get("authorPhone")?.toString().trim() || null;
@@ -517,25 +514,38 @@ export async function updateAuthorProfile(formData) {
     fail("Add a short author bio before continuing.");
   }
 
-  let authorPhotoUrl = business.author_photo_url ?? null;
+  let authorPhotoUrl = existingAuthor.photo_url ?? null;
   let oldPhotoUrl = null;
   const photoFile = formData.get("authorPhoto");
   if (photoFile instanceof File && photoFile.size > 0) {
     const upload = await uploadPublicImage(supabase, photoFile, "author-photos", user.id);
     if (upload.error) fail(upload.error.message);
-    oldPhotoUrl = business.author_photo_url ?? null;
+    oldPhotoUrl = existingAuthor.photo_url ?? null;
     authorPhotoUrl = upload.url;
-  } else if (formData.get("removePhoto") === "yes" && business.author_photo_url) {
-    oldPhotoUrl = business.author_photo_url;
+  } else if (formData.get("removePhoto") === "yes" && existingAuthor.photo_url) {
+    oldPhotoUrl = existingAuthor.photo_url;
     authorPhotoUrl = null;
   }
 
-  const { error } = await supabase
-    .from("businesses")
-    .update({ author_bio: authorBio, author_phone: authorPhone, author_photo_url: authorPhotoUrl })
-    .eq("id", business.id);
+  const { error } = await supabase.from("author_profiles").upsert(
+    {
+      user_id: user.id,
+      bio: authorBio,
+      phone: authorPhone,
+      photo_url: authorPhotoUrl,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
 
   if (error) fail(error.message);
+
+  if (business) {
+    await supabase
+      .from("businesses")
+      .update({ author_bio: authorBio, author_phone: authorPhone, author_photo_url: authorPhotoUrl })
+      .eq("id", business.id);
+  }
 
   if (oldPhotoUrl) {
     await deletePublicImage(supabase, oldPhotoUrl);

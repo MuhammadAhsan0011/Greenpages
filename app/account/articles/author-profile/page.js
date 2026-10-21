@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { updateAuthorProfile } from "../actions";
+import { getAuthorProfile } from "@/lib/authorProfile";
 import SubmitButton from "../../../components/SubmitButton";
 import ImageUploadField from "../../../components/ImageUploadField";
 import SmartTextarea from "../../../components/SmartTextarea";
@@ -41,18 +42,12 @@ export default async function AuthorProfilePage({ searchParams }) {
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase
       .from("businesses")
-      .select("name, author_bio, author_photo_url, author_phone")
+      .select("author_bio, author_photo_url, author_phone")
       .eq("owner_id", user.id)
       .maybeSingle(),
   ]);
 
-  if (!business) {
-    redirect(
-      `/account/business?error=${encodeURIComponent(
-        "Create your business profile first, then set up your author profile."
-      )}`
-    );
-  }
+  const author = await getAuthorProfile(supabase, user.id, business);
 
   return (
     <div className="dashboard-form-wrap">
@@ -95,7 +90,7 @@ export default async function AuthorProfilePage({ searchParams }) {
             name="authorPhone"
             type="tel"
             placeholder="+92 3XX XXXXXXX"
-            defaultValue={business.author_phone ?? ""}
+            defaultValue={author.phone ?? ""}
           />
         </div>
 
@@ -107,16 +102,16 @@ export default async function AuthorProfilePage({ searchParams }) {
             rows={4}
             required
             placeholder="A short bio shown alongside your articles."
-            defaultValue={business.author_bio ?? ""}
+            defaultValue={author.bio ?? ""}
           />
         </div>
 
         <div className="form-field">
           <span className="form-field-label-standalone">Profile Photo</span>
-          {business.author_photo_url && (
+          {author.photo_url && (
             <div className="logo-preview-row">
               <Image
-                src={business.author_photo_url}
+                src={author.photo_url}
                 alt="Current author photo"
                 width={72}
                 height={72}
