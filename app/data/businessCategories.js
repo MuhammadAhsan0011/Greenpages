@@ -1,4 +1,4 @@
-// Two-level directory taxonomy (20 parents / 139 children). description,
+// Two-level directory taxonomy (20 parents / 160 children). description,
 // metaTitle and metaDescription are intentionally empty strings for most
 // nodes for now — the fields exist so per-category SEO copy can be filled
 // in later without another schema change, per the migration plan in
@@ -124,6 +124,27 @@ export const BUSINESS_CATEGORIES = [
       { name: "Interior Designers", slug: "interior-designers", sortOrder: 7, description: "", metaTitle: "", metaDescription: "" },
       { name: "HR & Recruitment Agencies", slug: "recruitment-agencies", sortOrder: 8, description: "", metaTitle: "", metaDescription: "" },
       { name: "Translation & Attestation", slug: "translation-attestation", sortOrder: 9, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Financial Advisory", slug: "financial-advisory", sortOrder: 10, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Cybersecurity Services", slug: "cybersecurity-services", sortOrder: 11, description: "", metaTitle: "", metaDescription: "" },
+      { name: "IT Consulting", slug: "it-consulting", sortOrder: 12, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Engineering Consultancy", slug: "engineering-consultancy", sortOrder: 13, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Educational Consultancy", slug: "educational-consultancy", sortOrder: 14, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Corporate Training", slug: "corporate-training", sortOrder: 15, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Market Research", slug: "market-research", sortOrder: 16, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Business Research & Analysis", slug: "business-research-analysis", sortOrder: 17, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Business Registration & Compliance", slug: "business-registration-compliance", sortOrder: 18, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Company Secretarial Services", slug: "company-secretarial", sortOrder: 19, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Environmental Consultancy", slug: "environmental-consultancy", sortOrder: 20, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Supply Chain Consulting", slug: "supply-chain-consulting", sortOrder: 21, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Procurement Consulting", slug: "procurement-consulting", sortOrder: 22, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Public Relations (PR) Consulting", slug: "pr-consulting", sortOrder: 23, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Translation & Interpretation", slug: "translation-interpretation", sortOrder: 24, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Intellectual Property Services", slug: "intellectual-property", sortOrder: 25, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Patent & Trademark Services", slug: "patent-trademark", sortOrder: 26, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Data Analytics Consulting", slug: "data-analytics-consulting", sortOrder: 27, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Quality Management Consulting", slug: "quality-management-consulting", sortOrder: 28, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Risk Management Consulting", slug: "risk-management-consulting", sortOrder: 29, description: "", metaTitle: "", metaDescription: "" },
+      { name: "Virtual Assistant Services", slug: "virtual-assistant-services", sortOrder: 30, description: "", metaTitle: "", metaDescription: "" },
     ],
   },
   {
