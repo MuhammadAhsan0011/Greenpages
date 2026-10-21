@@ -205,8 +205,9 @@ export default async function PricingPage({ searchParams }) {
 
           {params?.requested && (
             <p className="form-success pricing-alert">
-              Your upgrade request has been sent! We&apos;ll contact you to
-              arrange payment and activate your package.
+              Your upgrade request has been sent! Send your payment using one
+              of the methods below and WhatsApp us the screenshot — we&apos;ll
+              activate your package once it&apos;s confirmed.
             </p>
           )}
           {params?.error && <p className="form-error">{params.error}</p>}
@@ -317,8 +318,9 @@ export default async function PricingPage({ searchParams }) {
 
           {params?.publisherRequested && (
             <p className="form-success pricing-alert">
-              Your Publisher Plan upgrade request has been sent! We&apos;ll
-              contact you to arrange payment and activate it.
+              Your Publisher Plan upgrade request has been sent! Send your
+              payment using one of the methods below and WhatsApp us the
+              screenshot — we&apos;ll activate it once it&apos;s confirmed.
             </p>
           )}
 
@@ -437,6 +439,7 @@ export default async function PricingPage({ searchParams }) {
       </section>
 
       <section
+        id="payment-methods"
         className="section-alt"
         aria-labelledby="payment-methods-heading"
       >

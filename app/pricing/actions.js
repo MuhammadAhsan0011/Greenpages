@@ -38,7 +38,7 @@ export async function requestUpgrade(plan, formData) {
   }
 
   revalidatePath("/account");
-  redirect("/pricing?requested=1");
+  redirect("/pricing?requested=1#payment-methods");
 }
 
 // Same request/approve flow as requestUpgrade above, but for the annual
@@ -72,5 +72,5 @@ export async function requestPublisherUpgrade(plan, formData) {
 
   revalidatePath("/account");
   revalidatePath("/admin");
-  redirect("/pricing?publisherRequested=1#publisher-plans-heading");
+  redirect("/pricing?publisherRequested=1#payment-methods");
 }

@@ -6133,3 +6133,8 @@ article.service-section h2 {
     font-size: 0.85rem;
   }
 }
+/* Pricing request redirects land on #payment-methods — keep the heading
+   clear of the sticky header (utility bar + nav) when scrolled to. */
+#payment-methods {
+  scroll-margin-top: 140px;
+}
