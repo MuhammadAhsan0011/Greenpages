@@ -47,11 +47,11 @@ function upgradeStatusLabel(business) {
   return "—";
 }
 
-function publisherPlanStatusLabel(business) {
-  if (business.requested_publisher_plan) {
-    return `Upgrade to ${PUBLISHER_PLAN_LABELS[business.requested_publisher_plan]} requested`;
+function publisherPlanStatusLabel(author) {
+  if (author?.requested_publisher_plan) {
+    return `Upgrade to ${PUBLISHER_PLAN_LABELS[author.requested_publisher_plan]} requested`;
   }
-  return PUBLISHER_PLAN_LABELS[business.publisher_plan ?? "basic"];
+  return PUBLISHER_PLAN_LABELS[author?.publisher_plan ?? "basic"];
 }
 
 const ADMIN_PAGE_SIZE_OPTIONS = [10, 25, 50, 75, 100];
@@ -159,12 +159,18 @@ export default async function AdminPage({ searchParams }) {
   const { data: businesses } = await supabase
     .from("businesses")
     .select(
-      "id, name, phone, city, plan, requested_plan, publisher_plan, requested_publisher_plan, created_at, needs_review, profiles(full_name)"
+      "id, owner_id, name, phone, city, plan, requested_plan, created_at, needs_review, profiles(full_name)"
     )
     .order("name", { ascending: true });
 
   const pending = (businesses ?? []).filter((b) => b.requested_plan);
-  const pendingPublisher = (businesses ?? []).filter((b) => b.requested_publisher_plan);
+
+  // Publisher Plans live per user on author_profiles (no business needed).
+  const { data: authorProfiles } = await supabase
+    .from("author_profiles")
+    .select("user_id, phone, publisher_plan, requested_publisher_plan");
+  const publisherByUser = new Map((authorProfiles ?? []).map((row) => [row.user_id, row]));
+  const pendingPublisherRows = (authorProfiles ?? []).filter((row) => row.requested_publisher_plan);
 
   const { data: pendingReviews } = await supabase
     .from("reviews")
@@ -195,6 +201,12 @@ export default async function AdminPage({ searchParams }) {
   const users = (profiles ?? []).map((profile) => ({
     ...profile,
     email: emailById.get(profile.id) ?? "—",
+  }));
+  const userById = new Map(users.map((u) => [u.id, u]));
+  const pendingPublisher = pendingPublisherRows.map((row) => ({
+    ...row,
+    name: userById.get(row.user_id)?.full_name ?? "—",
+    email: userById.get(row.user_id)?.email ?? "—",
   }));
 
   const usersPageSize = parseAdminPageSize(params?.usersPageSize);
@@ -296,8 +308,8 @@ export default async function AdminPage({ searchParams }) {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th scope="col">Business</th>
-                    <th scope="col">Owner</th>
+                    <th scope="col">Author</th>
+                    <th scope="col">Email</th>
                     <th scope="col">Phone</th>
                     <th scope="col">Current</th>
                     <th scope="col">Requested</th>
@@ -305,26 +317,26 @@ export default async function AdminPage({ searchParams }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingPublisher.map((business) => (
-                    <tr key={business.id}>
-                      <td>{business.name}</td>
-                      <td>{business.profiles?.full_name ?? "—"}</td>
-                      <td>{business.phone ?? "—"}</td>
-                      <td>{PUBLISHER_PLAN_LABELS[business.publisher_plan ?? "basic"]}</td>
-                      <td>{PUBLISHER_PLAN_LABELS[business.requested_publisher_plan]}</td>
+                  {pendingPublisher.map((row) => (
+                    <tr key={row.user_id}>
+                      <td>{row.name}</td>
+                      <td>{row.email}</td>
+                      <td>{row.phone ?? "—"}</td>
+                      <td>{PUBLISHER_PLAN_LABELS[row.publisher_plan ?? "basic"]}</td>
+                      <td>{PUBLISHER_PLAN_LABELS[row.requested_publisher_plan]}</td>
                       <td className="admin-table-actions">
                         <form
                           action={approvePublisherUpgrade.bind(
                             null,
-                            business.id,
-                            business.requested_publisher_plan
+                            row.user_id,
+                            row.requested_publisher_plan
                           )}
                         >
                           <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Approving…">
                             Approve
                           </SubmitButton>
                         </form>
-                        <form action={dismissPublisherRequest.bind(null, business.id)}>
+                        <form action={dismissPublisherRequest.bind(null, row.user_id)}>
                           <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Dismissing…">
                             Dismiss
                           </SubmitButton>
@@ -556,11 +568,11 @@ export default async function AdminPage({ searchParams }) {
                         </SubmitButton>
                       </form>
                     </td>
-                    <td>{publisherPlanStatusLabel(business)}</td>
+                    <td>{publisherPlanStatusLabel(publisherByUser.get(business.owner_id))}</td>
                     <td>
                       <form action={setPublisherPlan} className="admin-inline-form">
-                        <input type="hidden" name="businessId" value={business.id} />
-                        <select name="publisherPlan" defaultValue={business.publisher_plan ?? "basic"}>
+                        <input type="hidden" name="userId" value={business.owner_id} />
+                        <select name="publisherPlan" defaultValue={publisherByUser.get(business.owner_id)?.publisher_plan ?? "basic"}>
                           {PUBLISHER_PLAN_IDS.map((id) => (
                             <option key={id} value={id}>
                               {PUBLISHER_PLAN_LABELS[id]}

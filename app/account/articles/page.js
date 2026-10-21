@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import Button from "../../components/Button";
 import { deleteOwnArticle } from "./actions";
+import { getAuthorProfile } from "@/lib/authorProfile";
 import SubmitButton from "../../components/SubmitButton";
 import {
   isPaidPlan as computeIsPaidPlan,
@@ -50,11 +51,12 @@ export default async function MyArticlesPage({ searchParams }) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("plan, publisher_plan")
+    .select("plan, publisher_plan, requested_publisher_plan")
     .eq("owner_id", user.id)
     .maybeSingle();
   const isPaidPlan = computeIsPaidPlan(business?.plan);
-  const publisherPlan = business?.publisher_plan ?? "basic";
+  const author = await getAuthorProfile(supabase, user.id, business);
+  const publisherPlan = author.publisher_plan ?? "basic";
   const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
 
   // Same rolling-window count createArticle enforces server-side — drafts

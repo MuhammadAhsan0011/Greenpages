@@ -67,7 +67,7 @@ export default async function NewArticlePage({ searchParams }) {
   }
 
   const isPaidPlan = computeIsPaidPlan(business?.plan);
-  const publisherPlan = business?.publisher_plan ?? "basic";
+  const publisherPlan = author.publisher_plan ?? "basic";
   const submissionLimit = getPublisherSubmissionLimit(publisherPlan);
 
   // How many real submissions this account has made within the current

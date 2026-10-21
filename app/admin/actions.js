@@ -65,54 +65,63 @@ export async function setPlan(formData) {
 }
 
 // Same approve/dismiss/manual-override trio as the business plan above, but
-// for the annual Publisher Plan (businesses.publisher_plan /
-// requested_publisher_plan) — a separate column, approved independently.
-export async function approvePublisherUpgrade(businessId, publisherPlan) {
+// for the annual Publisher Plan — kept per user on author_profiles (so it
+// works for authors with no business listing), approved independently.
+// Keyed by user id, not business id.
+export async function approvePublisherUpgrade(userId, publisherPlan) {
   const supabase = await requireAdmin();
 
-  await supabase
-    .from("businesses")
-    .update({
+  await supabase.from("author_profiles").upsert(
+    {
+      user_id: userId,
       publisher_plan: publisherPlan,
       requested_publisher_plan: null,
       publisher_plan_started_at: new Date().toISOString(),
-    })
-    .eq("id", businessId);
+    },
+    { onConflict: "user_id" }
+  );
 
   revalidatePath("/admin");
   revalidatePath("/account/articles");
   revalidatePath("/account/articles/new");
+  revalidatePath("/pricing");
 }
 
-export async function dismissPublisherRequest(businessId) {
+export async function dismissPublisherRequest(userId) {
   const supabase = await requireAdmin();
 
-  await supabase.from("businesses").update({ requested_publisher_plan: null }).eq("id", businessId);
+  await supabase
+    .from("author_profiles")
+    .update({ requested_publisher_plan: null })
+    .eq("user_id", userId);
 
   revalidatePath("/admin");
+  revalidatePath("/pricing");
 }
 
 export async function setPublisherPlan(formData) {
   const supabase = await requireAdmin();
 
-  const businessId = formData.get("businessId")?.toString();
+  const userId = formData.get("userId")?.toString();
   const publisherPlan = formData.get("publisherPlan")?.toString();
 
-  if (!businessId || !PUBLISHER_PLAN_IDS.includes(publisherPlan)) {
+  if (!userId || !PUBLISHER_PLAN_IDS.includes(publisherPlan)) {
     return;
   }
 
-  await supabase
-    .from("businesses")
-    .update({
+  await supabase.from("author_profiles").upsert(
+    {
+      user_id: userId,
       publisher_plan: publisherPlan,
       requested_publisher_plan: null,
       publisher_plan_started_at: new Date().toISOString(),
-    })
-    .eq("id", businessId);
+    },
+    { onConflict: "user_id" }
+  );
 
   revalidatePath("/admin");
   revalidatePath("/account/articles");
+  revalidatePath("/pricing");
 }
 
 // Makes a pending review publicly visible.

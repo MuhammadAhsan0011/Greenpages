@@ -176,7 +176,7 @@ export async function createArticle(formData) {
   // (how OFTEN you may submit) that never changes who needs review. No
   // business listing means no paid plan: review applies, Basic cadence.
   const isPaidPlan = business?.plan === "verified" || business?.plan === "featured";
-  const publisherPlan = business?.publisher_plan ?? "basic";
+  const publisherPlan = author.publisher_plan ?? "basic";
 
   // Continuing a saved draft into a real submission updates that same row
   // instead of inserting a second one — verified against this user before
@@ -422,7 +422,7 @@ export async function saveArticleDraft(formData) {
     coverImageUrl = coverUpload.url;
   }
 
-  const publisherPlan = business?.publisher_plan ?? "basic";
+  const publisherPlan = author.publisher_plan ?? "basic";
   const excerpt = deriveExcerpt(content);
   const linkCount = countContentLinks(content);
 

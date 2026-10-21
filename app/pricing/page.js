@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { requestUpgrade, requestPublisherUpgrade } from "./actions";
+import { getAuthorProfile } from "@/lib/authorProfile";
 import {
   PLAN_PRICING,
   PLAN_LABELS,
@@ -170,6 +171,7 @@ export default async function PricingPage({ searchParams }) {
   } = await supabase.auth.getUser();
 
   let business = null;
+  let author = null;
   if (user) {
     const { data } = await supabase
       .from("businesses")
@@ -177,6 +179,7 @@ export default async function PricingPage({ searchParams }) {
       .eq("owner_id", user.id)
       .maybeSingle();
     business = data;
+    author = await getAuthorProfile(supabase, user.id, data);
   }
 
   return (
@@ -321,10 +324,10 @@ export default async function PricingPage({ searchParams }) {
 
           <div className="grid grid-3 pricing-grid">
             {publisherPackages.map((pkg) => {
-              const isCurrentPlan = (business?.publisher_plan ?? "basic") === pkg.id;
-              const isPending = business?.requested_publisher_plan === pkg.id;
+              const isCurrentPlan = (author?.publisher_plan ?? "basic") === pkg.id;
+              const isPending = author?.requested_publisher_plan === pkg.id;
               const isDowngrade =
-                business && PUBLISHER_PLAN_RANK[pkg.id] > PUBLISHER_PLAN_RANK[business.publisher_plan ?? "basic"];
+                author && PUBLISHER_PLAN_RANK[pkg.id] > PUBLISHER_PLAN_RANK[author.publisher_plan ?? "basic"];
 
               return (
                 <article
@@ -351,7 +354,7 @@ export default async function PricingPage({ searchParams }) {
                   {pkg.id === "basic" ? (
                     user ? (
                       <span className="btn btn-secondary pricing-cta-disabled">
-                        {business ? "Your Current Plan" : `Included with ${PUBLISHER_PLAN_LABELS.basic}`}
+                        {(author?.publisher_plan ?? "basic") === "basic" ? "Your Current Plan" : `Included with ${PUBLISHER_PLAN_LABELS.basic}`}
                       </span>
                     ) : (
                       <Link href="/signup" className="btn btn-secondary">
@@ -361,10 +364,6 @@ export default async function PricingPage({ searchParams }) {
                   ) : !user ? (
                     <Link href={`/login?next=/pricing`} className="btn btn-primary">
                       Log In to Upgrade
-                    </Link>
-                  ) : !business ? (
-                    <Link href="/account/business" className="btn btn-primary">
-                      Create Business First
                     </Link>
                   ) : isCurrentPlan ? (
                     <span className="btn btn-secondary pricing-cta-disabled">
