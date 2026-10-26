@@ -4208,6 +4208,15 @@ article.service-section h2 {
   padding: 8px 0 4px;
 }
 
+/* Adsterra slot that takes no space until its iframe actually shows up, so a
+   blocked / unfilled ad doesn't leave a 600px hole in the sidebar. */
+.ad-sidebar-banner:not(:has(iframe)) {
+  display: block;
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .ad-footer-band {
   display: flex;
   flex-direction: column;
