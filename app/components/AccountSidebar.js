@@ -80,6 +80,26 @@ export default function AccountSidebar({ user, profile, business }) {
           </li>
           <li>
             <Link
+              href="/account/products/new"
+              className={pathname === "/account/products/new" ? "active" : ""}
+            >
+              <span aria-hidden="true">🛍️</span> List a Product
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/account/products"
+              className={
+                pathname.startsWith("/account/products") && pathname !== "/account/products/new"
+                  ? "active"
+                  : ""
+              }
+            >
+              My Products
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/jobs/post-job"
               className={pathname === "/jobs/post-job" ? "active" : ""}
             >
@@ -118,6 +138,11 @@ export default function AccountSidebar({ user, profile, business }) {
           <li>
             <Link href="/jobs" className={pathname === "/jobs" ? "active" : ""}>
               Jobs
+            </Link>
+          </li>
+          <li>
+            <Link href="/products" className={pathname === "/products" ? "active" : ""}>
+              Products
             </Link>
           </li>
         </ul>

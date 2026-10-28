@@ -132,6 +132,9 @@ export default function Navbar() {
               <Link href="/jobs">Jobs</Link>
             </li>
             <li>
+              <Link href="/products">Products</Link>
+            </li>
+            <li>
               <Link href="/blog">Blog</Link>
             </li>
             <li>

@@ -10,14 +10,16 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
-const MIN_WIDTH = 800;
-const MIN_HEIGHT = 600;
+// Defaults are the business-gallery rules. Other callers (e.g. the product
+// form) override them through props — see the PhotoDropzone signature.
+const DEFAULT_MAX_SIZE_BYTES = 5 * 1024 * 1024;
+const DEFAULT_ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+const DEFAULT_MIN_WIDTH = 800;
+const DEFAULT_MIN_HEIGHT = 600;
 // The gallery frame displays at roughly 1.6:1 (landscape) and crops
 // anything else to fill it — requiring at least a 4:3-ish shape here means
 // a portrait or square photo never gets its edges cut off in the gallery.
-const MIN_ASPECT_RATIO = 1.3;
+const DEFAULT_MIN_ASPECT_RATIO = 1.3;
 
 // Reads a file's real pixel dimensions in the browser before we accept it —
 // mirrors the same check the server re-runs with sharp, so a bad file never
@@ -38,7 +40,60 @@ function readImageDimensions(file) {
   });
 }
 
-export default function PhotoDropzone({ name, existingFieldName, existingPhotos = [], max = 5 }) {
+// Phone photos are routinely 3-6MB, so a hard "too big" error would make a
+// 1MB cap unusable for most people. Re-encodes as JPEG, shrinking quality
+// and then size, until it fits; null if it can't get under the limit.
+async function compressToLimit(file, maxBytes) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  const loaded = await new Promise((resolve) => {
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+  URL.revokeObjectURL(url);
+  if (!loaded) return null;
+
+  let scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    const ctx = canvas.getContext("2d");
+    // JPEG has no alpha — paint white first so transparent PNGs don't go black.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.85, 0.7, 0.55]) {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+      if (blob && blob.size <= maxBytes) {
+        const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";
+        return new File([blob], `${baseName}.jpg`, { type: "image/jpeg" });
+      }
+    }
+    scale *= 0.8;
+  }
+  return null;
+}
+
+export default function PhotoDropzone({
+  name,
+  existingFieldName,
+  existingPhotos = [],
+  max = 5,
+  maxSizeBytes = DEFAULT_MAX_SIZE_BYTES,
+  allowedTypes = DEFAULT_ALLOWED_TYPES,
+  minWidth = DEFAULT_MIN_WIDTH,
+  minHeight = DEFAULT_MIN_HEIGHT,
+  minAspectRatio = DEFAULT_MIN_ASPECT_RATIO,
+  autoCompress = false,
+  hint,
+}) {
+  const maxSizeLabel =
+    maxSizeBytes % (1024 * 1024) === 0
+      ? `${maxSizeBytes / (1024 * 1024)}MB`
+      : `${Math.round(maxSizeBytes / 1024)}KB`;
   const [kept, setKept] = useState(existingPhotos);
   const [newFiles, setNewFiles] = useState([]); // [{ id, file, previewUrl }]
   const [error, setError] = useState("");
@@ -70,21 +125,35 @@ export default function PhotoDropzone({ name, existingFieldName, existingPhotos 
     const incoming = Array.from(fileList);
     const typeAndSizeOk = [];
 
-    for (const file of incoming) {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        setError(`"${file.name}" is a ${file.type || "file"} — only PNG, JPG, WebP, or GIF images are accepted.`);
+    setIsChecking(true);
+    for (const original of incoming) {
+      let file = original;
+      if (!allowedTypes.includes(file.type)) {
+        setError(
+          `"${file.name}" is a ${file.type || "file"} — only ${allowedTypes
+            .map((t) => t.replace("image/", "").toUpperCase())
+            .join(", ")} images are accepted.`
+        );
         continue;
       }
-      if (file.size > MAX_SIZE_BYTES) {
-        setError(`"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB — the limit is 5MB per photo.`);
-        continue;
+      if (file.size > maxSizeBytes) {
+        const compressed = autoCompress ? await compressToLimit(file, maxSizeBytes) : null;
+        if (!compressed) {
+          setError(
+            `"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB — the limit is ${maxSizeLabel} per photo.`
+          );
+          continue;
+        }
+        file = compressed;
       }
       typeAndSizeOk.push(file);
     }
 
-    if (typeAndSizeOk.length === 0) return;
+    if (typeAndSizeOk.length === 0) {
+      setIsChecking(false);
+      return;
+    }
 
-    setIsChecking(true);
     const accepted = [];
     for (const file of typeAndSizeOk) {
       const dims = await readImageDimensions(file);
@@ -92,15 +161,15 @@ export default function PhotoDropzone({ name, existingFieldName, existingPhotos 
         setError(`"${file.name}" couldn't be read as an image.`);
         continue;
       }
-      if (dims.width < MIN_WIDTH || dims.height < MIN_HEIGHT) {
+      if (dims.width < minWidth || dims.height < minHeight) {
         setError(
-          `"${file.name}" is ${dims.width}×${dims.height}px — photos need to be at least ${MIN_WIDTH}×${MIN_HEIGHT}px.`
+          `"${file.name}" is ${dims.width}×${dims.height}px — photos need to be at least ${minWidth}×${minHeight}px.`
         );
         continue;
       }
-      if (dims.width / dims.height < MIN_ASPECT_RATIO) {
+      if (minAspectRatio && dims.width / dims.height < minAspectRatio) {
         setError(
-          `"${file.name}" is ${dims.width}×${dims.height}px — that's too tall/square and would get cropped. Upload a landscape photo (at least ${MIN_ASPECT_RATIO}:1 wide, e.g. 1000×750px).`
+          `"${file.name}" is ${dims.width}×${dims.height}px — that's too tall/square and would get cropped. Upload a landscape photo (at least ${minAspectRatio}:1 wide, e.g. 1000×750px).`
         );
         continue;
       }
@@ -193,7 +262,8 @@ export default function PhotoDropzone({ name, existingFieldName, existingPhotos 
           {!isChecking && " or drag photos here"}
         </p>
         <p className="photo-dropzone-hint">
-          Landscape photos only, at least {MIN_WIDTH}×{MIN_HEIGHT}px — PNG, JPG, WebP, or GIF, up to 5MB each — {max} photos max
+          {hint ??
+            `Landscape photos only, at least ${minWidth}×${minHeight}px — PNG, JPG, WebP, or GIF, up to ${maxSizeLabel} each — ${max} photos max`}
         </p>
       </div>
 
