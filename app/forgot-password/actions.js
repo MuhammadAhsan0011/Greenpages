@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function requestPasswordReset(formData) {
   const email = formData.get("email")?.toString().trim();
@@ -12,7 +13,7 @@ export async function requestPasswordReset(formData) {
   }
 
   const headersList = await headers();
-  const origin = headersList.get("origin") || `https://${headersList.get("host")}`;
+  const origin = getSiteUrl(headersList);
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {

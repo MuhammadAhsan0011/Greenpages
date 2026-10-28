@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { safeNextPath } from "@/lib/site-url";
 
 export async function login(formData) {
   const email = formData.get("email")?.toString().trim();
@@ -10,7 +11,7 @@ export async function login(formData) {
   const next = formData.get("next")?.toString();
   // Only allow redirecting back to a relative path on this site, never an
   // absolute URL, to avoid an open-redirect via a crafted "next" value.
-  const redirectTo = next && next.startsWith("/") ? next : "/account";
+  const redirectTo = safeNextPath(next);
 
   if (!email || !password) {
     redirect(`/login?error=${encodeURIComponent("Email and password are required.")}`);

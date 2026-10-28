@@ -3,6 +3,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function signup(formData) {
   const fullName = formData.get("fullName")?.toString().trim();
@@ -31,6 +33,9 @@ export async function signup(formData) {
     password,
     options: {
       data: { full_name: fullName },
+      // Without this the confirmation link falls back to Supabase's
+      // dashboard "Site URL", which was pointing at localhost.
+      emailRedirectTo: `${getSiteUrl(await headers())}/auth/callback?next=/account`,
     },
   });
 
