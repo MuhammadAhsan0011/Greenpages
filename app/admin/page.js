@@ -159,7 +159,7 @@ export default async function AdminPage({ searchParams }) {
   const { data: businesses } = await supabase
     .from("businesses")
     .select(
-      "id, owner_id, name, phone, city, plan, requested_plan, created_at, needs_review, profiles(full_name)"
+      "id, owner_id, name, phone, city, plan, requested_plan, created_at, needs_review, author_bio, profiles(full_name)"
     )
     .order("name", { ascending: true });
 
@@ -168,8 +168,20 @@ export default async function AdminPage({ searchParams }) {
   // Publisher Plans live per user on author_profiles (no business needed).
   const { data: authorProfiles } = await supabase
     .from("author_profiles")
-    .select("user_id, phone, publisher_plan, requested_publisher_plan");
+    .select("user_id, phone, bio, photo_url, publisher_plan, requested_publisher_plan");
   const publisherByUser = new Map((authorProfiles ?? []).map((row) => [row.user_id, row]));
+  // Who has set up the one-time author bio used for article publishing. Same
+  // rule the app uses (lib/authorProfile.js): the author_profiles row, or the
+  // older bio still sitting on the user’s business when they have no row.
+  const authorBioUserIds = new Set();
+  for (const row of authorProfiles ?? []) {
+    if (row.bio?.trim()) authorBioUserIds.add(row.user_id);
+  }
+  for (const business of businesses ?? []) {
+    if (business.author_bio?.trim()) authorBioUserIds.add(business.owner_id);
+  }
+  const authorPhotoCount = (authorProfiles ?? []).filter((row) => row.photo_url).length;
+
   const pendingPublisherRows = (authorProfiles ?? []).filter((row) => row.requested_publisher_plan);
 
   const { data: pendingReviews } = await supabase
@@ -201,6 +213,7 @@ export default async function AdminPage({ searchParams }) {
   const users = (profiles ?? []).map((profile) => ({
     ...profile,
     email: emailById.get(profile.id) ?? "—",
+    hasAuthorBio: authorBioUserIds.has(profile.id),
   }));
   const userById = new Map(users.map((u) => [u.id, u]));
   const pendingPublisher = pendingPublisherRows.map((row) => ({
@@ -479,6 +492,13 @@ export default async function AdminPage({ searchParams }) {
 
         <div className="account-card">
           <h2>All Users ({users.length})</h2>
+          <p className="account-meta">
+            <span>
+              ✍️ <strong>{authorBioUserIds.size}</strong> of {users.length} users have set up an author bio for article
+              publishing
+            </span>
+            <span>🖼️ {authorPhotoCount} with an author photo</span>
+          </p>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
@@ -486,6 +506,7 @@ export default async function AdminPage({ searchParams }) {
                   <th scope="col">Name</th>
                   <th scope="col">Email</th>
                   <th scope="col">Joined</th>
+                  <th scope="col">Author Bio</th>
                 </tr>
               </thead>
               <tbody>
@@ -500,6 +521,7 @@ export default async function AdminPage({ searchParams }) {
                         day: "numeric",
                       })}
                     </td>
+                    <td>{profile.hasAuthorBio ? "✅ Yes" : "—"}</td>
                   </tr>
                 ))}
               </tbody>
