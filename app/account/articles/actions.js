@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { getParent, getChild } from "../../data/blog";
 import { PK_CITIES } from "../../data/directoryCities";
 import { getArticleLinkLimit, countContentLinks } from "@/lib/seo/articleLinks";
-import { getPublisherSubmissionLimit, publisherPlanToSubmissionPlan } from "../../data/plans";
+import { getPublisherSubmissionLimit, publisherPlanToSubmissionPlan, isUnlimitedPublisher } from "../../data/plans";
 import { getAuthorProfile } from "@/lib/authorProfile";
 
 const ARTICLE_MIN_WORDS = 800;
@@ -208,7 +208,7 @@ export async function createArticle(formData) {
     .neq("status", "draft")
     .gte("created_at", windowStart);
 
-  if ((recentCount ?? 0) >= limit.maxArticles) {
+  if (!isUnlimitedPublisher(user.email) && (recentCount ?? 0) >= limit.maxArticles) {
     fail(
       `Your Publisher Plan allows ${limit.maxArticles} article${limit.maxArticles === 1 ? "" : "s"} every ${limit.windowLabel} — you've reached that limit. Upgrade your Publisher Plan on the Pricing page to submit more often, or try again later.`
     );

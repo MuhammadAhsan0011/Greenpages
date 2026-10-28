@@ -8,6 +8,7 @@ import {
   isPaidPlan as computeIsPaidPlan,
   PUBLISHER_PLAN_LABELS,
   getPublisherSubmissionLimit,
+  isUnlimitedPublisher,
 } from "../../data/plans";
 
 export const metadata = {
@@ -83,13 +84,19 @@ export default async function MyArticlesPage({ searchParams }) {
       )}
 
       <p className="editor-hint">
-        <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher Plan —{" "}
-        {usedInWindow} of {submissionLimit.maxArticles} article
-        {submissionLimit.maxArticles === 1 ? "" : "s"} used in the last{" "}
-        {submissionLimit.windowLabel} (drafts don&apos;t count).{" "}
-        {publisherPlan !== "sponsored" && (
-          <Link href="/pricing#publisher-plans-heading">Upgrade</Link>
-        )}{" "}
+        {isUnlimitedPublisher(user.email) ? (
+          <>Admin account — unlimited articles. </>
+        ) : (
+          <>
+            <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher Plan —{" "}
+            {usedInWindow} of {submissionLimit.maxArticles} article
+            {submissionLimit.maxArticles === 1 ? "" : "s"} used in the last{" "}
+            {submissionLimit.windowLabel} (drafts don&apos;t count).{" "}
+            {publisherPlan !== "sponsored" && (
+              <Link href="/pricing#publisher-plans-heading">Upgrade</Link>
+            )}{" "}
+          </>
+        )}
         · <Link href="/account/articles/author-profile">Edit Author Profile</Link>
       </p>
       {!isPaidPlan && (

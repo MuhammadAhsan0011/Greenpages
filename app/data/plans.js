@@ -129,6 +129,13 @@ export const PUBLISHER_SUBMISSION_LIMITS = {
   sponsored: { maxArticles: 3, windowDays: 1, windowLabel: "24 hours" },
 };
 
+// The admin account (ADMIN_EMAIL) may submit articles with no cadence cap at
+// all, whatever its Publisher Plan. Server-side only — ADMIN_EMAIL is not
+// exposed to the browser, so callers must be Server Components/Actions.
+export function isUnlimitedPublisher(email) {
+  return Boolean(email) && email === process.env.ADMIN_EMAIL;
+}
+
 export function getPublisherSubmissionLimit(publisherPlan) {
   return PUBLISHER_SUBMISSION_LIMITS[publisherPlan] ?? PUBLISHER_SUBMISSION_LIMITS.basic;
 }

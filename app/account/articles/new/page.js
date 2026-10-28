@@ -15,6 +15,7 @@ import {
   isPaidPlan as computeIsPaidPlan,
   PUBLISHER_PLAN_LABELS,
   getPublisherSubmissionLimit,
+  isUnlimitedPublisher,
 } from "../../../data/plans";
 
 export const metadata = {
@@ -82,7 +83,8 @@ export default async function NewArticlePage({ searchParams }) {
     .eq("author_id", user.id)
     .neq("status", "draft")
     .gte("created_at", windowStart);
-  const atSubmissionLimit = (usedInWindow ?? 0) >= submissionLimit.maxArticles;
+  const isUnlimited = isUnlimitedPublisher(user.email);
+  const atSubmissionLimit = !isUnlimited && (usedInWindow ?? 0) >= submissionLimit.maxArticles;
 
   // Continuing a saved draft — ownership-checked here, never trusted from
   // the URL alone. A missing/foreign/no-longer-a-draft id just falls back
@@ -247,17 +249,23 @@ export default async function NewArticlePage({ searchParams }) {
 
           <div className="account-card">
             <h2>3. Publisher Plan</h2>
-            <p>
-              You&apos;re on the <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher
-              Plan — up to {submissionLimit.maxArticles} article
-              {submissionLimit.maxArticles === 1 ? "" : "s"} every {submissionLimit.windowLabel}.
-            </p>
-            <p className={atSubmissionLimit ? "form-error" : "editor-hint"}>
-              {usedInWindow ?? 0} of {submissionLimit.maxArticles} used in the last{" "}
-              {submissionLimit.windowLabel}
-              {atSubmissionLimit ? " — you've reached your limit for now." : "."}
-            </p>
-            {publisherPlan !== "sponsored" && (
+            {isUnlimited ? (
+              <p>Admin account — you can publish unlimited articles, any time.</p>
+            ) : (
+              <>
+                <p>
+                  You&apos;re on the <strong>{PUBLISHER_PLAN_LABELS[publisherPlan]}</strong> Publisher
+                  Plan — up to {submissionLimit.maxArticles} article
+                  {submissionLimit.maxArticles === 1 ? "" : "s"} every {submissionLimit.windowLabel}.
+                </p>
+                <p className={atSubmissionLimit ? "form-error" : "editor-hint"}>
+                  {usedInWindow ?? 0} of {submissionLimit.maxArticles} used in the last{" "}
+                  {submissionLimit.windowLabel}
+                  {atSubmissionLimit ? " — you've reached your limit for now." : "."}
+                </p>
+              </>
+            )}
+            {!isUnlimited && publisherPlan !== "sponsored" && (
               <Link href="/pricing#publisher-plans-heading" className="service-link">
                 Upgrade your Publisher Plan →
               </Link>
