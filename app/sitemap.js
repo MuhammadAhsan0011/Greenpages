@@ -30,6 +30,11 @@ import {
 
 const siteUrl = SITE_URL;
 
+// Re-generated at most hourly, so new businesses/articles/jobs reach the
+// sitemap without a redeploy. If a regeneration fails (see the throw below)
+// Next keeps serving the last good copy.
+export const revalidate = 3600;
+
 // Fully dynamic — every archive URL below is gated on the same live
 // INDEXING_THRESHOLD rule the pages themselves use (see lib/seo/indexing.js),
 // so an under-threshold category/city/child never appears here even though
@@ -41,7 +46,12 @@ export default async function sitemap() {
   const lastModified = new Date();
   const supabase = createPublicClient();
 
-  const [{ data: businessRows }, { data: articleRows }, jobCategories, { data: jobRows }] = await Promise.all([
+  const [
+    { data: businessRows, error: businessError },
+    { data: articleRows, error: articleError },
+    jobCategories,
+    { data: jobRows, error: jobError },
+  ] = await Promise.all([
     supabase
       .from("businesses")
       .select("slug, created_at, category, subcategory, city, needs_review"),
@@ -50,9 +60,22 @@ export default async function sitemap() {
       .select("slug, created_at, published_at, category, approved, content")
       .eq("approved", true)
       .lte("published_at", new Date().toISOString()),
-    fetchActiveJobCategories(supabase),
-    supabase.from("jobs").select("*"),
+    fetchActiveJobCategories(supabase, { strict: true }),
+    // Only the columns the sitemap and the job filters read — not "*", which
+    // drags every job's full description along and makes the response large
+    // enough to get cut off on a slow connection.
+    supabase.from("jobs").select("slug, created_at, status, category_id, city"),
   ]);
+
+  // Never publish a sitemap built from a partial result: a failed query
+  // would otherwise look like "no businesses/articles/jobs" and silently
+  // drop every URL (and archive that depends on its counts) from the sitemap.
+  const failed = [
+    ["businesses", businessError],
+    ["articles", articleError],
+    ["jobs", jobError],
+  ].find(([, err]) => err);
+  if (failed) throw new Error(`sitemap: ${failed[0]} query failed: ${failed[1].message}`);
 
   const businesses = businessRows ?? [];
   const normalizedArticles = (articleRows ?? []).map(normalizeDbArticle);
