@@ -260,6 +260,8 @@ export default async function AdminPage({ searchParams }) {
           <Link href="/admin/jobs">Manage Jobs →</Link>
           {" · "}
           <Link href="/admin/job-categories">Manage Job Categories →</Link>
+          {" · "}
+          <Link href="/admin/ads">Advertisement Manager →</Link>
         </p>
 
         <div className="account-card">

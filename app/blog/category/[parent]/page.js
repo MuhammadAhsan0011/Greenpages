@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BlogCard from "../../../components/BlogCard";
@@ -139,6 +140,8 @@ export default async function BlogParentCategoryPage({ params }) {
           </div>
         </section>
       )}
+
+      <AdSlot slot="archive-top" contained />
 
       <section aria-labelledby="category-posts-heading">
         <div className="container">

@@ -1,3 +1,5 @@
+import AdSlot from "@/app/components/AdSlot";
+import { Fragment } from "react";
 import Link from "next/link";
 import BlogCard from "../components/BlogCard";
 import Button from "../components/Button";
@@ -99,11 +101,17 @@ export default async function BlogPage({ searchParams }) {
             {query ? `Search Results for "${query}"` : "All Articles"}
           </h2>
           {allPosts.length > 0 ? (
-            <div className="grid grid-3">
-              {allPosts.map((post) => (
-                <BlogCard key={post.slug} post={post} />
-              ))}
-            </div>
+            <>
+              <AdSlot slot="blog-list" />
+              <div className="grid grid-3">
+                {allPosts.map((post, index) => (
+                  <Fragment key={post.slug}>
+                    <BlogCard post={post} />
+                    {index === 2 && <AdSlot slot="blog-between-posts" className="ad-slot-row" />}
+                  </Fragment>
+                ))}
+              </div>
+            </>
           ) : (
             <p>
               No articles match &quot;{query}&quot;.{" "}

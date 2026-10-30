@@ -6415,3 +6415,254 @@ article.service-section h2 {
 .wizard-form:not(:has(input[name="requestedPlan"][value="featured"]:checked)) .plan-show-featured {
   display: none;
 }
+
+/* ---------- Advertisement Manager: own banners (AdSlot) ---------- */
+
+/* An <AdSlot> renders nothing at all until it has an ad that fits (see
+   app/components/AdSlot.js), so none of this ever shows as an empty box. */
+.ad-slot-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.ad-slot-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.ad-slot-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* max-width and aspect-ratio come from the saved banner size (inline), so the
+   space is reserved before the image loads and the page never jumps. */
+.ad-slot-link {
+  display: block;
+  width: 100%;
+  line-height: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+}
+
+.ad-slot-link img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* A banner between blog cards spans the whole grid row. */
+.ad-slot-row {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Advertisement Manager: admin screens ---------- */
+
+.admin-ads-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 20px;
+}
+
+.admin-ads-tab {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.admin-ads-tab-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.admin-ads-tab-back {
+  margin-left: auto;
+  background: transparent;
+  border-style: dashed;
+}
+
+.admin-ads-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.admin-ads-filters input[type="search"],
+.admin-ads-filters select {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  max-width: 100%;
+}
+
+.admin-ads-filters input[type="search"] {
+  flex: 1 1 200px;
+}
+
+.admin-ads-clear {
+  font-size: 0.9rem;
+}
+
+.admin-ads-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-ad-thumb {
+  width: 120px;
+  max-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #f3f6f3;
+}
+
+.admin-ad-thumb img {
+  display: block;
+  max-width: 100%;
+  max-height: 80px;
+  height: auto;
+  width: auto;
+}
+
+.ad-form-preview-box {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  background: #f3f6f3;
+}
+
+.ad-form-preview-box img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.ad-form-preview-box .ad-slot-label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.admin-ad-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.admin-ad-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.admin-ad-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.admin-ad-stat-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.admin-ad-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-ad-slot-list {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-ad-slot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-ad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-ad-fieldset {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.admin-ad-fieldset legend {
+  padding: 0 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.admin-ad-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 6px 16px;
+}
+
+@media (max-width: 900px) {
+  .admin-ad-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-ads-tab-back {
+    margin-left: 0;
+  }
+}

@@ -5,6 +5,7 @@ import Button from "../../components/Button";
 import Comments from "../../components/Comments";
 import RichArticleBody from "../../components/RichArticleBody";
 import SanitizedArticleBody from "../../components/SanitizedArticleBody";
+import ArticleHtmlWithAd from "../../components/ArticleHtmlWithAd";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import BlogSidebar from "../../components/BlogSidebar";
 import {
@@ -336,7 +337,7 @@ export default async function BlogPostPage({ params }) {
               {post.isUserSubmitted ? (
                 <article className="service-section">
                   {post.contentFormat === "html" ? (
-                    <SanitizedArticleBody html={post.rawContent} />
+                    <ArticleHtmlWithAd html={post.rawContent} />
                   ) : (
                     <RichArticleBody content={post.rawContent} />
                   )}

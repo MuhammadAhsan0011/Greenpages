@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
 import AdsterraBanner from "./components/AdsterraBanner";
+import AdSlot from "./components/AdSlot";
 import { SITE_URL } from "@/lib/site";
 
 const GA_MEASUREMENT_ID = "G-E22PSF8FHE";
@@ -146,6 +147,7 @@ export default function RootLayout({ children }) {
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        <AdSlot slot="header" contained />
         <Navbar />
         <div className="ad-top-banner">
           <AdsterraBanner
@@ -161,7 +163,9 @@ export default function RootLayout({ children }) {
             className="ad-banner-mobile"
           />
         </div>
+        <AdSlot slot="below-nav" contained />
         <main>{children}</main>
+        <AdSlot slot="above-footer" contained />
         <Footer />
         <ReturnVisitorReviewPopup />
       </body>

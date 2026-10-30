@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Image from "next/image";
 import Link from "next/link";
 import Button from "./components/Button";
@@ -425,6 +426,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <AdSlot slot="home-content" contained />
+
       {featuredBusinesses.length > 0 && (
         <section aria-labelledby="featured-businesses-heading">
           <div className="container">
@@ -484,6 +487,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <AdSlot slot="home-content-2" contained />
 
       <section className="section-alt" aria-labelledby="why-heading">
         <div className="container">

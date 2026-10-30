@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Button from "../../../components/Button";
@@ -120,6 +121,8 @@ export default async function CityDirectoryPage({ params }) {
           </div>
         </div>
       </section>
+
+      <AdSlot slot="archive-top" contained />
 
       <section aria-labelledby="listings-heading">
         <div className="container">
