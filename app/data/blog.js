@@ -4,113 +4,12 @@
 import { createTaxonomyHelpers } from "@/lib/taxonomy";
 import { normalizeSpaces } from "@/lib/text";
 
-export const posts = [
-  {
-  slug: "server-rendering-vs-client-rendering",
-  title: "Why Your Marketing Site Should Be Server-Rendered",
-  category: "Web Development",
-  date: "2026-08-20",
-  author: "Green Pages Team",
-  readTime: "8 min read",
-  excerpt:
-    "A client-rendered marketing site asks Google to run your JavaScript before it can read a word of your copy. Here is what each rendering strategy actually costs you.",
-  metaDescription:
-    "SSG vs SSR vs CSR vs ISR compared for marketing sites: what crawlers see, TTFB, Core Web Vitals impact and how to pick the right rendering strategy.",
-  sections: [
-    {
-      heading: "The problem with client-side rendering",
-      body: "A client-rendered site sends an almost empty HTML document and a large JavaScript bundle. The browser downloads that bundle, executes it, fetches your content over the network, and only then paints anything readable. For a visitor on a fast laptop this costs a second. For a crawler it costs a place in a rendering queue that can run days behind the initial crawl, and for a visitor on a mid-range phone over mobile data it costs a bounce. Nothing about your copy, your headings or your internal links exists in that first response — which means for a short window, the most important page on your site is a blank div.",
-    },
-    {
-      heading: "The four strategies, side by side",
-      body: "Every rendering approach is a trade between when the HTML gets built and how fresh it is. This is what each one gives you in practice on a marketing site.",
-      table: {
-        caption: "Rendering strategies compared for a marketing site",
-        headers: ["Strategy", "HTML built", "What a crawler receives", "TTFB", "Best for"],
-        rows: [
-          ["CSR (client-side)", "In the browser, per visit", "Empty shell + JS bundle", "Fast, but blank", "Logged-in dashboards"],
-          ["SSR (server-side)", "On the server, per request", "Full HTML", "Moderate", "Personalized or real-time pages"],
-          ["SSG (static)", "Once, at build time", "Full HTML", "Fastest", "Marketing and service pages"],
-          ["ISR (incremental)", "At build, revalidated on a timer", "Full HTML", "Fastest", "Blogs and large catalogues"],
-        ],
-      },
-    },
-    {
-      heading: "For marketing pages, static wins almost every time",
-      body: "Your homepage, service pages and about page change a few times a quarter. There is no reason to rebuild that HTML on every single request, and even less reason to rebuild it in each visitor's browser. Pre-render them at build time and every request becomes a static file read from a CDN edge node. The content is complete in the first response, Time to First Byte drops to whatever the network costs, and the server does no work at all. If a page needs to change more often than your deploy cadence, use ISR with a revalidation window rather than reaching for full server rendering.",
-    },
-    {
-      heading: "What this does to Core Web Vitals",
-      body: "Rendering strategy shows up directly in the three metrics Google reports. Largest Contentful Paint improves because the hero markup is in the first response instead of waiting behind a bundle. Cumulative Layout Shift improves because server-rendered markup can reserve space for images and fonts before paint. Interaction to Next Paint improves because you are hydrating two or three interactive components instead of an entire application. These are the thresholds to hold yourself to.",
-      table: {
-        caption: "Core Web Vitals thresholds (75th percentile of real users)",
-        headers: ["Metric", "What it measures", "Good", "Needs work", "Poor"],
-        rows: [
-          ["LCP", "Time until the main content paints", "≤ 2.5s", "2.5s – 4.0s", "> 4.0s"],
-          ["INP", "Responsiveness to interactions", "≤ 200ms", "200ms – 500ms", "> 500ms"],
-          ["CLS", "Unexpected layout movement", "≤ 0.1", "0.1 – 0.25", "> 0.25"],
-        ],
-      },
-    },
-    {
-      heading: "Ship JavaScript only where the page needs it",
-      body: "Server rendering stops paying off the moment you hydrate the whole page anyway. The discipline that matters is drawing the client boundary as tightly as possible: a contact form needs state and event handlers, a mobile menu needs a toggle, and a pricing calculator needs both. Headings, body copy, cards, breadcrumbs and footers need none of it. On the sites we build, the interactive surface is usually two or three components, which keeps the hydration cost close to zero while the rest of the page stays pure HTML.",
-    },
-    {
-      heading: "How to check what you are actually shipping",
-      body: "Open your page, disable JavaScript, and reload. Whatever remains is what a crawler is guaranteed to see without waiting in a render queue. Then view source — not the inspector, which shows the DOM after scripts run — and search for your H1 and your body copy. If they are missing from the raw HTML, your content is dependent on JavaScript execution. Finally, run the page through Lighthouse on mobile throttling and look at the JavaScript execution time rather than the score, because that number is what your visitors on real phones are paying.",
-    },
-    {
-      heading: "The migration is smaller than it looks",
-      body: "Most teams assume this means a rewrite. Usually it means moving the pages that matter for search onto a server-rendered framework first, leaving the application behind whatever login wall it already lives behind. Marketing pages have few dependencies and no session state, so they port quickly. The care goes into the URL inventory and redirect map, not the components.",
-    },
-  ],
-  relatedServiceSlug: "web-development",
-},
-  {
-  slug: "internal-linking-guide",
-  title: "Internal Linking: The Cheapest SEO Win Most Sites Ignore",
-  category: "SEO",
-  date: "2026-08-20",
-  author: "Green Pages Team",
-  readTime: "7 min read",
-  excerpt:
-    "Most sites publish good pages and then leave them stranded three clicks deep with no links pointing in. Here is how we audit and rebuild an internal link graph.",
-  metaDescription:
-    "A practical guide to internal linking for SEO: crawl depth, anchor text, hub-and-spoke structure and how to find orphan pages on your own site.",
-  sections: [
-    {
-      heading: "Why internal links move rankings",
-      body: "Every page on your site inherits authority from the pages that link to it. External backlinks bring that authority in, but internal links decide where it goes once it arrives. A page with strong external links and no outbound internal links is a reservoir with no pipes — the value sits there instead of lifting the commercial pages you actually want ranking. Internal links are also the primary way crawlers discover URLs. If nothing links to a page, search engines have to rely on your sitemap alone, which signals that even you do not consider the page important.",
-    },
-    {
-      heading: "Crawl depth is the number to watch first",
-      body: "Crawl depth is how many clicks a page sits from your homepage. As a rule of thumb, anything past three clicks gets crawled less often and ranks worse, and anything past five is effectively invisible. Run a crawl and sort by depth. On most sites we audit, the worst offenders are older blog posts and secondary service pages that were linked from a homepage module two redesigns ago and never relinked since. Pulling those pages back to depth two or three, usually through a hub page or a category index, is often the single fastest fix available.",
-    },
-    {
-      heading: "Find your orphan pages",
-      body: "An orphan page has zero internal links pointing at it. To find yours, export every URL from your sitemap, then export every URL your crawler actually reached by following links. The difference between those two lists is your orphan set. Expect surprises: landing pages built for a campaign, blog posts published straight from a CMS with no category assigned, and paginated archives are the usual suspects. Every orphan page is either worth linking to or worth removing — leaving it in limbo helps nobody.",
-    },
-    {
-      heading: "Write anchor text that describes the destination",
-      body: "Anchor text is one of the clearest signals you control about what a page is about. Use language a reader would actually search for. \"Read our guide to technical SEO audits\" tells both a person and a crawler what sits behind the link; \"click here\" and \"learn more\" tell them nothing. Vary the phrasing across pages rather than repeating one exact-match keyword everywhere, and never link a keyword to a page that does not genuinely answer it. Over-optimized anchors on a thin page are worse than no link at all.",
-    },
-    {
-      heading: "Build hub and spoke, not a random web",
-      body: "The structure that works reliably is a hub page covering a broad topic, with spoke pages covering the specific questions inside it. The hub links down to every spoke; each spoke links back up to the hub and sideways to two or three siblings. This shape gives crawlers an obvious path to every page, keeps depth shallow, and matches how readers actually move through a topic. It also makes new content easy to place: when you publish, you already know which hub it belongs to and which existing pages should link to it.",
-    },
-    {
-      heading: "Make linking part of publishing, not a cleanup project",
-      body: "Internal linking decays because it is treated as an audit task instead of a step in the workflow. Add two lines to your content brief: which existing pages must link to this new piece, and which pages this piece must link out to. Add the inbound links on the day you publish, not in a quarterly sweep. It takes ten minutes per article and removes almost every orphan page problem before it starts.",
-    },
-    {
-      heading: "How to measure whether it worked",
-      body: "Give it four to eight weeks and watch three things: average crawl depth across the site, the number of pages receiving at least one impression in Search Console, and impressions on the specific pages you added links to. Internal linking rarely produces a dramatic single-page jump. What it produces is a broader base of pages earning clicks, which is usually where the compounding traffic comes from.",
-    },
-  ],
-  relatedServiceSlug: "seo",
-},
-];
+// Hardcoded seed posts used to live here. The last two ("server-rendering-vs-client-rendering"
+// and "internal-linking-guide") were moved into the articles table on 2026-10-30
+// (docs/seo/static-posts-to-articles-migration.sql) so they can be edited from
+// /account/articles; same slugs, so their URLs are unchanged. Kept as an empty
+// array because the listing, sitemap and category pages still merge it with DB articles.
+export const posts = [];
 
 // Two-level blog taxonomy (20 parents / 183 children). description,
 // metaTitle and metaDescription are intentionally empty strings for now —

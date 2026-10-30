@@ -98,6 +98,13 @@ const nextConfig = {
         hostname: "kjukxykigizrdcwsxjyc.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        // Cover images for the blog posts migrated out of app/data/blog.js,
+        // served from this site's own /public/images/blog folder.
+        protocol: "https",
+        hostname: "www.greenpagespk.com",
+        pathname: "/images/blog/**",
+      },
     ],
   },
 };
