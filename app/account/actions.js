@@ -373,7 +373,12 @@ export async function upsertBusiness(nextStep, formData) {
       linkedin_url: linkedinUrl,
       whatsapp_url: whatsappUrl,
       about_html: aboutHtml,
-      ...(isNewRequestedPlan ? { requested_plan: requestedPlanChoice } : {}),
+      // A brand-new listing that asks for Verified/Premium is held back from the
+      // public directory (needs_review hides it everywhere lists/sitemap are
+      // built) until an admin decides: approve the plan, or - if payment never
+      // arrives - publish it on Basic with the unpaid data removed (see
+      // app/admin/actions.js).
+      ...(isNewRequestedPlan ? { requested_plan: requestedPlanChoice, needs_review: true } : {}),
     },
     { onConflict: "owner_id" }
   );

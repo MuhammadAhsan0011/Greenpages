@@ -714,8 +714,25 @@ export default async function BusinessProfilePage({ searchParams }) {
                       ✅
                     </span>
                     <span>
-                      Once submitted, your listing goes live immediately on the
-                      public directory — you can always come back and edit it later.
+                      <PlanGate
+                        isNew={isNew}
+                        entitled={false}
+                        locked={
+                          <>
+                            Once submitted, your listing goes live immediately on the
+                            public directory — you can always come back and edit it later.
+                          </>
+                        }
+                        unlocked={
+                          <>
+                            Once submitted, our team will review your Verified/Premium
+                            request and contact you about payment. Your listing goes live
+                            as soon as we confirm it — or on the Basic plan if payment
+                            isn&apos;t made, in which case the extra data you added for the
+                            upgrade is removed (you can add it again if you upgrade later).
+                          </>
+                        }
+                      />
                     </span>
                   </div>
 

@@ -96,7 +96,7 @@ async function findBusinessBySlugParam(supabase, slugParam, columns) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const supabase = createPublicClient();
-  const business = await findBusinessBySlugParam(supabase, slug, "slug, name, category, description, city");
+  const business = await findBusinessBySlugParam(supabase, slug, "slug, name, category, description, city, needs_review");
 
   if (!business) {
     return { title: "Business Not Found" };
@@ -110,6 +110,9 @@ export async function generateMetadata({ params }) {
     alternates: {
       canonical: `/businesses/${business.slug}`,
     },
+    // A listing held for admin review is kept out of lists and the sitemap;
+    // keep it out of search results too if someone has the direct link.
+    ...(business.needs_review && { robots: { index: false, follow: true } }),
   };
 }
 
@@ -277,6 +280,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
   const openNow = isOpenNow(hoursToday, nowMinutes);
 
   const relatedBusinesses = (relatedRaw ?? [])
+    .filter((related) => !related.needs_review)
     .sort((a, b) => (PLAN_RANK[a.plan] ?? 2) - (PLAN_RANK[b.plan] ?? 2))
     .slice(0, 4);
 

@@ -5,6 +5,7 @@ import { deletePublicImage } from "@/utils/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { PLAN_IDS, PUBLISHER_PLAN_IDS } from "../data/plans";
+import { trimBusinessToPlan } from "@/lib/businessPlanTrim";
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -19,28 +20,66 @@ async function requireAdmin() {
   return supabase;
 }
 
-// Approves a pending request: copies requested_plan into plan and clears
-// the request. businessId/plan are pre-bound to the form action (see
-// app/admin/page.js), so the submitted form only needs to identify itself.
+// Approves a pending request: copies requested_plan into plan, clears the
+// request, and publishes the listing if it was being held for this decision
+// (needs_review). The owner's saved Verified/Premium data then shows by itself.
+// businessId/plan are pre-bound to the form action (see app/admin/page.js),
+// so the submitted form only needs to identify itself.
 export async function approveUpgrade(businessId, plan) {
   const supabase = await requireAdmin();
 
   await supabase
     .from("businesses")
-    .update({ plan, requested_plan: null })
+    .update({ plan, requested_plan: null, needs_review: false })
     .eq("id", businessId);
 
   revalidatePath("/admin");
   revalidatePath("/businesses");
 }
 
-// Declines a pending request without changing the current plan.
+// Declines a pending request - the owner didn't pay. The listing goes live on
+// the plan it actually has, and everything the owner filled in for the
+// requested plan is DELETED (columns and storage files) rather than kept, so
+// unpaid data doesn't accumulate. If they pay later they add it again.
 export async function dismissRequest(businessId) {
   const supabase = await requireAdmin();
 
-  await supabase.from("businesses").update({ requested_plan: null }).eq("id", businessId);
+  const { data: business } = await supabase
+    .from("businesses")
+    .select(
+      "plan, photos, cover_image_url, facebook_url, instagram_url, linkedin_url, whatsapp_url, about_html"
+    )
+    .eq("id", businessId)
+    .maybeSingle();
+  if (!business) return;
+
+  const { update, removedFiles } = trimBusinessToPlan(business, business.plan);
+
+  const { error } = await supabase
+    .from("businesses")
+    .update({ ...update, requested_plan: null, needs_review: false })
+    .eq("id", businessId);
+  // Only delete the files once the row no longer points at them.
+  if (error) return;
+
+  for (const url of removedFiles) {
+    await deletePublicImage(supabase, url);
+  }
 
   revalidatePath("/admin");
+  revalidatePath("/businesses");
+}
+
+// Publishes a listing that's being held (needs_review) without touching its
+// plan or data - the way out for a held listing whose upgrade request was
+// already cleared some other way.
+export async function publishListing(businessId) {
+  const supabase = await requireAdmin();
+
+  await supabase.from("businesses").update({ needs_review: false }).eq("id", businessId);
+
+  revalidatePath("/admin");
+  revalidatePath("/businesses");
 }
 
 // Manual override — set any business's plan directly, for corrections or

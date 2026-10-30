@@ -56,6 +56,8 @@ export default async function AccountPage() {
               <p className="form-success pricing-alert">
                 Your request to upgrade to {PLAN_LABELS[business.requested_plan]} is
                 pending approval. We&apos;ll contact you to arrange payment.
+                {business.needs_review &&
+                  " Your listing isn't public yet — it goes live once we confirm your upgrade, or on the Basic plan if payment isn't made (extra data you added for the upgrade is then removed, and you can add it again if you upgrade later)."}
               </p>
             )}
             {business.plan === "free" && !business.requested_plan && (

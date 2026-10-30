@@ -7,6 +7,7 @@ import { PLAN_LABELS, PUBLISHER_PLAN_LABELS, PUBLISHER_PLAN_IDS } from "../data/
 import {
   approveUpgrade,
   dismissRequest,
+  publishListing,
   setPlan,
   approvePublisherUpgrade,
   dismissPublisherRequest,
@@ -299,8 +300,8 @@ export default async function AdminPage({ searchParams }) {
                           </SubmitButton>
                         </form>
                         <form action={dismissRequest.bind(null, business.id)}>
-                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Dismissing…">
-                            Dismiss
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Publishing…">
+                            Not paid — publish as {PLAN_LABELS[business.plan]}
                           </SubmitButton>
                         </form>
                       </td>
@@ -573,6 +574,13 @@ export default async function AdminPage({ searchParams }) {
                       <span className={business.needs_review ? "admin-status-review" : "admin-status-live"}>
                         {business.needs_review ? "Needs Review" : "Live"}
                       </span>
+                      {business.needs_review && (
+                        <form action={publishListing.bind(null, business.id)} className="admin-inline-form">
+                          <SubmitButton className="btn btn-secondary admin-btn-sm" pendingLabel="Publishing…">
+                            Publish
+                          </SubmitButton>
+                        </form>
+                      )}
                     </td>
                     <td>{upgradeStatusLabel(business)}</td>
                     <td>
