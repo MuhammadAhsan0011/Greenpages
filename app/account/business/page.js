@@ -19,6 +19,8 @@ import {
   PLAN_LABELS,
   getPlanCapabilities,
   getPhotoLimit,
+  getEntitledPlan,
+  PHOTO_LIMITS,
   isPaidPlan as computeIsPaidPlan,
 } from "../../data/plans";
 
@@ -68,6 +70,20 @@ function LockedNotice({ feature }) {
   );
 }
 
+// A brand-new listing picks its plan on step 1 of this same form, so the server
+// can't know yet which version to show: it renders both and CSS (.plan-gate-*
+// in globals.css) shows the one matching the selected plan radio. An existing
+// listing already knows, so it renders just the right one.
+function PlanGate({ isNew, entitled, unlocked, locked }) {
+  if (!isNew) return entitled ? unlocked : locked;
+  return (
+    <>
+      <div className="plan-gate-unlocked">{unlocked}</div>
+      <div className="plan-gate-locked">{locked}</div>
+    </>
+  );
+}
+
 // Server Component — the form posts directly to a Server Action
 // (upsertBusiness), so no client-side JavaScript is needed to submit it.
 // The 5-step wizard is a pure-CSS radio-button widget (see .wizard-step-*
@@ -108,9 +124,15 @@ export default async function BusinessProfilePage({ searchParams }) {
     : defaultStepId;
 
   const currentPlan = business?.plan ?? "free";
-  const isPaidPlan = computeIsPaidPlan(currentPlan);
-  const capabilities = getPlanCapabilities(currentPlan);
-  const photoLimit = getPhotoLimit(currentPlan);
+  // The plan whose fields the owner may fill in: their real plan, or the one
+  // they've asked for. Data entered for a requested plan is saved but stays
+  // hidden on the public listing until an admin activates that plan.
+  const entitledPlan = getEntitledPlan(currentPlan, business?.requested_plan);
+  const isPaidPlan = computeIsPaidPlan(entitledPlan);
+  const capabilities = getPlanCapabilities(entitledPlan);
+  const photoLimit = getPhotoLimit(entitledPlan);
+  const isAwaitingUpgrade = Boolean(business) && entitledPlan !== currentPlan;
+  const isNew = !business;
   const selectedFeatures = (business?.features ?? "")
     .split(",")
     .map((f) => f.trim())
@@ -167,6 +189,14 @@ export default async function BusinessProfilePage({ searchParams }) {
           </h2>
 
           {error && <p className="form-error">{error}</p>}
+
+          {isAwaitingUpgrade && (
+            <p className="locked-field">
+              Your {PLAN_LABELS[entitledPlan]} upgrade is awaiting activation. You can fill in
+              its extra features now — they&apos;re saved, but your public listing stays on
+              the {PLAN_LABELS[currentPlan]} plan and only shows them once we activate your upgrade.
+            </p>
+          )}
 
           <form action={upsertBusiness.bind(null, null)} className="wizard-form">
             {STEPS.map((step) => (
@@ -255,7 +285,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                     <p className="editor-hint">
                       Picking Verified or Premium doesn&apos;t charge you
                       anything here — it just lets our team know to reach out
-                      about payment. See{" "}
+                      about payment. You can fill in that plan&apos;s extra
+                      features (cover image, social links, About, more photos)
+                      right away: they&apos;re saved, but your listing goes
+                      live on the Basic plan and only shows them once we
+                      activate your upgrade. See{" "}
                       <Link href="/pricing">Pricing</Link> for full plan
                       details.
                     </p>
@@ -361,9 +395,11 @@ export default async function BusinessProfilePage({ searchParams }) {
                     </div>
                     <div className="form-field">
                       <label>Cover Image</label>
-                      {!capabilities.coverImage ? (
-                        <LockedNotice feature="Cover image upload" />
-                      ) : (
+                      <PlanGate
+                        isNew={isNew}
+                        entitled={capabilities.coverImage}
+                        locked={<LockedNotice feature="Cover image upload" />}
+                        unlocked={
                         <div className="image-upload-box">
                           {business?.cover_image_url ? (
                             <div className="logo-preview-row">
@@ -386,27 +422,50 @@ export default async function BusinessProfilePage({ searchParams }) {
                           )}
                           <CoverImageUploadField name="coverImage" label="Upload Cover Image" />
                         </div>
-                      )}
+                        }
+                      />
                     </div>
                   </div>
 
                   <div className="form-field">
                     <label>Business Photos</label>
-                    <PhotoDropzone
-                      name="photos"
-                      existingFieldName="existingPhotos"
-                      existingPhotos={existingPhotos}
-                      max={photoLimit}
-                    />
-                    <p className="editor-hint">
-                      Your {PLAN_LABELS[currentPlan]} plan allows up to {photoLimit} photo
-                      {photoLimit === 1 ? "" : "s"}.{" "}
-                      {currentPlan !== "featured" && (
-                        <>
-                          <Link href="/pricing">Upgrade</Link> for more.
-                        </>
-                      )}
-                    </p>
+                    {isNew ? (
+                      // One dropzone per plan (max differs); CSS shows the one
+                      // for the plan picked on step 1. The hidden ones stay empty.
+                      ["free", "verified", "featured"].map((planId) => (
+                        <div className={"plan-show-" + planId} key={planId}>
+                          <PhotoDropzone
+                            name="photos"
+                            existingFieldName="existingPhotos"
+                            existingPhotos={[]}
+                            max={PHOTO_LIMITS[planId]}
+                          />
+                          <p className="editor-hint">
+                            The {PLAN_LABELS[planId]} plan allows up to {PHOTO_LIMITS[planId]} photo
+                            {PHOTO_LIMITS[planId] === 1 ? "" : "s"}.
+                            {planId !== "free" && " Photos beyond the first appear publicly once your upgrade is activated."}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <PhotoDropzone
+                          name="photos"
+                          existingFieldName="existingPhotos"
+                          existingPhotos={existingPhotos}
+                          max={photoLimit}
+                        />
+                        <p className="editor-hint">
+                          Your {PLAN_LABELS[entitledPlan]} plan allows up to {photoLimit} photo
+                          {photoLimit === 1 ? "" : "s"}.{" "}
+                          {entitledPlan !== "featured" && (
+                            <>
+                              <Link href="/pricing">Upgrade</Link> for more.
+                            </>
+                          )}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   <div className="wizard-nav-buttons">
@@ -473,7 +532,11 @@ export default async function BusinessProfilePage({ searchParams }) {
 
                   <div className="account-card">
                     <h2>Social Links</h2>
-                    {isPaidPlan ? (
+                    <PlanGate
+                      isNew={isNew}
+                      entitled={isPaidPlan}
+                      locked={<LockedNotice feature="Social links" />}
+                      unlocked={
                       <>
                         <div className="form-field">
                           <label htmlFor="facebookUrl">Facebook (optional)</label>
@@ -510,9 +573,8 @@ export default async function BusinessProfilePage({ searchParams }) {
                           <WhatsAppUrlField defaultValue={business?.whatsapp_url} />
                         </div>
                       </>
-                    ) : (
-                      <LockedNotice feature="Social links" />
-                    )}
+                      }
+                    />
                   </div>
 
                   <div className="wizard-nav-buttons">
@@ -613,11 +675,12 @@ export default async function BusinessProfilePage({ searchParams }) {
                   <p className="wizard-panel-subtitle">Write about you and your company</p>
 
                   <div className="form-field">
-                    {isPaidPlan ? (
-                      <RichTextEditor name="about" defaultValue={business?.about_html ?? ""} />
-                    ) : (
-                      <LockedNotice feature="The rich About editor" />
-                    )}
+                    <PlanGate
+                      isNew={isNew}
+                      entitled={isPaidPlan}
+                      locked={<LockedNotice feature="The rich About editor" />}
+                      unlocked={<RichTextEditor name="about" defaultValue={business?.about_html ?? ""} />}
+                    />
                   </div>
 
                   <div className="wizard-nav-buttons">

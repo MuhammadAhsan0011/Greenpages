@@ -7,7 +7,7 @@ import { sanitizeArticleHtml } from "@/utils/sanitizeHtml";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getParent, getChild } from "../data/businessCategories";
-import { isPaidPlan as computeIsPaidPlan, getPlanCapabilities, getPhotoLimit, PLAN_LABELS } from "../data/plans";
+import { isPaidPlan as computeIsPaidPlan, getPlanCapabilities, getPhotoLimit, getEntitledPlan, PLAN_LABELS } from "../data/plans";
 
 function slugify(name) {
   return name
@@ -201,14 +201,21 @@ export async function upsertBusiness(nextStep, formData) {
   const { data: existing } = await supabase
     .from("businesses")
     .select(
-      "slug, logo_url, cover_image_url, photos, plan, facebook_url, instagram_url, linkedin_url, whatsapp_url, about_html"
+      "slug, logo_url, cover_image_url, photos, plan, requested_plan, facebook_url, instagram_url, linkedin_url, whatsapp_url, about_html"
     )
     .eq("owner_id", user.id)
     .maybeSingle();
 
+  // What the owner may FILL IN is decided by the plan they have OR have
+  // asked for (the one picked on the wizard's plan step for a new listing, or
+  // an earlier request from /pricing) — not by the plan they're on. Their
+  // Verified/Premium data is saved right away but stays hidden on the public
+  // listing until an admin actually sets businesses.plan, at which point it
+  // appears by itself (the public page gates every paid field on the real plan).
   const currentPlan = existing?.plan ?? "free";
-  const isPaidPlan = computeIsPaidPlan(currentPlan);
-  const capabilities = getPlanCapabilities(currentPlan);
+  const entitledPlan = getEntitledPlan(currentPlan, existing ? existing.requested_plan : requestedPlanChoice);
+  const isPaidPlan = computeIsPaidPlan(entitledPlan);
+  const capabilities = getPlanCapabilities(entitledPlan);
 
   // Generated once, on first creation, and never touched again — even if
   // the name changes later, so a shared /businesses/[slug] link never
@@ -273,7 +280,7 @@ export async function upsertBusiness(nextStep, formData) {
   // photos the owner kept via a hidden "existingPhotos" field; anything
   // from the old list that isn't in that set gets its storage file cleaned
   // up below, same as logo/cover.
-  const photoLimit = getPhotoLimit(currentPlan);
+  const photoLimit = getPhotoLimit(entitledPlan);
   const existingPhotoUrls = (existing?.photos ?? "")
     .split(",")
     .map((url) => url.trim())
@@ -288,7 +295,7 @@ export async function upsertBusiness(nextStep, formData) {
   if (keptPhotoUrls.length + newPhotoFiles.length > photoLimit) {
     redirect(
       `/account/business?error=${encodeURIComponent(
-        `Your ${PLAN_LABELS[currentPlan]} plan allows up to ${photoLimit} photo${photoLimit === 1 ? "" : "s"} — remove some or upgrade your package to add more.`
+        `Your ${PLAN_LABELS[entitledPlan]} plan allows up to ${photoLimit} photo${photoLimit === 1 ? "" : "s"} — remove some or upgrade your package to add more.`
       )}`
     );
   }

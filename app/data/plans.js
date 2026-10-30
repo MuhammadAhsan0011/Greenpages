@@ -84,6 +84,16 @@ export function getPlanCapabilities(plan) {
   return PLAN_CAPABILITIES[plan] ?? PLAN_CAPABILITIES.free;
 }
 
+// The plan whose features a listing owner may FILL IN. A Basic listing that has
+// asked for Verified/Premium (businesses.requested_plan) can already enter that
+// plan's data — it is saved, but only shown publicly once an admin actually
+// sets businesses.plan (see the public listing page, which gates on plan).
+export function getEntitledPlan(plan, requestedPlan) {
+  const current = PLAN_RANK[plan] === undefined ? "free" : plan;
+  if (requestedPlan !== "verified" && requestedPlan !== "featured") return current;
+  return PLAN_RANK[requestedPlan] < PLAN_RANK[current] ? requestedPlan : current;
+}
+
 export function getPhotoLimit(plan) {
   return PHOTO_LIMITS[plan] ?? PHOTO_LIMITS.free;
 }

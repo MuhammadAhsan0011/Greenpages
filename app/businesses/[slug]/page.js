@@ -16,7 +16,7 @@ import { createPublicClient } from "@/utils/supabase/public";
 import { resolveCategoryNodes } from "../../data/businessCategories";
 import { PK_CITIES } from "../../data/directoryCities";
 import { normalizeSpaces } from "@/lib/text";
-import { PLAN_RANK, PLAN_LABELS, isPaidPlan as computeIsPaidPlan } from "../../data/plans";
+import { PLAN_RANK, PLAN_LABELS, isPaidPlan as computeIsPaidPlan, getPlanCapabilities, getPhotoLimit } from "../../data/plans";
 
 export const revalidate = 60;
 
@@ -143,6 +143,10 @@ export default async function BusinessProfilePage({ params, searchParams }) {
   await supabase.rpc("increment_business_view", { business_id: business.id });
 
   const isPaidPlan = computeIsPaidPlan(business.plan);
+  // Owners can fill in Verified/Premium fields while their upgrade is only
+  // requested; those stay saved but hidden here until businesses.plan is
+  // actually upgraded, so every paid field below is gated on the real plan.
+  const capabilities = getPlanCapabilities(business.plan);
 
   const [{ data: articles }, { data: relatedRaw }, { data: reviewData }] = await Promise.all([
     supabase
@@ -252,7 +256,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
         </svg>
       ),
     },
-  ].filter((link) => link.url);
+  ].filter((link) => capabilities.socialLinks && link.url);
 
   const featureList = (business.features ?? "")
     .split(",")
@@ -266,7 +270,8 @@ export default async function BusinessProfilePage({ params, searchParams }) {
   const galleryImages = (business.photos ?? "")
     .split(",")
     .map((url) => url.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, getPhotoLimit(business.plan));
   const { weekday: todayKey, minutes: nowMinutes } = getKarachiNow();
   const hoursToday = business.business_hours?.[todayKey];
   const openNow = isOpenNow(hoursToday, nowMinutes);
@@ -391,7 +396,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
               </div>
 
               <div className="listing-actions">
-                {(business.phone || business.whatsapp_url) && (
+                {(business.phone || (capabilities.socialLinks && business.whatsapp_url)) && (
                   <a
                     href={business.phone ? `tel:${business.phone}` : business.whatsapp_url}
                     className="btn btn-primary"
@@ -465,7 +470,7 @@ export default async function BusinessProfilePage({ params, searchParams }) {
             <div className="listing-main">
               <div className="profile-tab-panel" id="panel-detail-overview">
                 <h2>About This Business</h2>
-                {business.about_html ? (
+                {capabilities.aboutEditor && business.about_html ? (
                   <SanitizedArticleBody html={business.about_html} />
                 ) : (
                   <p>{business.description}</p>
