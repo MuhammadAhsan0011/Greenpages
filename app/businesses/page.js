@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -412,21 +413,32 @@ export default async function BusinessesPage({ searchParams }) {
         </div>
       </section>
 
-      <section className="section-alt" aria-labelledby="browse-city-heading">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-eyebrow">Browse by City</span>
-            <h2 id="browse-city-heading">Directories by City</h2>
-          </div>
-          <nav className="directory-browse-links" aria-label="Browse by city">
-            {PK_CITIES.map((cityOption) => (
-              <Link href={`/businesses/city/${cityOption.slug}`} key={cityOption.slug}>
-                {cityOption.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </section>
+      {/* The "Browse by City" row is the fallback: it is what the page (and
+          crawlers, and anyone without JS) always gets, and what stays whenever
+          no banner is eligible. While the scrolling-row placement has ads, the
+          row of banners takes its place. City links are still on every category
+          page, listing page and the sitemap. */}
+      <AdSlot
+        slot="businesses-ticker"
+        contained
+        fallback={
+          <section className="section-alt" aria-labelledby="browse-city-heading">
+            <div className="container">
+              <div className="section-header">
+                <span className="section-eyebrow">Browse by City</span>
+                <h2 id="browse-city-heading">Directories by City</h2>
+              </div>
+              <nav className="directory-browse-links" aria-label="Browse by city">
+                {PK_CITIES.map((cityOption) => (
+                  <Link href={`/businesses/city/${cityOption.slug}`} key={cityOption.slug}>
+                    {cityOption.name}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </section>
+        }
+      />
 
       <section aria-labelledby="browse-category-heading">
         <div className="container">

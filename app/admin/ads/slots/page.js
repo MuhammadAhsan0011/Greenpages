@@ -3,7 +3,7 @@ import AdsNav from "../AdsNav";
 import MigrationNotice from "../MigrationNotice";
 import { requireAdminPage } from "../guard";
 import { saveSlot } from "../actions";
-import { AD_ROTATIONS, AD_SIZE_OPTIONS } from "@/lib/ads";
+import { AD_DISPLAY_MODES, AD_ROTATIONS, AD_SIZE_OPTIONS, MAX_ADS_PER_SLOT } from "@/lib/ads";
 
 export const metadata = {
   title: "Advertisement Placement Settings",
@@ -93,7 +93,7 @@ export default async function AdSlotsPage({ searchParams }) {
                 <div className="form-row">
                   <div className="form-field">
                     <label htmlFor={`max-${slot.key}`}>Maximum advertisements at once</label>
-                    <input id={`max-${slot.key}`} name="maxAds" type="number" min="1" max="6" defaultValue={slot.max_ads} />
+                    <input id={`max-${slot.key}`} name="maxAds" type="number" min="1" max={MAX_ADS_PER_SLOT} defaultValue={slot.max_ads} />
                   </div>
                   <div className="form-field">
                     <label htmlFor={`rotation-${slot.key}`}>Rotation &amp; priority</label>
@@ -105,6 +105,20 @@ export default async function AdSlotsPage({ searchParams }) {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor={`mode-${slot.key}`}>Display style</label>
+                  <select id={`mode-${slot.key}`} name="displayMode" defaultValue={slot.display_mode ?? "static"}>
+                    {AD_DISPLAY_MODES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="editor-hint">
+                    A scrolling row shows every eligible ad (up to the maximum above) and ignores rotation.
+                  </p>
                 </div>
 
                 <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Saving…">

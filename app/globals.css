@@ -6666,3 +6666,83 @@ article.service-section h2 {
     margin-left: 0;
   }
 }
+
+/* Scrolling-row ("ticker") placement - banners loop sideways, pausing while the
+   cursor is over the row or something in it has focus. */
+.ad-ticker-band {
+  padding: 14px 0 18px;
+  background: #f3f6f3;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ad-ticker {
+  margin-top: 6px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+
+/* Two identical halves side by side; sliding exactly one half left and
+   starting over is what makes the loop seamless. The duration is set inline
+   from the row's length, so the speed stays the same however many ads there are. */
+.ad-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ad-ticker-scroll linear infinite;
+}
+
+.ad-ticker:hover .ad-ticker-track,
+.ad-ticker:focus-within .ad-ticker-track {
+  animation-play-state: paused;
+}
+
+.ad-ticker-half {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.ad-ticker-item {
+  display: block;
+  flex: none;
+  line-height: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+}
+
+.ad-ticker-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+@keyframes ad-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* "Reduce motion": no animation - a normal row the visitor scrolls sideways. */
+@media (prefers-reduced-motion: reduce) {
+  .ad-ticker {
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .ad-ticker-track {
+    animation: none;
+  }
+
+  .ad-ticker-half[aria-hidden="true"] {
+    display: none;
+  }
+}

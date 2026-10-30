@@ -3,18 +3,21 @@
 // One placement for the site's OWN banners (affiliate / sponsored / house) -
 // completely separate from the Adsterra units, which are left as they are.
 // Drop <AdSlot slot="blog-sidebar" /> anywhere; what it can show, on which
-// devices and how it rotates is configured in /admin/ads/slots.
+// devices, how it rotates and whether it is a static banner or a scrolling row
+// is configured in /admin/ads/slots.
 //
 // It renders NOTHING until it knows there is an ad that fits: no empty box,
 // no reserved gap, no broken image. A hidden <span> stays behind only so the
-// available width can be measured.
+// available width can be measured. A placement that REPLACES existing content
+// passes it as `fallback`: that content is what the server renders and what
+// stays whenever there is no ad, so crawlers and no-JS visitors always get it.
 //
 // Client-side on purpose: ad choice, rotation, device and width fitting and
 // viewability tracking all depend on the visitor's browser, and it keeps the
 // pages themselves static (the ad list comes from /api/ads, cached ~1 minute).
 
 import { useEffect, useRef, useState } from "react";
-import { selectAds, deviceBucket, adDisclosureLabel } from "@/lib/ads";
+import { selectAds, selectTickerAds, tickerLayout, deviceBucket, adDisclosureLabel } from "@/lib/ads";
 
 const CONFIG_TTL_MS = 60 * 1000;
 let configCache = { at: 0, promise: null };
@@ -97,6 +100,10 @@ function useViewableImpression(ref, adId, slot) {
   }, [ref, adId, slot]);
 }
 
+function clickHref(ad, slot) {
+  return `/ad/click/${ad.id}?s=${encodeURIComponent(slot)}`;
+}
+
 function AdItem({ ad, slot, onFail }) {
   const ref = useRef(null);
   useViewableImpression(ref, ad.id, slot);
@@ -105,7 +112,7 @@ function AdItem({ ad, slot, onFail }) {
     <div className="ad-slot-item" ref={ref}>
       <span className="ad-slot-label">{adDisclosureLabel(ad.adType)}</span>
       <a
-        href={`/ad/click/${ad.id}?s=${encodeURIComponent(slot)}`}
+        href={clickHref(ad, slot)}
         target={ad.newTab ? "_blank" : undefined}
         rel="sponsored nofollow noopener noreferrer"
         className="ad-slot-link"
@@ -129,9 +136,80 @@ function AdItem({ ad, slot, onFail }) {
   );
 }
 
-export default function AdSlot({ slot, contained = false, className = "" }) {
+// One banner inside the scrolling row. `duplicate` marks the second, repeated
+// half of the loop: it is only there to make the loop seamless, so it is hidden
+// from screen readers and keyboard focus.
+function TickerItem({ item, slot, duplicate, onFail }) {
+  const ref = useRef(null);
+  useViewableImpression(ref, item.ad.id, slot);
+
+  return (
+    <a
+      ref={ref}
+      href={clickHref(item.ad, slot)}
+      target={item.ad.newTab ? "_blank" : undefined}
+      rel="sponsored nofollow noopener noreferrer"
+      className="ad-ticker-item"
+      style={{ width: item.width, height: item.height }}
+      tabIndex={duplicate ? -1 : undefined}
+      aria-label={duplicate ? undefined : `${item.ad.name} (sponsored)`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size banner */}
+      <img
+        src={item.ad.image}
+        alt={duplicate ? "" : item.ad.name}
+        width={item.width}
+        height={item.height}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        onError={() => onFail(item.ad.id)}
+      />
+    </a>
+  );
+}
+
+// A looping row of banners. CSS does the movement (.ad-ticker-track), it
+// pauses while the cursor is over it or something inside has focus, and with
+// "reduce motion" on it becomes a plain row the visitor scrolls themselves.
+function AdTicker({ ads, slot, width, onFail }) {
+  const layout = tickerLayout(ads, width);
+  if (layout.items.length === 0) return null;
+
+  const half = (isDuplicate) => (
+    <div className="ad-ticker-half" aria-hidden={isDuplicate ? "true" : undefined} style={{ gap: layout.gap, paddingRight: layout.gap }}>
+      {Array.from({ length: layout.repeats }).flatMap((_, repeat) =>
+        layout.items.map((item) => (
+          <TickerItem
+            key={`${item.ad.id}-${repeat}`}
+            item={item}
+            slot={slot}
+            duplicate={isDuplicate || repeat > 0}
+            onFail={onFail}
+          />
+        ))
+      )}
+    </div>
+  );
+
+  return (
+    <div className="ad-ticker-band" data-ad-placement={slot}>
+      <div className="container">
+        <span className="ad-slot-label">Sponsored</span>
+        <div className="ad-ticker" role="region" aria-label="Advertisements">
+          <div className="ad-ticker-track" style={{ animationDuration: `${layout.duration}s` }}>
+            {half(false)}
+            {half(true)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdSlot({ slot, contained = false, className = "", fallback = null }) {
   const anchorRef = useRef(null);
-  const [ads, setAds] = useState([]);
+  const [view, setView] = useState({ mode: "static", ads: [], width: 0 });
   const [failed, setFailed] = useState({});
 
   useEffect(() => {
@@ -149,13 +227,21 @@ export default function AdSlot({ slot, contained = false, className = "" }) {
         ? Math.min(viewport - 32, 1168)
         : anchor.parentElement?.clientWidth || viewport;
 
-      const picked = selectAds(config.slots?.[slot], {
-        device: deviceBucket(viewport),
+      const slotConfig = config.slots?.[slot];
+      const device = deviceBucket(viewport);
+
+      if (slotConfig?.mode === "ticker") {
+        setView({ mode: "ticker", ads: selectTickerAds(slotConfig, { device }), width: availableWidth });
+        return;
+      }
+
+      const picked = selectAds(slotConfig, {
+        device,
         availableWidth,
         lastShownId: readLastShown(slot),
       });
       if (picked.length > 0) writeLastShown(slot, picked[0].id);
-      setAds(picked);
+      setView({ mode: "static", ads: picked, width: availableWidth });
     }
 
     choose();
@@ -178,25 +264,28 @@ export default function AdSlot({ slot, contained = false, className = "" }) {
     };
   }, [slot, contained]);
 
-  const visible = ads.filter((ad) => !failed[ad.id]);
+  const visible = view.ads.filter((ad) => !failed[ad.id]);
+  const onFail = (id) => setFailed((previous) => ({ ...previous, [id]: true }));
+
+  let content = fallback;
+  if (visible.length > 0 && view.mode === "ticker") {
+    content = <AdTicker ads={visible} slot={slot} width={view.width} onFail={onFail} />;
+  } else if (visible.length > 0) {
+    content = (
+      <div className={`${contained ? "container " : ""}ad-slot-wrap ${className}`.trim()}>
+        <aside className="ad-slot" aria-label="Advertisement" data-ad-placement={slot}>
+          {visible.map((ad) => (
+            <AdItem key={ad.id} ad={ad} slot={slot} onFail={onFail} />
+          ))}
+        </aside>
+      </div>
+    );
+  }
 
   return (
     <>
       <span hidden ref={anchorRef} data-ad-slot={slot} />
-      {visible.length > 0 && (
-        <div className={`${contained ? "container " : ""}ad-slot-wrap ${className}`.trim()}>
-          <aside className="ad-slot" aria-label="Advertisement" data-ad-placement={slot}>
-            {visible.map((ad) => (
-              <AdItem
-                key={ad.id}
-                ad={ad}
-                slot={slot}
-                onFail={(id) => setFailed((previous) => ({ ...previous, [id]: true }))}
-              />
-            ))}
-          </aside>
-        </div>
-      )}
+      {content}
     </>
   );
 }

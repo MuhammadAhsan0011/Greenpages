@@ -10,6 +10,8 @@ import {
   AD_SIZE_OPTIONS,
   AD_TYPES,
   AD_ROTATIONS,
+  AD_DISPLAY_MODES,
+  MAX_ADS_PER_SLOT,
   AD_ASPECT_TOLERANCE,
   ALLOWED_AD_IMAGE_TYPES,
   MAX_AD_IMAGE_BYTES,
@@ -255,8 +257,10 @@ export async function saveSlot(formData) {
   const key = formData.get("key")?.toString();
   const maxAds = Number.parseInt(formData.get("maxAds")?.toString() ?? "", 10);
   const rotation = formData.get("rotation")?.toString();
-  if (!key || !Number.isInteger(maxAds) || maxAds < 1 || maxAds > 6) return;
+  if (!key || !Number.isInteger(maxAds) || maxAds < 1 || maxAds > MAX_ADS_PER_SLOT) return;
   if (!AD_ROTATIONS.some((option) => option.value === rotation)) return;
+  const displayMode = formData.get("displayMode")?.toString();
+  if (!AD_DISPLAY_MODES.some((option) => option.value === displayMode)) return;
 
   const allowedSizes = formData.getAll("allowedSizes").map(String).filter((size) => SIZE_KEYS.includes(size));
 
@@ -270,6 +274,7 @@ export async function saveSlot(formData) {
       show_mobile: formData.get("showMobile") === "yes",
       max_ads: maxAds,
       rotation,
+      display_mode: displayMode,
       updated_at: new Date().toISOString(),
     })
     .eq("key", key);
