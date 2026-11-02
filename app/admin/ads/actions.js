@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { uploadPublicImage, deletePublicImage } from "@/utils/storage";
 import { clearAdConfigCache } from "@/lib/adsServer";
+import { fitBannerImage } from "@/lib/adImage";
 import {
   AD_SIZES,
   AD_SIZE_OPTIONS,
@@ -12,7 +13,6 @@ import {
   AD_ROTATIONS,
   AD_DISPLAY_MODES,
   MAX_ADS_PER_SLOT,
-  AD_ASPECT_TOLERANCE,
   ALLOWED_AD_IMAGE_TYPES,
   MAX_AD_IMAGE_BYTES,
   isSafeTargetUrl,
@@ -71,8 +71,8 @@ async function readAdForm(supabase, formData, existing) {
   }
 
   // ---- image ----
-  const file = formData.get("image");
-  const hasNewFile = file instanceof File && file.size > 0;
+  let file = formData.get("image");
+  let hasNewFile = file instanceof File && file.size > 0;
   if (!hasNewFile && !existing) return { error: "Upload a banner image (JPG, PNG or WebP)." };
 
   let image = null;
@@ -111,22 +111,35 @@ async function readAdForm(supabase, formData, existing) {
     height = AD_SIZES[sizeKey].height;
   }
 
-  // The image has to match the size it will be shown at, or it would look
-  // stretched/squashed. With no new upload, the ad's previous dimensions stand
-  // in for the image's shape.
-  const shape = image ?? (existing ? { width: existing.width, height: existing.height } : null);
-  if (shape && sizeKey !== "responsive") {
-    const wanted = width / height;
-    const actual = shape.width / shape.height;
-    if (Math.abs(actual - wanted) / wanted > AD_ASPECT_TOLERANCE) {
-      return {
-        error: image
-          ? `That image is ${shape.width}×${shape.height}px, which doesn't match the ${width}×${height} size you chose (it would look stretched). Upload a ${width}×${height} image, or choose a size that fits it.`
-          : `Changing to ${width}×${height} needs a new image of that size - upload one.`,
-      };
-    }
-    if (image && image.width < width * 0.9) {
-      return { error: `That image is only ${image.width}px wide - it would look blurry at ${width}px. Upload one at least ${width}px wide.` };
+  // Any shape or resolution is accepted: the image is fitted to the chosen
+  // size here (never stretched or cropped), so the admin doesn't have to
+  // prepare an exact one. With no new upload but a changed size, the current
+  // image is fitted again.
+  if (sizeKey !== "responsive") {
+    try {
+      let source = null;
+      let type = null;
+      let baseName = "banner";
+      if (hasNewFile) {
+        source = Buffer.from(await file.arrayBuffer());
+        type = file.type;
+        baseName = file.name || baseName;
+      } else if (existing && (existing.width !== width || existing.height !== height)) {
+        const response = await fetch(existing.image_url);
+        if (!response.ok) throw new Error("fetch failed");
+        source = Buffer.from(await response.arrayBuffer());
+        type = response.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+        if (!ALLOWED_AD_IMAGE_TYPES.includes(type)) type = "image/jpeg";
+      }
+      if (source) {
+        const fitted = await fitBannerImage(source, type, width, height);
+        if (fitted.changed || !hasNewFile) {
+          file = new File([fitted.buffer], baseName, { type: fitted.type });
+          hasNewFile = true;
+        }
+      }
+    } catch {
+      return { error: "Couldn't resize that image to the chosen size. Try exporting it again as JPG, PNG or WebP, or upload it again." };
     }
   }
 

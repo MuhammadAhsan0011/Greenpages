@@ -47,6 +47,23 @@ export default function AdForm({ action, slots, ad, today }) {
     setPreviewUrl(URL.createObjectURL(file));
   }
 
+  // Custom size: start from the image's own shape at a sensible banner size
+  // (longest side 300px) instead of leaving the admin to guess - they can
+  // still change it.
+  function onPreviewLoad(event) {
+    const width = event.target.naturalWidth;
+    const height = event.target.naturalHeight;
+    setNatural({ width, height });
+    if (values.sizeKey === "custom" && !values.customWidth && !values.customHeight && width && height) {
+      const scale = Math.min(1, 300 / Math.max(width, height));
+      setValues((previous) => ({
+        ...previous,
+        customWidth: String(Math.max(20, Math.round(width * scale))),
+        customHeight: String(Math.max(20, Math.round(height * scale))),
+      }));
+    }
+  }
+
   const slot = slots.find((option) => option.key === values.slotKey);
   const preset = AD_SIZES[values.sizeKey];
   const shownWidth = preset
@@ -167,9 +184,11 @@ export default function AdForm({ action, slots, ad, today }) {
             onChange={onFileChange}
           />
           <p className="editor-hint">
-            JPG, JPEG, PNG or WebP, up to {MAX_AD_IMAGE_BYTES / (1024 * 1024)}MB. It must match the size you chose
-            {shownWidth && shownHeight ? ` (${shownWidth} × ${shownHeight} px)` : ""} - larger images in the same
-            proportions (like 2× for sharper screens) are fine.
+            JPG, JPEG, PNG or WebP, up to {MAX_AD_IMAGE_BYTES / (1024 * 1024)}MB. Any size or shape works - it is
+            fitted automatically to the size you chose
+            {shownWidth && shownHeight ? ` (${shownWidth} × ${shownHeight} px)` : ""}, kept sharp and never stretched or
+            cropped (a different shape gets plain space on the sides). For the best look, upload an image in the same
+            proportions.
           </p>
         </div>
 
@@ -185,7 +204,7 @@ export default function AdForm({ action, slots, ad, today }) {
               <img
                 src={imageSrc}
                 alt="Banner preview"
-                onLoad={(event) => setNatural({ width: event.target.naturalWidth, height: event.target.naturalHeight })}
+                onLoad={onPreviewLoad}
               />
             </div>
           ) : (
