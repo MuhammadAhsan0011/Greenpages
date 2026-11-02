@@ -305,6 +305,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Sitewide scrolling row of own banners: one placement, shown on every page that
+          has this slot (Home, About, Services, Businesses). Renders nothing with no ad. */}
+      <AdSlot slot="businesses-ticker" contained />
+
       <section aria-labelledby="categories-heading">
         <div className="container">
           <div className="section-header-row">

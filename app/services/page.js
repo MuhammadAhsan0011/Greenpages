@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Image from "next/image";
 import Link from "next/link";
 import ServiceCard from "../components/ServiceCard";
@@ -151,6 +152,10 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* Sitewide scrolling row of own banners: one placement, shown on every page that
+          has this slot (Home, About, Services, Businesses). Renders nothing with no ad. */}
+      <AdSlot slot="businesses-ticker" contained />
 
       <section aria-labelledby="services-list-heading">
         <div className="container">

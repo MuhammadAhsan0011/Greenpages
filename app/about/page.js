@@ -1,3 +1,4 @@
+import AdSlot from "@/app/components/AdSlot";
 import Image from "next/image";
 import Button from "../components/Button";
 import aboutHeroPhoto from "../../public/images/about-hero-photo.png";
@@ -63,6 +64,10 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Sitewide scrolling row of own banners: one placement, shown on every page that
+          has this slot (Home, About, Services, Businesses). Renders nothing with no ad. */}
+      <AdSlot slot="businesses-ticker" contained />
 
       <section aria-labelledby="mission-heading">
         <div className="container">
