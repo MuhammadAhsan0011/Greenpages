@@ -20,6 +20,11 @@ import { useEffect, useRef, useState } from "react";
 import { selectAds, selectTickerAds, tickerLayout, deviceBucket, adDisclosureLabel } from "@/lib/ads";
 
 const CONFIG_TTL_MS = 60 * 1000;
+
+// Row height of the scrolling-row placement, by device. A banner is scaled down
+// to fit (never enlarged past its own size), so a 300x300 square fills this
+// height and a 728x90 leaderboard keeps its own 90.
+const TICKER_ROW_HEIGHT = { desktop: 180, tablet: 150, mobile: 120 };
 let configCache = { at: 0, promise: null };
 
 function loadConfig() {
@@ -172,8 +177,8 @@ function TickerItem({ item, slot, duplicate, onFail }) {
 // A looping row of banners. CSS does the movement (.ad-ticker-track), it
 // pauses while the cursor is over it or something inside has focus, and with
 // "reduce motion" on it becomes a plain row the visitor scrolls themselves.
-function AdTicker({ ads, slot, width, onFail }) {
-  const layout = tickerLayout(ads, width);
+function AdTicker({ ads, slot, width, height, onFail }) {
+  const layout = tickerLayout(ads, width, { maxHeight: height });
   if (layout.items.length === 0) return null;
 
   const half = (isDuplicate) => (
@@ -209,7 +214,7 @@ function AdTicker({ ads, slot, width, onFail }) {
 
 export default function AdSlot({ slot, contained = false, className = "", fallback = null }) {
   const anchorRef = useRef(null);
-  const [view, setView] = useState({ mode: "static", ads: [], width: 0 });
+  const [view, setView] = useState({ mode: "static", ads: [], width: 0, device: "desktop" });
   const [failed, setFailed] = useState({});
 
   useEffect(() => {
@@ -231,7 +236,7 @@ export default function AdSlot({ slot, contained = false, className = "", fallba
       const device = deviceBucket(viewport);
 
       if (slotConfig?.mode === "ticker") {
-        setView({ mode: "ticker", ads: selectTickerAds(slotConfig, { device }), width: availableWidth });
+        setView({ mode: "ticker", ads: selectTickerAds(slotConfig, { device }), width: availableWidth, device });
         return;
       }
 
@@ -241,7 +246,7 @@ export default function AdSlot({ slot, contained = false, className = "", fallba
         lastShownId: readLastShown(slot),
       });
       if (picked.length > 0) writeLastShown(slot, picked[0].id);
-      setView({ mode: "static", ads: picked, width: availableWidth });
+      setView({ mode: "static", ads: picked, width: availableWidth, device });
     }
 
     choose();
@@ -269,7 +274,7 @@ export default function AdSlot({ slot, contained = false, className = "", fallba
 
   let content = fallback;
   if (visible.length > 0 && view.mode === "ticker") {
-    content = <AdTicker ads={visible} slot={slot} width={view.width} onFail={onFail} />;
+    content = <AdTicker ads={visible} slot={slot} width={view.width} height={TICKER_ROW_HEIGHT[view.device]} onFail={onFail} />;
   } else if (visible.length > 0) {
     content = (
       <div className={`${contained ? "container " : ""}ad-slot-wrap ${className}`.trim()}>
