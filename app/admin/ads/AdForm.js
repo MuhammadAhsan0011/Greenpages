@@ -184,11 +184,10 @@ export default function AdForm({ action, slots, ad, today }) {
             onChange={onFileChange}
           />
           <p className="editor-hint">
-            JPG, JPEG, PNG or WebP, up to {MAX_AD_IMAGE_BYTES / (1024 * 1024)}MB. Any size or shape works - it is
-            fitted automatically to the size you chose
-            {shownWidth && shownHeight ? ` (${shownWidth} × ${shownHeight} px)` : ""}, kept sharp and never stretched or
-            cropped (a different shape gets plain space on the sides). For the best look, upload an image in the same
-            proportions.
+            JPG, JPEG, PNG or WebP, up to {MAX_AD_IMAGE_BYTES / (1024 * 1024)}MB. Any size or shape works. The size
+            you chose is a box: the banner keeps the image&apos;s own proportions and is shown as large as fits in it
+            {shownWidth && shownHeight ? ` (${shownWidth} × ${shownHeight} px)` : ""} - nothing is cropped, stretched or
+            padded.
           </p>
         </div>
 

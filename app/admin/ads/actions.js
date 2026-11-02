@@ -111,35 +111,27 @@ async function readAdForm(supabase, formData, existing) {
     height = AD_SIZES[sizeKey].height;
   }
 
-  // Any shape or resolution is accepted: the image is fitted to the chosen
-  // size here (never stretched or cropped), so the admin doesn't have to
-  // prepare an exact one. With no new upload but a changed size, the current
-  // image is fitted again.
+  // Any shape or resolution is accepted, and the picture is never padded,
+  // cropped or stretched: the chosen size is a box, and the banner is shown at
+  // the image's own proportions as large as fits in it (a tall image in a
+  // 300x300 box shows as 214x300). The file itself is resampled to that shape
+  // at up to 2x for sharp screens.
   if (sizeKey !== "responsive") {
-    try {
-      let source = null;
-      let type = null;
-      let baseName = "banner";
-      if (hasNewFile) {
-        source = Buffer.from(await file.arrayBuffer());
-        type = file.type;
-        baseName = file.name || baseName;
-      } else if (existing && (existing.width !== width || existing.height !== height)) {
-        const response = await fetch(existing.image_url);
-        if (!response.ok) throw new Error("fetch failed");
-        source = Buffer.from(await response.arrayBuffer());
-        type = response.headers.get("content-type")?.split(";")[0] || "image/jpeg";
-        if (!ALLOWED_AD_IMAGE_TYPES.includes(type)) type = "image/jpeg";
-      }
-      if (source) {
-        const fitted = await fitBannerImage(source, type, width, height);
-        if (fitted.changed || !hasNewFile) {
-          file = new File([fitted.buffer], baseName, { type: fitted.type });
-          hasNewFile = true;
+    const shape = image ?? (existing ? { width: existing.width, height: existing.height } : null);
+    if (shape) {
+      const scale = Math.min(width / shape.width, height / shape.height);
+      width = Math.max(20, Math.round(shape.width * scale));
+      height = Math.max(20, Math.round(shape.height * scale));
+    }
+    if (hasNewFile) {
+      try {
+        const fitted = await fitBannerImage(Buffer.from(await file.arrayBuffer()), file.type, width, height);
+        if (fitted.changed) {
+          file = new File([fitted.buffer], file.name || "banner", { type: fitted.type });
         }
+      } catch {
+        return { error: "Couldn't resize that image. Try exporting it again as JPG, PNG or WebP, or upload it again." };
       }
-    } catch {
-      return { error: "Couldn't resize that image to the chosen size. Try exporting it again as JPG, PNG or WebP, or upload it again." };
     }
   }
 
