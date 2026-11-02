@@ -1,3 +1,5 @@
+import { ADSTERRA_ENABLED } from "@/lib/adsterra";
+
 // Renders one Adsterra "banner" ad unit (the atOptions + iframe-loader
 // script pair Adsterra's dashboard gives you per ad key/size). Deliberately
 // NOT async: the loader script reads the global `atOptions` the instant it
@@ -7,6 +9,8 @@
 // swapped by CSS at different breakpoints): each pair fires in document
 // order before the next one overwrites `atOptions`.
 export default function AdsterraBanner({ adKey, width, height, className }) {
+  if (!ADSTERRA_ENABLED) return null;
+
   return (
     <div className={className} style={{ width, height, maxWidth: "100%", margin: "0 auto" }}>
       <script

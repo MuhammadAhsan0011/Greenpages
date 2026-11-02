@@ -108,7 +108,7 @@ export default async function AdminAdsPage({ searchParams }) {
       <div className="container">
         <h1 id="ads-heading">Advertisement Manager</h1>
         <p className="hero-description">
-          Your own affiliate and sponsored banners. Adsterra keeps running separately and is not affected by anything here.
+          Your own affiliate and sponsored banners. Adsterra is managed separately (see lib/adsterra.js) and is not affected by anything here.
         </p>
         <AdsNav active="ads" />
 

@@ -4,6 +4,7 @@ import NewsletterForm from "./NewsletterForm";
 import ScrollToTopButton from "./ScrollToTopButton";
 import AdsterraBanner from "./AdsterraBanner";
 import AdsterraNativeBanner from "./AdsterraNativeBanner";
+import { ADSTERRA_ENABLED } from "@/lib/adsterra";
 
 // Server Component — purely presentational, no client interactivity needed
 // (NewsletterForm posts via a Server Action; ScrollToTopButton is the one
@@ -18,10 +19,12 @@ export default function Footer() {
     <>
       <footer className="site-footer" id="footer-newsletter">
         <div className="container">
-          <div className="ad-footer-band">
-            <AdsterraNativeBanner className="ad-footer-native" />
-            <AdsterraBanner adKey="37cf896b6437e6c72a84a4fc0ca74e0f" width={468} height={60} />
-          </div>
+          {ADSTERRA_ENABLED && (
+            <div className="ad-footer-band">
+              <AdsterraNativeBanner className="ad-footer-native" />
+              <AdsterraBanner adKey="37cf896b6437e6c72a84a4fc0ca74e0f" width={468} height={60} />
+            </div>
+          )}
 
           <div className="footer-grid">
             <div className="footer-brand">

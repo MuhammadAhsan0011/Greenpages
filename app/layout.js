@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
 import AdsterraBanner from "./components/AdsterraBanner";
+import { ADSTERRA_ENABLED } from "@/lib/adsterra";
 import AdSlot from "./components/AdSlot";
 import { SITE_URL } from "@/lib/site";
 
@@ -121,11 +122,13 @@ export default function RootLayout({ children }) {
             needed (unlike the Native Banner/iframe banner units below it in
             the Adsterra dashboard, which render into a specific container
             element wherever that's placed in the page). */}
-        <script
-          async
-          data-cfasync="false"
-          src="https://bicea.org/14/995236a502054aa1860745841e5c2365"
-        />
+        {ADSTERRA_ENABLED && (
+          <script
+            async
+            data-cfasync="false"
+            src="https://bicea.org/14/995236a502054aa1860745841e5c2365"
+          />
+        )}
       </head>
       <body>
         <script
@@ -149,20 +152,22 @@ export default function RootLayout({ children }) {
         </Script>
         <AdSlot slot="header" contained />
         <Navbar />
-        <div className="ad-top-banner">
-          <AdsterraBanner
-            adKey="0a101d92828b53ade8b6cf3deab8495c"
-            width={728}
-            height={90}
-            className="ad-banner-desktop"
-          />
-          <AdsterraBanner
-            adKey="084bca52f51a263bcc66a574fc4cb7ac"
-            width={320}
-            height={50}
-            className="ad-banner-mobile"
-          />
-        </div>
+        {ADSTERRA_ENABLED && (
+          <div className="ad-top-banner">
+            <AdsterraBanner
+              adKey="0a101d92828b53ade8b6cf3deab8495c"
+              width={728}
+              height={90}
+              className="ad-banner-desktop"
+            />
+            <AdsterraBanner
+              adKey="084bca52f51a263bcc66a574fc4cb7ac"
+              width={320}
+              height={50}
+              className="ad-banner-mobile"
+            />
+          </div>
+        )}
         <AdSlot slot="below-nav" contained />
         <main>{children}</main>
         <AdSlot slot="above-footer" contained />

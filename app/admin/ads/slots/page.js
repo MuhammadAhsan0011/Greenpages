@@ -32,7 +32,7 @@ export default async function AdSlotsPage({ searchParams }) {
         <h1 id="slots-heading">Placement Settings</h1>
         <p className="hero-description">
           Control where banners can appear. A placement with no eligible advertisement shows nothing and takes no space.
-          Adsterra units are separate and keep their own spots.
+          Adsterra units are separate (on/off switch in lib/adsterra.js).
         </p>
         <AdsNav active="slots" />
 
