@@ -109,7 +109,7 @@ function clickHref(ad, slot) {
   return `/ad/click/${ad.id}?s=${encodeURIComponent(slot)}`;
 }
 
-function AdItem({ ad, slot, onFail }) {
+function AdItem({ ad, slot, onFail, fill = false }) {
   const ref = useRef(null);
   useViewableImpression(ref, ad.id, slot);
 
@@ -123,7 +123,7 @@ function AdItem({ ad, slot, onFail }) {
         className="ad-slot-link"
         // Space is reserved from the saved dimensions before the image loads,
         // so a banner arriving never pushes the content around.
-        style={{ maxWidth: ad.width, aspectRatio: `${ad.width} / ${ad.height}` }}
+        style={{ maxWidth: fill ? undefined : ad.width, aspectRatio: `${ad.width} / ${ad.height}` }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
             banner, deliberately not run through the image optimiser. */}
@@ -212,7 +212,9 @@ function AdTicker({ ads, slot, width, height, onFail }) {
   );
 }
 
-export default function AdSlot({ slot, contained = false, className = "", fallback = null }) {
+// layout="grid" lays the ads out like the site's 3-column card grids (1-3 ads,
+// each filling one card-sized cell) instead of stacking them centred.
+export default function AdSlot({ slot, contained = false, layout = "stack", className = "", fallback = null }) {
   const anchorRef = useRef(null);
   const [view, setView] = useState({ mode: "static", ads: [], width: 0, device: "desktop" });
   const [failed, setFailed] = useState({});
@@ -276,11 +278,12 @@ export default function AdSlot({ slot, contained = false, className = "", fallba
   if (visible.length > 0 && view.mode === "ticker") {
     content = <AdTicker ads={visible} slot={slot} width={view.width} height={TICKER_ROW_HEIGHT[view.device]} onFail={onFail} />;
   } else if (visible.length > 0) {
+    const grid = layout === "grid";
     content = (
-      <div className={`${contained ? "container " : ""}ad-slot-wrap ${className}`.trim()}>
-        <aside className="ad-slot" aria-label="Advertisement" data-ad-placement={slot}>
+      <div className={`${contained ? "container " : ""}ad-slot-wrap${grid ? " ad-slot-wrap-grid" : ""} ${className}`.trim()}>
+        <aside className={grid ? "ad-slot ad-slot-grid grid grid-3" : "ad-slot"} aria-label="Advertisement" data-ad-placement={slot}>
           {visible.map((ad) => (
-            <AdItem key={ad.id} ad={ad} slot={slot} onFail={onFail} />
+            <AdItem key={ad.id} ad={ad} slot={slot} onFail={onFail} fill={grid} />
           ))}
         </aside>
       </div>

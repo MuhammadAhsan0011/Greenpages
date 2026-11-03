@@ -6451,6 +6451,21 @@ article.service-section h2 {
 
 /* max-width and aspect-ratio come from the saved banner size (inline), so the
    space is reserved before the image loads and the page never jumps. */
+/* Card-grid placement (homepage, between the listings and the articles): same
+   3 columns and gap as the listing cards (.grid-3), ads fill their cell. */
+.ad-slot-wrap-grid {
+  display: block;
+  padding: 0 24px 56px;
+  margin-top: -32px;
+}
+
+.ad-slot-grid {
+  display: grid;
+  gap: 28px;
+  align-items: start;
+  justify-items: stretch;
+}
+
 .ad-slot-link {
   display: block;
   width: 100%;

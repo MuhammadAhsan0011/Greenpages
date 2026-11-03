@@ -457,6 +457,8 @@ export default async function HomePage() {
         </section>
       )}
 
+      <AdSlot slot="home-listings-ads" layout="grid" contained />
+
       {featured.length > 0 && (
         <section className="section-alt" aria-labelledby="featured-articles-heading">
           <div className="container">
