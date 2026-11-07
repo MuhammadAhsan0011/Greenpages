@@ -17,9 +17,13 @@
 // pages themselves static (the ad list comes from /api/ads, cached ~1 minute).
 
 import { useEffect, useRef, useState } from "react";
-import { selectAds, selectTickerAds, tickerLayout, deviceBucket, adDisclosureLabel } from "@/lib/ads";
+import { orderAds, slotShowCount, rotationWindow, selectTickerAds, tickerLayout, deviceBucket, adDisclosureLabel } from "@/lib/ads";
 
 const CONFIG_TTL_MS = 60 * 1000;
+
+// A placement with more eligible ads than boxes moves on to the next ones this
+// often while the page stays open.
+const ROTATE_EVERY_MS = 15 * 1000;
 
 // Row height of the scrolling-row placement, by device. A banner is scaled down
 // to fit (never enlarged past its own size), so a 300x300 square fills this
@@ -216,8 +220,10 @@ function AdTicker({ ads, slot, width, height, onFail }) {
 // each filling one card-sized cell) instead of stacking them centred.
 export default function AdSlot({ slot, contained = false, layout = "stack", className = "", fallback = null }) {
   const anchorRef = useRef(null);
-  const [view, setView] = useState({ mode: "static", ads: [], width: 0, device: "desktop" });
+  const [view, setView] = useState({ mode: "static", ads: [], width: 0, device: "desktop", max: 1, rotates: false });
   const [failed, setFailed] = useState({});
+  const [tick, setTick] = useState(0);
+  const hoveredRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -242,13 +248,21 @@ export default function AdSlot({ slot, contained = false, layout = "stack", clas
         return;
       }
 
-      const picked = selectAds(slotConfig, {
+      const ordered = orderAds(slotConfig, {
         device,
         availableWidth,
         lastShownId: readLastShown(slot),
       });
-      if (picked.length > 0) writeLastShown(slot, picked[0].id);
-      setView({ mode: "static", ads: picked, width: availableWidth, device });
+      if (ordered.length > 0) writeLastShown(slot, ordered[0].id);
+      setTick(0);
+      setView({
+        mode: "static",
+        ads: ordered,
+        width: availableWidth,
+        device,
+        max: slotShowCount(slotConfig, ordered.length),
+        rotates: slotConfig?.rotation !== "off",
+      });
     }
 
     choose();
@@ -271,7 +285,21 @@ export default function AdSlot({ slot, contained = false, layout = "stack", clas
     };
   }, [slot, contained]);
 
-  const visible = view.ads.filter((ad) => !failed[ad.id]);
+  const pool = view.ads.filter((ad) => !failed[ad.id]);
+
+  // Step to the next ads every ROTATE_EVERY_MS - but only while the tab is in
+  // view and the cursor is not over the placement (so a click never lands on a
+  // banner that just swapped).
+  const canRotate = view.mode === "static" && view.rotates && pool.length > view.max;
+  useEffect(() => {
+    if (!canRotate) return undefined;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible" && !hoveredRef.current) setTick((value) => value + 1);
+    }, ROTATE_EVERY_MS);
+    return () => clearInterval(timer);
+  }, [canRotate]);
+
+  const visible = view.mode === "static" ? rotationWindow(pool, view.max, tick) : pool;
   const onFail = (id) => setFailed((previous) => ({ ...previous, [id]: true }));
 
   let content = fallback;
@@ -281,7 +309,11 @@ export default function AdSlot({ slot, contained = false, layout = "stack", clas
     const grid = layout === "grid";
     content = (
       <div className={`${contained ? "container " : ""}ad-slot-wrap${grid ? " ad-slot-wrap-grid" : ""} ${className}`.trim()}>
-        <aside className={grid ? "ad-slot ad-slot-grid grid grid-3" : "ad-slot"} aria-label="Advertisement" data-ad-placement={slot}>
+        <aside className={grid ? "ad-slot ad-slot-grid grid grid-3" : "ad-slot"} aria-label="Advertisement"
+          data-ad-placement={slot}
+          onMouseEnter={() => { hoveredRef.current = true; }}
+          onMouseLeave={() => { hoveredRef.current = false; }}
+        >
           {visible.map((ad) => (
             <AdItem key={ad.id} ad={ad} slot={slot} onFail={onFail} fill={grid} />
           ))}

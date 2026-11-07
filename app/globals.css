@@ -6434,7 +6434,17 @@ article.service-section h2 {
   width: 100%;
 }
 
+@keyframes ad-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .ad-slot-item {
+  animation: ad-fade-in 0.5s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6747,6 +6757,10 @@ article.service-section h2 {
 
 /* "Reduce motion": no animation - a normal row the visitor scrolls sideways. */
 @media (prefers-reduced-motion: reduce) {
+  .ad-slot-item {
+    animation: none;
+  }
+
   .ad-ticker {
     overflow-x: auto;
     -webkit-mask-image: none;
