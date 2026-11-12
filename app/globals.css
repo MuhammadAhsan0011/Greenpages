@@ -4179,6 +4179,22 @@ article.service-section h2 {
 /* Leaderboard (desktop) / mobile banner, swapped by width below the navbar.
    Both AdsterraBanner instances always render (they have to — each one's
    script pair only fires once, at render time) so the toggle is CSS-only. */
+.ad-alt-off {
+  display: none !important;
+}
+
+/* Own ads sharing a box with an Adsterra unit (AdsterraAlternate): fill the box,
+   and keep the label readable on the dark footer. */
+.ad-top-banner .ad-slot-wrap,
+.ad-footer-band .ad-slot-wrap {
+  width: 100%;
+  padding: 0;
+}
+
+.ad-footer-band .ad-slot-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .ad-top-banner {
   display: flex;
   justify-content: center;

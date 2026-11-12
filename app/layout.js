@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ReturnVisitorReviewPopup from "./components/ReturnVisitorReviewPopup";
 import AdsterraBanner from "./components/AdsterraBanner";
+import AdsterraAlternate from "./components/AdsterraAlternate";
 import { ADSTERRA_ENABLED } from "@/lib/adsterra";
 import AdSlot from "./components/AdSlot";
 import { SITE_URL } from "@/lib/site";
@@ -152,8 +153,8 @@ export default function RootLayout({ children }) {
         </Script>
         <AdSlot slot="header" contained />
         <Navbar />
-        {ADSTERRA_ENABLED && (
-          <div className="ad-top-banner">
+        {ADSTERRA_ENABLED ? (
+          <AdsterraAlternate slot="below-nav" className="ad-top-banner">
             <AdsterraBanner
               adKey="0a101d92828b53ade8b6cf3deab8495c"
               width={728}
@@ -166,11 +167,12 @@ export default function RootLayout({ children }) {
               height={50}
               className="ad-banner-mobile"
             />
-          </div>
+          </AdsterraAlternate>
+        ) : (
+          <AdSlot slot="below-nav" contained />
         )}
-        <AdSlot slot="below-nav" contained />
         <main>{children}</main>
-        <AdSlot slot="above-footer" contained />
+        {!ADSTERRA_ENABLED && <AdSlot slot="above-footer" contained />}
         <Footer />
         <ReturnVisitorReviewPopup />
       </body>

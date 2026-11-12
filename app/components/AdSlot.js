@@ -218,7 +218,9 @@ function AdTicker({ ads, slot, width, height, onFail }) {
 
 // layout="grid" lays the ads out like the site's 3-column card grids (1-3 ads,
 // each filling one card-sized cell) instead of stacking them centred.
-export default function AdSlot({ slot, contained = false, layout = "stack", className = "", fallback = null }) {
+// `onResolved(hasAds)` reports whether a banner is on offer here (used by
+// AdsterraAlternate to know whether there is anything to take turns with).
+export default function AdSlot({ slot, contained = false, layout = "stack", className = "", fallback = null, onResolved }) {
   const anchorRef = useRef(null);
   const [view, setView] = useState({ mode: "static", ads: [], width: 0, device: "desktop", max: 1, rotates: false });
   const [failed, setFailed] = useState({});
@@ -298,6 +300,13 @@ export default function AdSlot({ slot, contained = false, layout = "stack", clas
     }, ROTATE_EVERY_MS);
     return () => clearInterval(timer);
   }, [canRotate]);
+
+  const hasAds = view.mode === "static" && pool.length > 0;
+  const onResolvedRef = useRef(onResolved);
+  onResolvedRef.current = onResolved;
+  useEffect(() => {
+    onResolvedRef.current?.(hasAds);
+  }, [hasAds]);
 
   const visible = view.mode === "static" ? rotationWindow(pool, view.max, tick) : pool;
   const onFail = (id) => setFailed((previous) => ({ ...previous, [id]: true }));
