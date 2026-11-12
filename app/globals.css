@@ -6791,3 +6791,22 @@ article.service-section h2 {
     display: none;
   }
 }
+
+/* /admin/articles/[id] - the details block above an article under review. */
+.admin-article-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px 24px;
+  margin: 0 0 16px;
+}
+
+.admin-article-details dt {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.admin-article-details dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

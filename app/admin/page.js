@@ -435,7 +435,9 @@ export default async function AdminPage({ searchParams }) {
                 <tbody>
                   {pendingArticles.map((article) => (
                     <tr key={article.id}>
-                      <td>{article.title}</td>
+                      <td>
+                        <Link href={`/admin/articles/${article.id}`}>{article.title}</Link>
+                      </td>
                       <td>{article.profiles?.full_name ?? "—"}</td>
                       <td>{article.author_email ?? "—"}</td>
                       <td>{article.category}</td>
@@ -465,6 +467,9 @@ export default async function AdminPage({ searchParams }) {
                         })}
                       </td>
                       <td className="admin-table-actions">
+                        <Link href={`/admin/articles/${article.id}`} className="btn btn-secondary admin-btn-sm">
+                          Read
+                        </Link>
                         <form action={approveArticle.bind(null, article.id)}>
                           <SubmitButton className="btn btn-primary admin-btn-sm" pendingLabel="Approving…">
                             Approve
@@ -662,7 +667,7 @@ export default async function AdminPage({ searchParams }) {
                           {article.title}
                         </a>
                       ) : (
-                        article.title
+                        <Link href={`/admin/articles/${article.id}`}>{article.title}</Link>
                       )}
                     </td>
                     <td>{article.profiles?.full_name ?? "—"}</td>
