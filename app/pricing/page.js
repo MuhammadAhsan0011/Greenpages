@@ -106,6 +106,7 @@ const packages = [
       `Priority placement above ${PLAN_LABELS.verified} listings`,
       "Featured on the homepage",
       "Featured in category search results",
+      "Run up to 3 of your own ads — footer and sliding row — for 3 weeks",
       "Dedicated support setting up your profile",
     ],
   },

@@ -19,6 +19,7 @@ const ROWS = [
   { label: "Priority placement in search & category results", free: false, verified: true, featured: true },
   { label: "Top placement directory-wide", free: false, verified: false, featured: true },
   { label: "Featured on homepage", free: false, verified: false, featured: true },
+  { label: "3 footer & sliding-row ads for 3 weeks", free: false, verified: false, featured: true },
   { label: "Comment on articles", free: true, verified: true, featured: true },
   { label: "Dedicated onboarding support", free: false, verified: false, featured: true },
 ];
